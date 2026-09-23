@@ -1,0 +1,19 @@
+{
+  "name": "Mercado LuAn",
+  "short_name": "Mercado",
+  "description": "Calculadora de mercado con IVA — LuAn System™",
+  "start_url": "/MercadoLuan/",
+  "scope": "/MercadoLuan/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#f97316",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
