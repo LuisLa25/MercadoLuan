@@ -45,26 +45,22 @@ button{width:100%;padding:11px;border-radius:8px;border:none;font-size:0.95rem;f
 .btn-link{background:none;border:none;color:#38bdf8;font-size:0.75rem;cursor:pointer;text-decoration:underline;padding:0;width:auto;margin:0;}
 .btn-sm{padding:6px 14px;font-size:0.82rem;border-radius:8px;border:none;cursor:pointer;margin:0;width:auto;font-weight:bold;}
 .btn-sm-danger{background:#ef4444;color:#fff;}
-
-/* Selector moneda por producto */
-.moneda-selector{display:grid;grid-template-columns:1fr 1fr;gap:0;border-radius:10px;overflow:hidden;border:2px solid #334155;margin-top:4px;}
-.mon-btn{padding:10px;text-align:center;font-size:1rem;font-weight:bold;cursor:pointer;user-select:none;transition:all 0.15s;border:none;background:#0f172a;color:#64748b;}
-.mon-btn.activo-bs{background:#064e3b;color:#34d399;border-color:#34d399;}
-.mon-btn.activo-usd{background:#1e3a5f;color:#60a5fa;border-color:#60a5fa;}
+/* Moneda selector */
+.mon-sel{display:grid;grid-template-columns:1fr 1fr;border-radius:10px;overflow:hidden;border:2px solid #334155;margin-top:4px;}
+.mon-btn{padding:10px;text-align:center;font-size:0.95rem;font-weight:bold;cursor:pointer;user-select:none;border:none;background:#0f172a;color:#64748b;}
 .mon-btn:first-child{border-right:1px solid #334155;}
-
+.mon-btn.bs{background:#064e3b;color:#34d399;border-color:#34d399;}
+.mon-btn.usd{background:#1e3a5f;color:#60a5fa;border-color:#60a5fa;}
 /* Tipo */
 .tipo-grupo{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:4px;}
 .tipo-btn{padding:8px 4px;border-radius:8px;border:1px solid #334155;background:#0f172a;color:#94a3b8;font-size:0.8rem;font-weight:bold;cursor:pointer;text-align:center;user-select:none;}
 .tipo-btn.activo{border-color:#38bdf8;background:#0c2a3a;color:#38bdf8;}
-
-/* IVA toggle */
+/* IVA */
 .iva-toggle{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:4px;}
-.iva-btn{padding:8px 4px;border-radius:8px;border:1px solid #334155;background:#0f172a;color:#94a3b8;font-size:0.82rem;font-weight:bold;cursor:pointer;text-align:center;user-select:none;}
-.iva-btn.activo-iva{border-color:#fb923c;background:#1c0a00;color:#fb923c;}
-.iva-btn.activo-e{border-color:#34d399;background:#00150d;color:#34d399;}
-.iva-btn.activo-incl{border-color:#60a5fa;background:#0a1628;color:#60a5fa;}
-
+.iva-btn{padding:9px 4px;border-radius:8px;border:1px solid #334155;background:#0f172a;color:#94a3b8;font-size:0.82rem;font-weight:bold;cursor:pointer;text-align:center;user-select:none;}
+.iva-btn.ai{border-color:#fb923c;background:#1c0a00;color:#fb923c;}
+.iva-btn.ae{border-color:#34d399;background:#00150d;color:#34d399;}
+.iva-btn.ain{border-color:#60a5fa;background:#0a1628;color:#60a5fa;}
 /* Autocomplete */
 .ac-wrap{position:relative;}
 .ac-lista{position:absolute;top:calc(100% + 4px);left:0;right:0;background:#1e293b;border:1px solid #38bdf8;border-radius:8px;z-index:100;max-height:220px;overflow-y:auto;display:none;box-shadow:0 8px 24px rgba(0,0,0,0.6);}
@@ -75,55 +71,47 @@ button{width:100%;padding:11px;border-radius:8px;border:none;font-size:0.95rem;f
 .ac-icono{font-size:1rem;flex-shrink:0;}
 .ac-sep{padding:4px 14px;font-size:0.7rem;color:#475569;background:#0f172a;text-transform:uppercase;letter-spacing:0.5px;font-weight:bold;}
 .ac-empty{padding:10px 14px;font-size:0.85rem;color:#64748b;font-style:italic;}
-.ac-badge{font-size:0.65rem;background:#1e3a5f;color:#60a5fa;padding:1px 5px;border-radius:10px;font-weight:bold;margin-left:auto;}
-
 /* Hint */
-.hint{font-size:0.75rem;color:#38bdf8;background:#0c2a3a;border:1px solid #1e4a6e;border-radius:6px;padding:6px 10px;margin-top:6px;line-height:1.5;}
+.hint{font-size:0.75rem;color:#38bdf8;background:#0c2a3a;border:1px solid #1e4a6e;border-radius:6px;padding:6px 10px;margin-top:6px;line-height:1.5;display:none;}
 .err{font-size:0.8rem;color:#f87171;margin-top:6px;display:none;}
-
 /* Qty */
 .qty-row{display:flex;align-items:center;border:1px solid #334155;border-radius:8px;overflow:hidden;background:#0f172a;height:42px;}
 .qty-btn{width:44px;height:42px;flex-shrink:0;background:#1e3a5f;color:#38bdf8;border:none;font-size:1.3rem;font-weight:bold;cursor:pointer;display:flex;align-items:center;justify-content:center;margin:0;padding:0;}
 .qty-btn:active{background:#0ea5e9;color:#fff;}
 .qty-input{flex:1;border:none;border-left:1px solid #334155;border-right:1px solid #334155;border-radius:0;text-align:center;font-size:1.05rem;font-weight:bold;background:#0f172a;color:#f8fafc;height:42px;padding:0;}
 .qty-input:focus{outline:none;}
-
 /* Fases */
-.fase-bar{display:flex;gap:8px;margin-bottom:14px;}
-.fase-pill{flex:1;padding:10px;border-radius:10px;text-align:center;font-size:0.8rem;font-weight:bold;border:2px solid transparent;cursor:pointer;}
+.fase-bar{display:flex;gap:6px;margin-bottom:14px;}
+.fase-pill{flex:1;padding:9px 4px;border-radius:10px;text-align:center;font-size:0.75rem;font-weight:bold;border:2px solid transparent;cursor:pointer;}
 .fase-pill.activa{background:#f97316;color:#fff;border-color:#f97316;}
 .fase-pill.inactiva{background:#1e293b;color:#64748b;border-color:#334155;}
 .fase-pill.completa{background:#064e3b;color:#34d399;border-color:#34d399;}
-
 /* Items */
-.prev-item{display:flex;align-items:center;gap:10px;padding:12px;border-radius:10px;margin-bottom:8px;background:#0f172a;border:2px solid #334155;}
-.prev-item.confirmado{border-color:#10b981;background:#00150d;opacity:0.7;}
-.prev-item.expandido{border-color:#f97316;}
-.prev-item.tocable{cursor:pointer;}
-.prev-item.tocable:active{border-color:#38bdf8;}
-.prev-icono{font-size:1.3rem;flex-shrink:0;}
-.prev-body{flex:1;}
-.prev-nombre{font-size:0.95rem;font-weight:bold;color:#f1f5f9;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
-.prev-detalle{font-size:0.74rem;color:#64748b;margin-top:2px;}
-.prev-estado{font-size:0.72rem;font-weight:bold;flex-shrink:0;text-align:right;}
-
+.item-card{display:flex;align-items:center;gap:10px;padding:12px;border-radius:10px;margin-bottom:8px;background:#0f172a;border:2px solid #334155;}
+.item-card.tocable{cursor:pointer;}
+.item-card.tocable:active{border-color:#38bdf8;}
+.item-card.expandido{border-color:#f97316;}
+.item-card.completo{border-color:#10b981;background:#001a0d;}
+.item-card.confirmado{border-color:#10b981;background:#001a0d;opacity:0.6;}
+.item-ico{font-size:1.3rem;flex-shrink:0;}
+.item-body{flex:1;}
+.item-nom{font-size:0.95rem;font-weight:bold;color:#f1f5f9;display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
+.item-det{font-size:0.74rem;color:#64748b;margin-top:2px;}
+.item-est{font-size:0.8rem;font-weight:bold;flex-shrink:0;text-align:right;min-width:44px;}
 /* Tags */
-.tag-e{font-size:0.7rem;background:#064e3b;color:#34d399;padding:1px 7px;border-radius:20px;font-weight:bold;}
-.tag-iva{font-size:0.7rem;background:#451a03;color:#fb923c;padding:1px 7px;border-radius:20px;font-weight:bold;}
-.tag-incl{font-size:0.7rem;background:#1e3a8a;color:#60a5fa;padding:1px 7px;border-radius:20px;font-weight:bold;}
-.tag-pend{font-size:0.7rem;background:#1c1400;color:#fbbf24;padding:1px 7px;border-radius:20px;font-weight:bold;}
-.tag-bs{font-size:0.7rem;background:#064e3b;color:#34d399;padding:1px 6px;border-radius:10px;font-weight:bold;}
-.tag-usd{font-size:0.7rem;background:#1e3a5f;color:#60a5fa;padding:1px 6px;border-radius:10px;font-weight:bold;}
-
-/* Panel confirmación inline */
-.confirm-panel{background:#1e293b;border:2px solid #f97316;border-radius:10px;padding:14px;margin-top:6px;margin-bottom:8px;display:none;}
-
+.tag-e{font-size:0.68rem;background:#064e3b;color:#34d399;padding:1px 6px;border-radius:20px;font-weight:bold;}
+.tag-iva{font-size:0.68rem;background:#451a03;color:#fb923c;padding:1px 6px;border-radius:20px;font-weight:bold;}
+.tag-incl{font-size:0.68rem;background:#1e3a8a;color:#60a5fa;padding:1px 6px;border-radius:20px;font-weight:bold;}
+.tag-pend{font-size:0.68rem;background:#1c1400;color:#fbbf24;padding:1px 6px;border-radius:20px;font-weight:bold;}
+.tag-bs{font-size:0.68rem;background:#064e3b;color:#34d399;padding:1px 6px;border-radius:10px;font-weight:bold;}
+.tag-usd{font-size:0.68rem;background:#1e3a5f;color:#60a5fa;padding:1px 6px;border-radius:10px;font-weight:bold;}
+/* Panel inline */
+.panel{background:#1e293b;border:2px solid #f97316;border-radius:10px;padding:14px;margin-top:6px;margin-bottom:8px;display:none;}
 /* Resumen */
-.resumen-line{display:flex;justify-content:space-between;font-size:0.85rem;color:#94a3b8;margin-bottom:5px;}
-.resumen-total{display:flex;justify-content:space-between;font-size:1rem;font-weight:bold;color:#38bdf8;border-top:1px solid #334155;padding-top:8px;margin-top:6px;}
-.resumen-total-usd{display:flex;justify-content:flex-end;font-size:0.85rem;color:#94a3b8;margin-top:3px;font-weight:bold;}
-.contador{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;border-radius:10px;background:#f97316;color:#fff;font-size:0.7rem;font-weight:bold;padding:0 5px;margin-left:6px;}
-
+.res-line{display:flex;justify-content:space-between;font-size:0.85rem;color:#94a3b8;margin-bottom:5px;}
+.res-total{display:flex;justify-content:space-between;font-size:1rem;font-weight:bold;color:#38bdf8;border-top:1px solid #334155;padding-top:8px;margin-top:6px;}
+.res-usd{display:flex;justify-content:flex-end;font-size:0.85rem;color:#94a3b8;margin-top:3px;font-weight:bold;}
+.cnt{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;border-radius:10px;background:#f97316;color:#fff;font-size:0.7rem;font-weight:bold;padding:0 5px;margin-left:6px;}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#10b981;color:#fff;padding:8px 20px;border-radius:20px;font-size:0.85rem;font-weight:bold;opacity:0;pointer-events:none;transition:opacity 0.2s;white-space:nowrap;z-index:999;}
 .toast.show{opacity:1;}
 #panelTasa{display:none;}
@@ -131,12 +119,12 @@ button{width:100%;padding:11px;border-radius:8px;border:none;font-size:0.95rem;f
 </head>
 <body>
 
-<!-- INICIO -->
+<!-- ══ INICIO ══ -->
 <div class="screen activo" id="screenInicio">
   <h1>🛒 Mercado LuAn</h1>
   <p class="subtitle"><span class="sync-dot" id="syncDot"></span><span class="sync-label" id="syncLabel">Conectando...</span></p>
   <div class="card" id="panelTasa">
-    <div class="card-title">⚙️ Tasa del dólar</div>
+    <div class="card-title">💵 Tasa del dólar</div>
     <label>Precio del dólar hoy (en Bs)</label>
     <input type="number" id="tasa" placeholder="Ej: 40.50" step="0.01" min="0.01" inputmode="decimal">
     <p id="err-tasa" class="err">Ingresa un valor válido.</p>
@@ -151,104 +139,68 @@ button{width:100%;padding:11px;border-radius:8px;border:none;font-size:0.95rem;f
   </div>
 </div>
 
-<!-- LISTA + CAJA + RESUMEN -->
+<!-- ══ LISTA / PASILLO / CAJA / TOTAL ══ -->
 <div class="screen" id="screenLista">
   <h1>🛒 Mercado LuAn</h1>
   <p class="subtitle"><span class="sync-dot" id="syncDot2"></span><span class="sync-label" id="syncLabel2">—</span></p>
   <div class="fase-bar">
-    <div class="fase-pill activa" id="pill1" onclick="irFase(1)">📝 Lista</div>
-    <div class="fase-pill inactiva" id="pill2" onclick="irFase(2)">🛒 Caja</div>
-    <div class="fase-pill inactiva" id="pill3" onclick="irFase(3)">✅ Total</div>
+    <div class="fase-pill activa"  id="pill1" onclick="irFase(1)">📝 Lista</div>
+    <div class="fase-pill inactiva" id="pill2" onclick="irFase(2)">🏪 Pasillo</div>
+    <div class="fase-pill inactiva" id="pill3" onclick="irFase(3)">🛒 Caja</div>
+    <div class="fase-pill inactiva" id="pill4" onclick="irFase(4)">✅ Total</div>
   </div>
 
-  <!-- FASE 1 -->
+  <!-- FASE 1: Solo nombres -->
   <div id="fase1">
     <div class="card">
       <div class="card-title">
-        <span>Agregar producto<span class="contador" id="cnt1">0</span></span>
+        <span>Anota los productos<span class="cnt" id="cnt1">0</span></span>
         <button class="btn-link" onclick="volverInicio()">✕ Salir</button>
       </div>
-
       <label>Nombre del producto</label>
       <div class="ac-wrap">
-        <input type="text" id="nom1" placeholder="Escribe para buscar..." autocomplete="off" oninput="onNom1(this)">
+        <input type="text" id="nom1" placeholder="Ej: Azúcar, Café, Jamón..." autocomplete="off" oninput="onNom1(this)">
         <div class="ac-lista" id="ac1"></div>
       </div>
-
-      <!-- SELECTOR MONEDA POR PRODUCTO -->
-      <label style="margin-top:12px;">Moneda del precio</label>
-      <div class="moneda-selector">
-        <div class="mon-btn" id="mon-bs" onclick="setMonedaProd('BS')">🟢 Bs</div>
-        <div class="mon-btn" id="mon-usd" onclick="setMonedaProd('USD')">🔵 $</div>
-      </div>
-
-      <label style="margin-top:12px;">Tipo</label>
-      <div class="tipo-grupo">
-        <div class="tipo-btn activo" onclick="setTipo1('unidad')" id="t1u">📦 Unidad</div>
-        <div class="tipo-btn" onclick="setTipo1('peso')" id="t1p">⚖️ Peso</div>
-        <div class="tipo-btn" onclick="setTipo1('volumen')" id="t1v">🧴 Volumen</div>
-      </div>
-
-      <div id="f1-unidad">
-        <div class="row2">
-          <div>
-            <label id="lbl1p">Precio unitario <span style="color:#475569">(opcional)</span></label>
-            <input type="number" id="p1" placeholder="0.00" step="0.01" min="0" inputmode="decimal">
-          </div>
-          <div>
-            <label>Cantidad</label>
-            <div class="qty-row">
-              <button class="qty-btn" onclick="qtyC(-1,'q1')">−</button>
-              <input type="number" class="qty-input" id="q1" value="1" min="1" inputmode="numeric">
-              <button class="qty-btn" onclick="qtyC(1,'q1')">+</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div id="f1-pesoVol" style="display:none;">
-        <div class="row2">
-          <div><label id="lbl1r">Precio/kg <span style="color:#475569">(opcional)</span></label><input type="number" id="r1" placeholder="0.00" step="0.01" min="0" inputmode="decimal"></div>
-          <div><label id="lbl1c">Gramos</label><input type="number" id="c1" placeholder="Ej: 358" step="1" min="1" inputmode="numeric"></div>
-        </div>
-        <div class="hint" id="h1" style="display:none;">—</div>
-      </div>
-
-      <label style="margin-top:12px;">IVA <span style="color:#475569;font-size:0.72rem;">(opcional)</span></label>
-      <div class="iva-toggle">
-        <div class="iva-btn" id="i1a" onclick="setIva1('agregar')">+16%</div>
-        <div class="iva-btn" id="i1e" onclick="setIva1('exento')">(E) Exento</div>
-        <div class="iva-btn" id="i1i" onclick="setIva1('incluido')">Incluido</div>
-      </div>
-
       <p id="err1" class="err">Escribe el nombre del producto.</p>
-      <button class="btn-success" onclick="agregarALista()">➕ Agregar a la lista</button>
+      <button class="btn-success" onclick="agregarNombre()">➕ Agregar a la lista</button>
     </div>
-
-    <div id="cardPrevia" style="display:none;">
+    <div id="cardLista1" style="display:none;">
       <div class="card">
-        <div class="card-title">Tu lista<span class="contador" id="cnt1b">0</span></div>
-        <div id="listaPrevia"></div>
+        <div class="card-title">Tu lista<span class="cnt" id="cnt1b">0</span></div>
+        <div id="listaF1"></div>
       </div>
-      <button class="btn-orange" onclick="irFase(2)">🛒 Ir a caja →</button>
+      <button class="btn-orange" onclick="irFase(2)">🏪 Ir al mercado →</button>
     </div>
   </div>
 
-  <!-- FASE 2 -->
+  <!-- FASE 2: Pasillo — cargar precios -->
   <div id="fase2" style="display:none;">
     <div class="card">
       <div class="card-title">
-        <span>Toca el producto que pasa la cajera</span>
-        <span id="cntCaja" style="font-size:0.8rem;color:#64748b;"></span>
+        <span>Carga precios en el pasillo</span>
+        <span id="cntPasillo" style="font-size:0.8rem;color:#64748b;"></span>
       </div>
-      <div id="listaCaja"></div>
-      <button class="btn-orange" onclick="agregarExtra()" style="margin-top:12px;">➕ Producto extra</button>
-      <button class="btn-primary" onclick="irFase(3)" style="margin-top:8px;">✅ Ver total →</button>
+      <div id="listaF2"></div>
+      <button class="btn-success" onclick="agregarExtraPasillo()" style="margin-top:12px;">➕ Agregar producto extra</button>
+      <button class="btn-orange" onclick="irFase(3)" style="margin-top:8px;">🛒 Ir a caja →</button>
     </div>
   </div>
 
-  <!-- FASE 3 -->
+  <!-- FASE 3: Caja — confirmar -->
   <div id="fase3" style="display:none;">
+    <div class="card">
+      <div class="card-title">
+        <span>Toca cada producto en caja</span>
+        <span id="cntCaja" style="font-size:0.8rem;color:#64748b;"></span>
+      </div>
+      <div id="listaF3"></div>
+      <button class="btn-primary" onclick="irFase(4)" style="margin-top:12px;">✅ Ver total →</button>
+    </div>
+  </div>
+
+  <!-- FASE 4: Total -->
+  <div id="fase4" style="display:none;">
     <div class="card">
       <div class="card-title">✅ Resumen de compra</div>
       <div id="resumenItems"></div>
@@ -274,7 +226,7 @@ const CAT=[
 
 // ── ESTADO ────────────────────────────────────
 let tasa=0,catPersonal=[],fbListo=false;
-let lista=[],confirmados=[],iva1='',tipo1='unidad',monedaProd='BS',itemExpandido=null;
+let lista=[],confirmados=[],monedaProd='BS',itemExpandido=null;
 
 // ── UTILS ─────────────────────────────────────
 function f2(n){return Number(n).toFixed(2);}
@@ -304,10 +256,7 @@ async function cargarCat(){
     const s=await getDoc(doc(db,'catalogo_personal',USER_ID));
     catPersonal=s.exists()?(s.data().productos||[]):[];
     fbListo=true;sync('ok');
-  }catch(e){
-    fbListo=false;sync('err');
-    try{const l=localStorage.getItem('luan_cat');if(l)catPersonal=JSON.parse(l);}catch(_){}
-  }
+  }catch(e){fbListo=false;sync('err');try{const l=localStorage.getItem('luan_cat');if(l)catPersonal=JSON.parse(l);}catch(_){}}
 }
 async function guardarCat(){
   try{localStorage.setItem('luan_cat',JSON.stringify(catPersonal));}catch(_){}
@@ -321,23 +270,17 @@ function regUso(nombre,moneda){
 function catSiNuevo(nombre,tipo,moneda){
   const enB=CAT.some(p=>p.n.toLowerCase()===nombre.toLowerCase());
   const enP=catPersonal.some(p=>p.n.toLowerCase()===nombre.toLowerCase());
-  if(!enB&&!enP){catPersonal.push({n:nombre,i:'⭐',t:tipo,usos:1,moneda});guardarCat();return true;}
+  if(!enB&&!enP){catPersonal.push({n:nombre,i:'⭐',t:tipo||'unidad',usos:1,moneda:moneda||'BS'});guardarCat();return true;}
   return false;
 }
-function getMonedaMemoria(nombre){
-  const enP=catPersonal.find(p=>p.n.toLowerCase()===nombre.toLowerCase());
-  if(enP&&enP.moneda)return enP.moneda;
-  const enB=CAT.find(p=>p.n.toLowerCase()===nombre.toLowerCase());
-  return null; // sin memoria → mantiene la última usada
+function getMemoria(nombre){
+  const p=catPersonal.find(p=>p.n.toLowerCase()===nombre.toLowerCase());
+  return p?{tipo:p.t,moneda:p.moneda||'BS'}:null;
 }
 
 // ── TASA ──────────────────────────────────────
 function cargarTasa(){
-  try{
-    const t=localStorage.getItem('luan_tasa');
-    if(t){tasa=parseFloat(t);document.getElementById('tasa').value=t;}
-    lblTasa();
-  }catch(e){}
+  try{const t=localStorage.getItem('luan_tasa');if(t){tasa=parseFloat(t);document.getElementById('tasa').value=t;}lblTasa();}catch(e){}
 }
 function lblTasa(){document.getElementById('lblTasa').textContent=tasa>0?f2(tasa)+' Bs/$':'Configurar';}
 window.toggleTasa=function(){const p=document.getElementById('panelTasa');p.style.display=p.style.display==='block'?'none':'block';};
@@ -345,19 +288,23 @@ window.guardarTasa=function(){
   const t=parseFloat(document.getElementById('tasa').value);
   if(!t||t<=0){document.getElementById('err-tasa').style.display='block';return;}
   document.getElementById('err-tasa').style.display='none';
-  tasa=t;
-  try{localStorage.setItem('luan_tasa',t);}catch(e){}
+  tasa=t;try{localStorage.setItem('luan_tasa',t);}catch(e){}
   lblTasa();document.getElementById('panelTasa').style.display='none';toast('✓ Tasa guardada');
 };
 
-// ── SELECTOR MONEDA POR PRODUCTO ──────────────
-window.setMonedaProd=function(m){
+// ── MONEDA SELECTOR ───────────────────────────
+function setMon(m,prefixBS,prefixUSD){
   monedaProd=m;
-  document.getElementById('mon-bs').className='mon-btn'+(m==='BS'?' activo-bs':'');
-  document.getElementById('mon-usd').className='mon-btn'+(m==='USD'?' activo-usd':'');
+  const bs=document.getElementById(prefixBS);
+  const usd=document.getElementById(prefixUSD);
+  if(bs)bs.className='mon-btn'+(m==='BS'?' bs':'');
+  if(usd)usd.className='mon-btn'+(m==='USD'?' usd':'');
+}
+window.setMonF1=function(m){setMon(m,'mon1-bs','mon1-usd');};
+window.setMonItem=function(id,m){
+  const item=lista.find(i=>i.id===id);if(item)item.moneda=m;
+  renderF2();setTimeout(()=>{abrirPanel(id);},30);
 };
-// Inicializar con Bs por defecto
-function initMonedaSelector(){setMonedaProd(monedaProd);}
 
 // ── NAVEGACIÓN ────────────────────────────────
 window.volverInicio=function(){
@@ -366,32 +313,32 @@ window.volverInicio=function(){
 };
 window.irACrearLista=function(){
   if(tasa<=0){document.getElementById('panelTasa').style.display='block';toast('💵 Configura la tasa primero','#f97316');return;}
-  lista=[];confirmados=[];iva1='';tipo1='unidad';monedaProd='BS';itemExpandido=null;
+  lista=[];confirmados=[];monedaProd='BS';itemExpandido=null;
   document.getElementById('screenInicio').classList.remove('activo');
   document.getElementById('screenLista').classList.add('activo');
-  initMonedaSelector();
-  irFase(1);renderPrevia();
+  irFase(1);
 };
 window.irFase=function(n){
-  [1,2,3].forEach(i=>{document.getElementById('fase'+i).style.display=i===n?'block':'none';});
-  ['pill1','pill2','pill3'].forEach((id,i)=>{
+  [1,2,3,4].forEach(i=>{document.getElementById('fase'+i).style.display=i===n?'block':'none';});
+  ['pill1','pill2','pill3','pill4'].forEach((id,i)=>{
     const el=document.getElementById(id);
     el.className='fase-pill '+(i+1===n?'activa':i+1<n?'completa':'inactiva');
   });
-  if(n===2)renderCaja();
-  if(n===3)renderResumen();
+  if(n===2){itemExpandido=null;renderF2();}
+  if(n===3){itemExpandido=null;renderF3();}
+  if(n===4)renderResumen();
 };
 window.nuevaLista=function(){
   if(!confirm('¿Nueva lista?'))return;
-  lista=[];confirmados=[];irFase(1);renderPrevia();
+  lista=[];confirmados=[];irFase(1);renderF1();
 };
 
-// ── AUTOCOMPLETE ──────────────────────────────
+// ── AUTOCOMPLETE FASE 1 ───────────────────────
 window.onNom1=function(inp){
   const q=inp.value;if(q.length>0)inp.value=q.charAt(0).toUpperCase()+q.slice(1);
-  filtAC(inp.value.trim());
+  filtAC1(inp.value.trim());
 };
-function filtAC(q){
+function filtAC1(q){
   const el=document.getElementById('ac1');
   if(q.length===0){el.style.display='none';return;}
   const qN=norm(q);
@@ -399,146 +346,247 @@ function filtAC(q){
   const rB=CAT.filter(p=>norm(p.n).includes(qN));
   if(rP.length===0&&rB.length===0){el.innerHTML='<div class="ac-empty">No encontrado — escríbelo tú ⭐</div>';el.style.display='block';return;}
   let html='';
-  if(rP.length>0){html+='<div class="ac-sep">⭐ Tus productos</div>'+rP.map(p=>acHTML(p,q,qN)).join('');}
-  if(rB.length>0){if(rP.length>0)html+='<div class="ac-sep">📦 Catálogo</div>';html+=rB.map(p=>acHTML(p,q,qN)).join('');}
+  if(rP.length>0){html+='<div class="ac-sep">⭐ Tus productos</div>'+rP.map(p=>acHTML1(p,q,qN)).join('');}
+  if(rB.length>0){if(rP.length>0)html+='<div class="ac-sep">📦 Catálogo</div>';html+=rB.map(p=>acHTML1(p,q,qN)).join('');}
   el.innerHTML=html;el.style.display='block';
 }
-function acHTML(p,q,qN){
+function acHTML1(p,q,qN){
   const nN=norm(p.n),idx=nN.indexOf(qN);
   const a=esc(p.n.slice(0,idx)),m=esc(p.n.slice(idx,idx+q.length)),d=esc(p.n.slice(idx+q.length));
-  const mTag=p.moneda?'<span class="'+(p.moneda==='BS'?'tag-bs':'tag-usd')+'">'+(p.moneda==='BS'?'Bs':'$')+'</span>':'';
-  return'<div class="ac-item" data-n="'+esc(p.n)+'" data-t="'+p.t+'" data-m="'+(p.moneda||'')+'" ontouchstart="selAC(this)" onclick="selAC(this)"><span class="ac-icono">'+p.i+'</span>'+a+'<span class="ac-match">'+m+'</span>'+d+' '+mTag+'</div>';
+  return'<div class="ac-item" data-n="'+esc(p.n)+'" ontouchstart="selAC1(this)" onclick="selAC1(this)"><span class="ac-icono">'+p.i+'</span>'+a+'<span class="ac-match">'+m+'</span>'+d+'</div>';
 }
-window.selAC=function(el){
-  const nombre=el.getAttribute('data-n');
-  const tipo=el.getAttribute('data-t');
-  const mem=el.getAttribute('data-m');
-  document.getElementById('nom1').value=nombre;
+window.selAC1=function(el){
+  document.getElementById('nom1').value=el.getAttribute('data-n');
   document.getElementById('ac1').style.display='none';
-  setTipo1(tipo);
-  // Aplicar moneda memorizada o mantener la actual
-  if(mem)setMonedaProd(mem);
   vib(30);
 };
-document.addEventListener('click',e=>{if(!e.target.closest('.ac-wrap'))document.getElementById('ac1').style.display='none';});
+document.addEventListener('click',e=>{if(!e.target.closest('.ac-wrap'))document.querySelectorAll('.ac-lista').forEach(l=>l.style.display='none');});
 
-// ── TIPO + IVA FASE 1 ─────────────────────────
-window.setTipo1=function(t){
-  tipo1=t;
-  ['unidad','peso','volumen'].forEach(x=>document.getElementById('t1'+x[0]).classList.remove('activo'));
-  document.getElementById('t1'+t[0]).classList.add('activo');
-  document.getElementById('f1-unidad').style.display=t==='unidad'?'block':'none';
-  document.getElementById('f1-pesoVol').style.display=t!=='unidad'?'block':'none';
-  if(t!=='unidad'){
-    const p=t==='peso';
-    document.getElementById('lbl1r').innerHTML=(p?'Precio/kg':'Precio/L')+' <span style="color:#475569">(opcional)</span>';
-    document.getElementById('lbl1c').textContent=p?'Gramos':'Mililitros';
-    document.getElementById('c1').placeholder=p?'Ej: 358':'Ej: 750';
-    actHint1();
-  }
-};
-function actHint1(){
-  const h=document.getElementById('h1');
-  const pr=parseFloat(document.getElementById('r1').value),cr=parseFloat(document.getElementById('c1').value);
-  if(!pr||!cr||pr<=0||cr<=0){h.style.display='none';return;}
-  const base=(pr*cr)/1000;
-  const mS=monedaProd==='BS'?' Bs':' $';
-  const uR=tipo1==='peso'?'kg':'L',uC=tipo1==='peso'?'gr':'ml';
-  h.textContent=cr+' '+uC+' a '+f2(pr)+mS+'/'+uR+' → '+f2(base)+mS;h.style.display='block';
-}
-window.setIva1=function(v){
-  iva1=iva1===v?'':v;
-  ['agregar','exento','incluido'].forEach(x=>{
-    const el=document.getElementById('i1'+x[0]);
-    el.className='iva-btn'+(iva1===x?' activo-'+(x==='agregar'?'iva':x==='exento'?'e':'incl'):'');
-  });
-};
-window.qtyC=function(d,id){const i=document.getElementById(id);i.value=Math.max(1,(parseInt(i.value)||1)+d);vib(30);};
-
-// ── AGREGAR A LISTA ───────────────────────────
-window.agregarALista=function(){
+// ── FASE 1: AGREGAR SOLO NOMBRE ───────────────
+window.agregarNombre=function(){
   const nom=document.getElementById('nom1').value.trim();
   if(!nom){document.getElementById('err1').style.display='block';return;}
   document.getElementById('err1').style.display='none';
-  let precio=null,descC='',cantRef=null,precioRef=null;
-  if(tipo1==='unidad'){
-    const p=parseFloat(document.getElementById('p1').value),c=parseInt(document.getElementById('q1').value)||1;
-    if(p>0)precio=p*c;
-    descC=c>1?c+' unid.':'1 unid.';cantRef=c;
-  }else{
-    const pr=parseFloat(document.getElementById('r1').value),cr=parseFloat(document.getElementById('c1').value);
-    if(pr>0&&cr>0){precio=(pr*cr)/1000;precioRef=pr;}
-    if(cr>0)cantRef=cr;
-    const uR=tipo1==='peso'?'kg':'L',uC=tipo1==='peso'?'gr':'ml';
-    descC=cr>0?cr+' '+uC+(pr>0?' (@'+f2(pr)+(monedaProd==='BS'?' Bs':' $')+'/'+uR+')':''):'cantidad pendiente';
-  }
+  const mem=getMemoria(nom);
   const ico=CAT.find(p=>p.n.toLowerCase()===nom.toLowerCase())?.i||catPersonal.find(p=>p.n.toLowerCase()===nom.toLowerCase())?.i||'🛒';
-  lista.push({id:Date.now(),nom,tipo:tipo1,precio,precioRef,cantRef,descC,iva:iva1,ico,moneda:monedaProd,confirmado:false});
-  catSiNuevo(nom,tipo1,monedaProd);
-  regUso(nom,monedaProd);
-  // Limpiar
+  lista.push({
+    id:Date.now(),nom,ico,
+    tipo:mem?.tipo||'unidad',
+    moneda:mem?.moneda||'BS',
+    precio:null,precioRef:null,cantRef:null,
+    descC:'',iva:'',
+    completo:false,confirmado:false
+  });
   document.getElementById('nom1').value='';
-  document.getElementById('p1').value='';document.getElementById('q1').value='1';
-  document.getElementById('r1').value='';document.getElementById('c1').value='';
-  document.getElementById('h1').style.display='none';
-  iva1='';['agregar','exento','incluido'].forEach(x=>document.getElementById('i1'+x[0]).className='iva-btn');
-  setTipo1('unidad');
-  // Moneda se mantiene para el siguiente producto
   document.getElementById('ac1').style.display='none';
   document.getElementById('nom1').focus();
   vib(50);toast('✅ '+nom+' en la lista');
-  renderPrevia();
+  renderF1();
 };
 
-// ── RENDER LISTA PREVIA ───────────────────────
-function monTag(m){return m==='BS'?'<span class="tag-bs">Bs</span>':'<span class="tag-usd">$</span>';}
-function renderPrevia(){
+function renderF1(){
   const n=lista.length;
   document.getElementById('cnt1').textContent=n;
   document.getElementById('cnt1b').textContent=n;
-  const card=document.getElementById('cardPrevia');
+  const card=document.getElementById('cardLista1');
   if(n===0){card.style.display='none';return;}
   card.style.display='block';
-  let html='';
-  lista.forEach((item,i)=>{
-    const pTxt=item.precio!=null?f2(item.precio)+(item.moneda==='BS'?' Bs':' $'):'precio pendiente';
-    const iTag=item.iva?ivaTag(item.iva):'<span class="tag-pend">IVA pendiente</span>';
-    html+='<div class="prev-item">'
-      +'<span class="prev-icono">'+item.ico+'</span>'
-      +'<div class="prev-body">'
-      +'<div class="prev-nombre">'+esc(item.nom)+' '+iTag+' '+monTag(item.moneda)+'</div>'
-      +'<div class="prev-detalle">'+item.descC+' · '+pTxt+'</div>'
-      +'</div>'
-      +'<button class="btn-sm btn-sm-danger" onclick="elimDeLista('+i+')">✕</button>'
-      +'</div>';
-  });
-  document.getElementById('listaPrevia').innerHTML=html;
+  document.getElementById('listaF1').innerHTML=lista.map((item,i)=>`
+    <div class="item-card">
+      <span class="item-ico">${item.ico}</span>
+      <div class="item-body"><div class="item-nom">${esc(item.nom)}</div></div>
+      <button class="btn-sm btn-sm-danger" onclick="elimItem(${i})">✕</button>
+    </div>`).join('');
 }
-window.elimDeLista=function(i){lista.splice(i,1);renderPrevia();};
+window.elimItem=function(i){lista.splice(i,1);renderF1();};
 
-// ── RENDER CAJA ───────────────────────────────
-function renderCaja(){
-  document.getElementById('cntCaja').textContent=confirmados.length+'/'+lista.length+' listos';
-  let html='';
-  lista.forEach(item=>{
-    const conf=item.confirmado;
-    const iTag=item.iva?ivaTag(item.iva):'<span class="tag-pend">IVA pendiente</span>';
+// ── FASE 2: PASILLO — cargar precios ──────────
+function renderF2(){
+  const total=lista.length,completos=lista.filter(i=>i.completo).length;
+  document.getElementById('cntPasillo').textContent=completos+'/'+total+' con precio';
+  document.getElementById('listaF2').innerHTML=lista.map(item=>{
+    const iTag=item.iva?ivaTag(item.iva):'<span class="tag-pend">IVA?</span>';
     const pTxt=item.precio!=null?f2(item.precio)+(item.moneda==='BS'?' Bs':' $'):'precio pendiente';
-    html+='<div class="prev-item'+(conf?' confirmado':'')+(itemExpandido===item.id?' expandido':'')+(conf?'':' tocable')+'" '
-      +(conf?'':' onclick="tocarItem('+item.id+')"')+'>'
-      +'<span class="prev-icono">'+(conf?'✅':item.ico)+'</span>'
-      +'<div class="prev-body">'
-      +'<div class="prev-nombre">'+esc(item.nom)+' '+iTag+' '+monTag(item.moneda)+'</div>'
-      +'<div class="prev-detalle">'+item.descC+' · '+pTxt+'</div>'
-      +'</div>'
-      +'<div class="prev-estado" style="color:'+(conf?'#10b981':'#fbbf24')+'">'+(conf?'✓':'tocar')+'</div>'
-      +'</div>'
-      +'<div id="panel-'+item.id+'" class="confirm-panel" style="display:'+(itemExpandido===item.id?'block':'none')+'">'
-      +(itemExpandido===item.id?renderPanelConf(item):'')
-      +'</div>';
+    const mTag=item.moneda==='BS'?'<span class="tag-bs">Bs</span>':'<span class="tag-usd">$</span>';
+    const isExp=itemExpandido===item.id;
+    return`<div class="item-card tocable${item.completo?' completo':''}${isExp?' expandido':''}" onclick="tocarF2(${item.id})">
+      <span class="item-ico">${item.completo?'✅':item.ico}</span>
+      <div class="item-body">
+        <div class="item-nom">${esc(item.nom)} ${iTag} ${mTag}</div>
+        <div class="item-det">${item.descC||'toca para cargar precio'} · ${pTxt}</div>
+      </div>
+      <div class="item-est" style="color:${item.completo?'#10b981':'#fbbf24'}">${item.completo?'✓':'editar'}</div>
+    </div>
+    <div id="panel-${item.id}" class="panel" style="display:${isExp?'block':'none'}">
+      ${isExp?panelPasillo(item):''}
+    </div>`;
+  }).join('');
+  // Listeners hints
+  lista.forEach(item=>{
+    ['pref-','pcant-'].forEach(pre=>{
+      const el=document.getElementById(pre+item.id);
+      if(el)el.addEventListener('input',()=>actHint(item));
+    });
   });
-  document.getElementById('listaCaja').innerHTML=html;
-  // Attach listeners para hints
+}
+
+function panelPasillo(item){
+  const esPeso=item.tipo==='peso',esVol=item.tipo==='volumen',esU=item.tipo==='unidad';
+  let html=`<div style="font-size:0.9rem;color:#f97316;font-weight:bold;margin-bottom:10px;">${item.ico} ${esc(item.nom)}</div>`;
+  // Moneda
+  html+=`<div style="margin-bottom:10px;">
+    <div style="font-size:0.78rem;color:#94a3b8;margin-bottom:4px;">Moneda del precio</div>
+    <div class="mon-sel">
+      <div class="mon-btn${item.moneda==='BS'?' bs':''}" onclick="setMonItem(${item.id},'BS')">🟢 Bs</div>
+      <div class="mon-btn${item.moneda==='USD'?' usd':''}" onclick="setMonItem(${item.id},'USD')">🔵 $</div>
+    </div></div>`;
+  // Tipo
+  html+=`<label style="margin-top:0;">Tipo</label>
+    <div class="tipo-grupo">
+      <div class="tipo-btn${item.tipo==='unidad'?' activo':''}" onclick="setTipoItem(${item.id},'unidad')">📦 Unidad</div>
+      <div class="tipo-btn${item.tipo==='peso'?' activo':''}" onclick="setTipoItem(${item.id},'peso')">⚖️ Peso</div>
+      <div class="tipo-btn${item.tipo==='volumen'?' activo':''}" onclick="setTipoItem(${item.id},'volumen')">🧴 Volumen</div>
+    </div>`;
+  // Precio
+  if(esU){
+    html+=`<div class="row2">
+      <div><label style="margin-top:10px;">Precio unitario</label>
+        <input type="number" id="pprecio-${item.id}" value="${item.precio&&item.cantRef?f2(item.precio/item.cantRef):''}" placeholder="0.00" step="0.01" min="0" inputmode="decimal"></div>
+      <div><label style="margin-top:10px;">Cantidad</label>
+        <div class="qty-row">
+          <button class="qty-btn" onclick="qtyC(-1,'pqty-${item.id}')">−</button>
+          <input type="number" class="qty-input" id="pqty-${item.id}" value="${item.cantRef||1}" min="1" inputmode="numeric">
+          <button class="qty-btn" onclick="qtyC(1,'pqty-${item.id}')">+</button>
+        </div></div>
+    </div>`;
+  }else{
+    html+=`<div class="row2">
+      <div><label style="margin-top:10px;">Precio/${esPeso?'kg':'L'}</label>
+        <input type="number" id="pref-${item.id}" value="${item.precioRef?f2(item.precioRef):''}" placeholder="0.00" step="0.01" min="0" inputmode="decimal"></div>
+      <div><label style="margin-top:10px;">${esPeso?'Gramos':'Mililitros'}</label>
+        <input type="number" id="pcant-${item.id}" value="${item.cantRef||''}" placeholder="${esPeso?'358':'750'}" step="1" min="1" inputmode="numeric"></div>
+    </div>
+    <div class="hint" id="phint-${item.id}" style="display:${item.precioRef&&item.cantRef?'block':'none'};">${item.precioRef&&item.cantRef?hintTxt(item):''}</div>`;
+  }
+  // IVA
+  html+=`<label style="margin-top:10px;">IVA</label>
+    <div class="iva-toggle">
+      <div class="iva-btn${item.iva==='agregar'?' ai':''}" onclick="setIvaItem(${item.id},'agregar')">+16%</div>
+      <div class="iva-btn${item.iva==='exento'?' ae':''}" onclick="setIvaItem(${item.id},'exento')">(E) Exento</div>
+      <div class="iva-btn${item.iva==='incluido'?' ain':''}" onclick="setIvaItem(${item.id},'incluido')">Incluido</div>
+    </div>
+    <p style="font-size:0.72rem;color:#475569;margin-top:4px;">Si no sabes el IVA puedes definirlo en caja</p>
+    <p id="perr-${item.id}" class="err">Ingresa el precio.</p>
+    <button class="btn-success" onclick="guardarPasillo(${item.id})" style="margin-top:10px;">✓ Guardar</button>
+    <button class="btn-ghost" onclick="cerrarPanel()" style="margin-top:6px;font-size:0.85rem;padding:8px;">✕ Cancelar</button>`;
+  return html;
+}
+
+function hintTxt(item){
+  const pr=item.precioRef,cr=item.cantRef;
+  if(!pr||!cr)return'';
+  const base=(pr*cr)/1000,mS=item.moneda==='BS'?' Bs':' $';
+  const uR=item.tipo==='peso'?'kg':'L',uC=item.tipo==='peso'?'gr':'ml';
+  return cr+' '+uC+' a '+f2(pr)+mS+'/'+uR+' → '+f2(base)+mS;
+}
+function actHint(item){
+  const h=document.getElementById('phint-'+item.id);if(!h)return;
+  const pr=parseFloat(document.getElementById('pref-'+item.id)?.value);
+  const cr=parseFloat(document.getElementById('pcant-'+item.id)?.value);
+  if(!pr||!cr){h.style.display='none';return;}
+  item.precioRef=pr;item.cantRef=cr;
+  h.textContent=hintTxt(item);h.style.display='block';
+}
+
+window.tocarF2=function(id){
+  itemExpandido=itemExpandido===id?null:id;
+  renderF2();
+  if(itemExpandido){setTimeout(()=>{abrirPanel(id);},30);}
+};
+function abrirPanel(id){
+  const p=document.getElementById('panel-'+id);
+  if(p){p.style.display='block';p.scrollIntoView({behavior:'smooth',block:'center'});}
+  // Enfocar primer campo vacío
+  const item=lista.find(i=>i.id===id);if(!item)return;
+  setTimeout(()=>{
+    const campo=item.tipo==='unidad'?'pprecio-':'pref-';
+    const inp=document.getElementById(campo+id);
+    if(inp&&!inp.value)inp.focus();
+  },100);
+}
+window.cerrarPanel=function(){itemExpandido=null;renderF2();};
+
+window.setTipoItem=function(id,t){
+  const item=lista.find(i=>i.id===id);if(!item)return;
+  item.tipo=t;item.precio=null;item.precioRef=null;item.cantRef=null;item.descC='';
+  renderF2();setTimeout(()=>abrirPanel(id),30);
+};
+window.setIvaItem=function(id,v){
+  const item=lista.find(i=>i.id===id);if(!item)return;
+  item.iva=item.iva===v?'':v;
+  const clases={agregar:'ai',exento:'ae',incluido:'ain'};
+  ['agregar','exento','incluido'].forEach(x=>{
+    const el=document.getElementById('piva-'+x+'-'+id);
+    if(el)el.className='iva-btn'+(item.iva===x?' '+clases[x]:'');
+  });
+};
+window.guardarPasillo=function(id){
+  const item=lista.find(i=>i.id===id);if(!item)return;
+  let precioBase=0,descC='';
+  if(item.tipo==='unidad'){
+    const p=parseFloat(document.getElementById('pprecio-'+id)?.value);
+    const c=parseInt(document.getElementById('pqty-'+id)?.value)||1;
+    if(!p||p<=0){const e=document.getElementById('perr-'+id);if(e){e.style.display='block';e.textContent='Ingresa el precio.';}return;}
+    precioBase=p*c;descC=c>1?c+' unid.':'1 unid.';item.cantRef=c;
+  }else{
+    const pr=parseFloat(document.getElementById('pref-'+id)?.value);
+    const cr=parseFloat(document.getElementById('pcant-'+id)?.value);
+    if(!pr||pr<=0||!cr||cr<=0){const e=document.getElementById('perr-'+id);if(e){e.style.display='block';e.textContent='Ingresa precio y cantidad.';}return;}
+    precioBase=(pr*cr)/1000;
+    const uR=item.tipo==='peso'?'kg':'L',uC=item.tipo==='peso'?'gr':'ml';
+    descC=cr+' '+uC+' (@'+f2(pr)+(item.moneda==='BS'?' Bs':' $')+'/'+uR+')';
+    item.precioRef=pr;item.cantRef=cr;
+  }
+  item.precio=precioBase;item.descC=descC;
+  item.completo=true;
+  catSiNuevo(item.nom,item.tipo,item.moneda);
+  regUso(item.nom,item.moneda);
+  itemExpandido=null;vib(50);toast('✓ '+item.nom+' guardado');
+  renderF2();
+};
+
+window.agregarExtraPasillo=function(){
+  // Mini formulario de nombre rápido
+  const nom=prompt('Nombre del producto extra:');
+  if(!nom||!nom.trim())return;
+  const nombre=nom.trim().charAt(0).toUpperCase()+nom.trim().slice(1);
+  const mem=getMemoria(nombre);
+  const ico=CAT.find(p=>p.n.toLowerCase()===nombre.toLowerCase())?.i||catPersonal.find(p=>p.n.toLowerCase()===nombre.toLowerCase())?.i||'🛒';
+  lista.push({id:Date.now(),nom:nombre,ico,tipo:mem?.tipo||'unidad',moneda:mem?.moneda||monedaProd,precio:null,precioRef:null,cantRef:null,descC:'',iva:'',completo:false,confirmado:false});
+  vib(50);toast('✅ '+nombre+' agregado');renderF2();
+};
+
+// ── FASE 3: CAJA — confirmar ──────────────────
+function renderF3(){
+  const total=lista.length,conf=lista.filter(i=>i.confirmado).length;
+  document.getElementById('cntCaja').textContent=conf+'/'+total+' confirmados';
+  document.getElementById('listaF3').innerHTML=lista.map(item=>{
+    const iTag=item.iva?ivaTag(item.iva):'<span class="tag-pend">IVA?</span>';
+    const pTxt=item.precio!=null?f2(item.precio)+(item.moneda==='BS'?' Bs':' $'):'precio pendiente';
+    const mTag=item.moneda==='BS'?'<span class="tag-bs">Bs</span>':'<span class="tag-usd">$</span>';
+    const isExp=itemExpandido===item.id;
+    return`<div class="item-card${item.confirmado?' confirmado':''}${isExp?' expandido':''} tocable" onclick="${item.confirmado?'':('tocarF3('+item.id+')')}">
+      <span class="item-ico">${item.confirmado?'✅':item.ico}</span>
+      <div class="item-body">
+        <div class="item-nom">${esc(item.nom)} ${iTag} ${mTag}</div>
+        <div class="item-det">${item.descC||'sin precio'} · ${pTxt}</div>
+      </div>
+      <div class="item-est" style="color:${item.confirmado?'#10b981':'#fbbf24'}">${item.confirmado?'✓':'tocar'}</div>
+    </div>
+    <div id="panelc-${item.id}" class="panel" style="display:${isExp?'block':'none'}">
+      ${isExp?panelCaja(item):''}
+    </div>`;
+  }).join('');
   lista.forEach(item=>{
     ['cref-','ccant-'].forEach(pre=>{
       const el=document.getElementById(pre+item.id);
@@ -547,44 +595,45 @@ function renderCaja(){
   });
 }
 
-function renderPanelConf(item){
+function panelCaja(item){
   const esU=item.tipo==='unidad',esPeso=item.tipo==='peso';
-  const mS=item.moneda==='BS'?' Bs':' $';
-  let html='<div style="font-size:0.9rem;color:#f97316;font-weight:bold;margin-bottom:10px;">'+item.ico+' '+esc(item.nom)+'</div>';
-  // Selector moneda en caja también
-  html+='<div style="margin-bottom:10px;">'
-    +'<div style="font-size:0.78rem;color:#94a3b8;margin-bottom:4px;">Moneda del precio</div>'
-    +'<div class="moneda-selector" style="max-width:200px;">'
-    +'<div class="mon-btn'+(item.moneda==='BS'?' activo-bs':'')+'" onclick="setCajaMoneda('+item.id+',\'BS\')">🟢 Bs</div>'
-    +'<div class="mon-btn'+(item.moneda==='USD'?' activo-usd':'')+'" onclick="setCajaMoneda('+item.id+',\'USD\')">🔵 $</div>'
-    +'</div></div>';
+  let html=`<div style="font-size:0.9rem;color:#f97316;font-weight:bold;margin-bottom:10px;">${item.ico} ${esc(item.nom)}</div>`;
+  // Moneda
+  html+=`<div style="margin-bottom:10px;">
+    <div style="font-size:0.78rem;color:#94a3b8;margin-bottom:4px;">Moneda</div>
+    <div class="mon-sel">
+      <div class="mon-btn${item.moneda==='BS'?' bs':''}" onclick="setMonCaja(${item.id},'BS')">🟢 Bs</div>
+      <div class="mon-btn${item.moneda==='USD'?' usd':''}" onclick="setMonCaja(${item.id},'USD')">🔵 $</div>
+    </div></div>`;
   if(esU){
-    html+='<div class="row2">'
-      +'<div><label style="margin-top:0;">Precio unitario</label>'
-      +'<input type="number" id="cprecio-'+item.id+'" value="'+(item.precio&&item.cantRef?f2(item.precio/item.cantRef):'')+'" placeholder="0.00" step="0.01" min="0" inputmode="decimal"></div>'
-      +'<div><label style="margin-top:0;">Cantidad</label>'
-      +'<div class="qty-row"><button class="qty-btn" onclick="qtyC(-1,\'cqty-'+item.id+'\')">−</button>'
-      +'<input type="number" class="qty-input" id="cqty-'+item.id+'" value="'+(item.cantRef||1)+'" min="1" inputmode="numeric">'
-      +'<button class="qty-btn" onclick="qtyC(1,\'cqty-'+item.id+'\')">+</button></div></div>'
-      +'</div>';
+    html+=`<div class="row2">
+      <div><label style="margin-top:0;">Precio unitario</label>
+        <input type="number" id="cprecio-${item.id}" value="${item.precio&&item.cantRef?f2(item.precio/item.cantRef):''}" placeholder="0.00" step="0.01" min="0" inputmode="decimal"></div>
+      <div><label style="margin-top:0;">Cantidad</label>
+        <div class="qty-row">
+          <button class="qty-btn" onclick="qtyC(-1,'cqty-${item.id}')">−</button>
+          <input type="number" class="qty-input" id="cqty-${item.id}" value="${item.cantRef||1}" min="1" inputmode="numeric">
+          <button class="qty-btn" onclick="qtyC(1,'cqty-${item.id}')">+</button>
+        </div></div>
+    </div>`;
   }else{
-    html+='<div class="row2">'
-      +'<div><label style="margin-top:0;">Precio/'+(esPeso?'kg':'L')+'</label>'
-      +'<input type="number" id="cref-'+item.id+'" value="'+(item.precioRef?f2(item.precioRef):'')+'" placeholder="0.00" step="0.01" min="0" inputmode="decimal"></div>'
-      +'<div><label style="margin-top:0;">'+(esPeso?'Gramos':'Mililitros')+'</label>'
-      +'<input type="number" id="ccant-'+item.id+'" value="'+(item.cantRef?item.cantRef:'')+'" placeholder="'+(esPeso?'358':'750')+'" step="1" min="1" inputmode="numeric"></div>'
-      +'</div>'
-      +'<div class="hint" id="chint-'+item.id+'" style="margin-top:6px;">—</div>';
+    html+=`<div class="row2">
+      <div><label style="margin-top:0;">Precio/${esPeso?'kg':'L'}</label>
+        <input type="number" id="cref-${item.id}" value="${item.precioRef?f2(item.precioRef):''}" placeholder="0.00" step="0.01" min="0" inputmode="decimal"></div>
+      <div><label style="margin-top:0;">${esPeso?'Gramos':'Mililitros'}</label>
+        <input type="number" id="ccant-${item.id}" value="${item.cantRef||''}" placeholder="${esPeso?'358':'750'}" step="1" min="1" inputmode="numeric"></div>
+    </div>
+    <div class="hint" id="chint-${item.id}" style="display:${item.precioRef&&item.cantRef?'block':'none'};">${item.precioRef&&item.cantRef?hintTxt(item):''}</div>`;
   }
-  html+='<label style="margin-top:10px;">¿Cómo viene el precio?</label>'
-    +'<div class="iva-toggle">'
-    +'<div class="iva-btn'+(item.iva==='agregar'?' activo-iva':'')+'" id="civa-a-'+item.id+'" onclick="setCajaIva('+item.id+',\'agregar\')">+16%</div>'
-    +'<div class="iva-btn'+(item.iva==='exento'?' activo-e':'')+'" id="civa-e-'+item.id+'" onclick="setCajaIva('+item.id+',\'exento\')">(E) Exento</div>'
-    +'<div class="iva-btn'+(item.iva==='incluido'?' activo-incl':'')+'" id="civa-i-'+item.id+'" onclick="setCajaIva('+item.id+',\'incluido\')">Incluido</div>'
-    +'</div>'
-    +'<p id="cerr-'+item.id+'" class="err">Selecciona el IVA.</p>'
-    +'<button class="btn-success" onclick="confirmarItem('+item.id+')" style="margin-top:10px;">✓ Confirmar</button>'
-    +'<button class="btn-ghost" onclick="cerrarPanel()" style="margin-top:6px;font-size:0.85rem;padding:8px;">✕ Cancelar</button>';
+  html+=`<label style="margin-top:10px;">IVA</label>
+    <div class="iva-toggle">
+      <div class="iva-btn${item.iva==='agregar'?' ai':''}" onclick="setIvaCaja(${item.id},'agregar')">+16%</div>
+      <div class="iva-btn${item.iva==='exento'?' ae':''}" onclick="setIvaCaja(${item.id},'exento')">(E) Exento</div>
+      <div class="iva-btn${item.iva==='incluido'?' ain':''}" onclick="setIvaCaja(${item.id},'incluido')">Incluido</div>
+    </div>
+    <p id="cerr-${item.id}" class="err">Selecciona el IVA.</p>
+    <button class="btn-success" onclick="confirmarItem(${item.id})" style="margin-top:10px;">✓ Confirmar</button>
+    <button class="btn-ghost" onclick="cerrarPanelCaja()" style="margin-top:6px;font-size:0.85rem;padding:8px;">✕ Cancelar</button>`;
   return html;
 }
 
@@ -592,84 +641,71 @@ function actHintCaja(item){
   const h=document.getElementById('chint-'+item.id);if(!h)return;
   const pr=parseFloat(document.getElementById('cref-'+item.id)?.value);
   const cr=parseFloat(document.getElementById('ccant-'+item.id)?.value);
-  if(!pr||!cr){h.textContent='—';return;}
-  const base=(pr*cr)/1000,mS=item.moneda==='BS'?' Bs':' $';
-  const uR=item.tipo==='peso'?'kg':'L',uC=item.tipo==='peso'?'gr':'ml';
-  h.textContent=cr+' '+uC+' a '+f2(pr)+mS+'/'+uR+' → '+f2(base)+mS;
+  if(!pr||!cr){h.style.display='none';return;}
+  item.precioRef=pr;item.cantRef=cr;
+  h.textContent=hintTxt(item);h.style.display='block';
 }
 
-window.setCajaMoneda=function(id,m){
+window.setMonCaja=function(id,m){
   const item=lista.find(i=>i.id===id);if(!item)return;
-  item.moneda=m;renderCaja();
-  setTimeout(()=>{const p=document.getElementById('panel-'+id);if(p)p.style.display='block';},10);
+  item.moneda=m;renderF3();setTimeout(()=>tocarF3(id),30);
 };
-window.setCajaIva=function(id,v){
+window.setIvaCaja=function(id,v){
   const item=lista.find(i=>i.id===id);if(!item)return;
   item.iva=item.iva===v?'':v;
-  ['a','e','i'].forEach(x=>{
-    const el=document.getElementById('civa-'+x+'-'+id);if(!el)return;
-    const val=x==='a'?'agregar':x==='e'?'exento':'incluido';
-    el.className='iva-btn'+(item.iva===val?' activo-'+(val==='agregar'?'iva':val==='exento'?'e':'incl'):'');
+  const clases={agregar:'ai',exento:'ae',incluido:'ain'};
+  ['agregar','exento','incluido'].forEach(x=>{
+    const el=document.getElementById('civa-'+x[0]+'-'+id);
+    if(el)el.className='iva-btn'+(item.iva===x?' '+clases[x]:'');
   });
 };
-window.tocarItem=function(id){
+window.tocarF3=function(id){
   itemExpandido=itemExpandido===id?null:id;
-  renderCaja();
+  renderF3();
   if(itemExpandido){
     setTimeout(()=>{
-      const p=document.getElementById('panel-'+id);
+      const p=document.getElementById('panelc-'+id);
       if(p){p.style.display='block';p.scrollIntoView({behavior:'smooth',block:'center'});}
-      const item=lista.find(i=>i.id===id);
-      if(item){
-        const campo=item.tipo==='unidad'?'cprecio-':'cref-';
-        const inp=document.getElementById(campo+id);
-        if(inp&&!inp.value)inp.focus();
-      }
-    },60);
+      const item=lista.find(i=>i.id===id);if(!item)return;
+      const campo=item.tipo==='unidad'?'cprecio-':'cref-';
+      const inp=document.getElementById(campo+id);
+      if(inp&&!inp.value)setTimeout(()=>inp.focus(),100);
+    },30);
   }
 };
-window.cerrarPanel=function(){itemExpandido=null;renderCaja();};
+window.cerrarPanelCaja=function(){itemExpandido=null;renderF3();};
 
 window.confirmarItem=function(id){
   const item=lista.find(i=>i.id===id);if(!item)return;
   if(!item.iva){const e=document.getElementById('cerr-'+id);if(e){e.style.display='block';e.textContent='Selecciona el IVA.';}return;}
-  let precioEnMoneda=0,descFinal=item.descC;
+  let precioBase=0,descFinal=item.descC;
   if(item.tipo==='unidad'){
     const p=parseFloat(document.getElementById('cprecio-'+id)?.value);
     const c=parseInt(document.getElementById('cqty-'+id)?.value)||1;
     if(!p||p<=0){const e=document.getElementById('cerr-'+id);if(e){e.style.display='block';e.textContent='Ingresa el precio.';}return;}
-    precioEnMoneda=p*c;descFinal=c>1?c+' unid.':'1 unid.';
-    item.precio=precioEnMoneda;item.cantRef=c;
+    precioBase=p*c;descFinal=c>1?c+' unid.':'1 unid.';item.precio=precioBase;item.cantRef=c;
   }else{
     const pr=parseFloat(document.getElementById('cref-'+id)?.value);
     const cr=parseFloat(document.getElementById('ccant-'+id)?.value);
     if(!pr||pr<=0||!cr||cr<=0){const e=document.getElementById('cerr-'+id);if(e){e.style.display='block';e.textContent='Ingresa precio y cantidad.';}return;}
-    precioEnMoneda=(pr*cr)/1000;
+    precioBase=(pr*cr)/1000;
     const uR=item.tipo==='peso'?'kg':'L',uC=item.tipo==='peso'?'gr':'ml';
     descFinal=cr+' '+uC+' (@'+f2(pr)+(item.moneda==='BS'?' Bs':' $')+'/'+uR+')';
-    item.precio=precioEnMoneda;item.precioRef=pr;item.cantRef=cr;item.descC=descFinal;
+    item.precio=precioBase;item.precioRef=pr;item.cantRef=cr;item.descC=descFinal;
   }
-  // Convertir a Bs y USD según moneda del producto
+  const calc=calcIVA(precioBase,item.iva);
   let bBs,bUsd,iBs,iUsd,tBs,tUsd;
-  const calc=calcIVA(precioEnMoneda,item.iva);
-  if(item.moneda==='BS'){
-    bBs=calc.base;iBs=calc.iva;tBs=calc.total;
-    bUsd=bBs/tasa;iUsd=iBs/tasa;tUsd=tBs/tasa;
-  }else{
-    bUsd=calc.base;iUsd=calc.iva;tUsd=calc.total;
-    bBs=bUsd*tasa;iBs=iUsd*tasa;tBs=tUsd*tasa;
-  }
+  if(item.moneda==='BS'){bBs=calc.base;iBs=calc.iva;tBs=calc.total;bUsd=bBs/tasa;iUsd=iBs/tasa;tUsd=tBs/tasa;}
+  else{bUsd=calc.base;iUsd=calc.iva;tUsd=calc.total;bBs=bUsd*tasa;iBs=iUsd*tasa;tBs=tUsd*tasa;}
   item.confirmado=true;
   confirmados.push({id,nom:item.nom,ico:item.ico,descFinal,iva:item.iva,moneda:item.moneda,bBs,bUsd,iBs,iUsd,tBs,tUsd});
-  // Guardar moneda en memoria
   regUso(item.nom,item.moneda);
-  // La moneda del siguiente producto hereda la de este
   monedaProd=item.moneda;
-  itemExpandido=null;vib(50);toast('✓ '+item.nom+' confirmado');
-  renderCaja();
+  itemExpandido=null;vib(50);toast('✓ '+item.nom);
+  renderF3();
 };
 
-window.agregarExtra=function(){irFase(1);toast('Agrega el producto extra y vuelve a caja','#f97316');};
+window.qtyC=function(d,id){const i=document.getElementById(id);if(i)i.value=Math.max(1,(parseInt(i.value)||1)+d);vib(30);};
 
 // ── IVA ───────────────────────────────────────
 function calcIVA(p,tr){
@@ -688,21 +724,26 @@ function renderResumen(){
   let sBs=0,sUsd=0,iBs=0,iUsd=0,tBs=0,tUsd=0,html='';
   confirmados.forEach(p=>{
     sBs+=p.bBs;sUsd+=p.bUsd;iBs+=p.iBs;iUsd+=p.iUsd;tBs+=p.tBs;tUsd+=p.tUsd;
-    html+='<div class="prev-item" style="cursor:default;">'
-      +'<span class="prev-icono">'+p.ico+'</span>'
-      +'<div class="prev-body"><div class="prev-nombre">'+esc(p.nom)+' '+ivaTag(p.iva)+' '+monTag(p.moneda)+'</div>'
-      +'<div class="prev-detalle">'+p.descFinal+'</div></div>'
-      +'<div style="text-align:right"><div style="font-weight:bold;font-size:0.9rem;">'+fbs(p.tBs)+'</div>'
-      +'<div style="font-size:0.74rem;color:#64748b;">'+fusd(p.tUsd)+'</div></div></div>';
+    const mTag=p.moneda==='BS'?'<span class="tag-bs">Bs</span>':'<span class="tag-usd">$</span>';
+    html+=`<div class="item-card" style="cursor:default;">
+      <span class="item-ico">${p.ico}</span>
+      <div class="item-body">
+        <div class="item-nom">${esc(p.nom)} ${ivaTag(p.iva)} ${mTag}</div>
+        <div class="item-det">${p.descFinal}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-weight:bold;font-size:0.9rem;">${fbs(p.tBs)}</div>
+        <div style="font-size:0.74rem;color:#64748b;">${fusd(p.tUsd)}</div>
+      </div></div>`;
   });
   const pend=lista.filter(i=>!i.confirmado);
-  if(pend.length>0)html+='<div style="margin-top:10px;padding:8px;background:#1c0a00;border-radius:8px;font-size:0.8rem;color:#fb923c;">⚠️ Sin confirmar: '+pend.map(p=>p.nom).join(', ')+'</div>';
-  document.getElementById('resumenItems').innerHTML=html||'<p style="color:#64748b;text-align:center;padding:20px;">Sin productos confirmados.</p>';
+  if(pend.length>0)html+=`<div style="margin-top:10px;padding:8px;background:#1c0a00;border-radius:8px;font-size:0.8rem;color:#fb923c;">⚠️ Sin confirmar: ${pend.map(p=>p.nom).join(', ')}</div>`;
+  document.getElementById('resumenItems').innerHTML=html||'<p style="color:#64748b;text-align:center;padding:20px;">Sin productos.</p>';
   document.getElementById('resumenTotales').innerHTML=
-    '<div class="resumen-line"><span>Subtotal base</span><span>'+fbs(sBs)+' / '+fusd(sUsd)+'</span></div>'
-   +'<div class="resumen-line"><span>IVA 16%</span><span>+ '+fbs(iBs)+' / '+fusd(iUsd)+'</span></div>'
-   +'<div class="resumen-total"><span>TOTAL A PAGAR</span><span>'+fbs(tBs)+'</span></div>'
-   +'<div class="resumen-total-usd"><span>'+fusd(tUsd)+'</span></div>';
+    `<div class="res-line"><span>Subtotal base</span><span>${fbs(sBs)} / ${fusd(sUsd)}</span></div>
+     <div class="res-line"><span>IVA 16%</span><span>+ ${fbs(iBs)} / ${fusd(iUsd)}</span></div>
+     <div class="res-total"><span>TOTAL A PAGAR</span><span>${fbs(tBs)}</span></div>
+     <div class="res-usd"><span>${fusd(tUsd)}</span></div>`;
 }
 
 // ── WHATSAPP ──────────────────────────────────
@@ -725,14 +766,11 @@ window.compartirWA=function(){
 };
 
 // ── ARRANQUE ──────────────────────────────────
-document.getElementById('r1').addEventListener('input',actHint1);
-document.getElementById('c1').addEventListener('input',actHint1);
-document.getElementById('nom1').addEventListener('keypress',e=>{if(e.key==='Enter')agregarALista();});
+document.getElementById('nom1').addEventListener('keypress',e=>{if(e.key==='Enter')agregarNombre();});
 document.getElementById('tasa').addEventListener('keypress',e=>{if(e.key==='Enter')guardarTasa();});
 if('serviceWorker' in navigator)navigator.serviceWorker.register('/MercadoLuan/sw.js');
 cargarTasa();
 await cargarCat();
-initMonedaSelector();
 </script>
 </body>
 </html>
