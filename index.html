@@ -367,7 +367,8 @@ button{width:100%;padding:11px;border-radius:8px;border:none;font-size:0.95rem;f
   </div>
 </div>
 
-<div class="toast" id="toast"></div><script type="module">
+<div class="toast" id="toast"></div>
+<script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, addDoc, getDocs, orderBy, query, limit } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
@@ -386,6 +387,7 @@ let lista=[],confirmados=[],monedaProd='BS',itemExpandido=null,faseActual=1;
 let dragSrcIdx=null,touchClone=null;
 
 // ══ ESTADO COMPARADOR ════════════════════════
+// Sesión activa: {id, nom, fecha, productos:[{id,nom,ico,tipo,cantRef,unidad}], abastos:[{id,nom,fecha,precios:{prodId:{precio,moneda,iva}}}]}
 let cmpSesionActual=null;
 let cmpTipoProd='unidad';
 let cmpDragSrc=null,cmpTouchClone=null;
@@ -528,6 +530,7 @@ function mostrarScreen(id){
 }
 window.volverInicio=function(){mostrarScreen('screenInicio');};
 
+// Banner retomar
 async function verificarProgreso(){
   const e=await cargarProgreso();
   if(!e||!e.lista||e.lista.length===0)return;
@@ -551,6 +554,7 @@ window.descartarLista=function(){
   window._pendiente=null;toast('🗑️ Descartada','#ef4444');
 };
 
+// Historial
 window.irAHistorial=async function(){
   mostrarScreen('screenHistorial');
   document.getElementById('historialLista').innerHTML='<p style="color:#64748b;text-align:center;padding:20px;">Cargando...</p>';
@@ -564,6 +568,7 @@ window.irAHistorial=async function(){
   }).join('');
 };
 
+// ══ MERCADO LUAN — NAVEGACIÓN ════════════════
 window.irACrearLista=function(){
   if(tasa<=0){document.getElementById('panelTasa').style.display='block';toast('💵 Configura la tasa primero','#f97316');return;}
   lista=[];confirmados=[];monedaProd='BS';itemExpandido=null;faseActual=1;
@@ -589,97 +594,48 @@ window.validarIrACaja=function(){
 };
 
 // ══ AUTOCOMPLETE MERCADO ═════════════════════
-window.onNom1=function(inp){
-  const q=inp.value;
-  if(q.length>0)inp.value=q.charAt(0).toUpperCase()+q.slice(1);
-  filtAC('ac1',inp.value.trim(),selAC1);
-};
-
+window.onNom1=function(inp){const q=inp.value;if(q.length>0)inp.value=q.charAt(0).toUpperCase()+q.slice(1);filtAC('ac1',inp.value.trim(),selAC1);};
 function filtAC(elId,q,selFn){
   const el=document.getElementById(elId);
   if(q.length===0){el.style.display='none';return;}
   const qN=norm(q);
   const rP=catPersonal.filter(p=>norm(p.n).includes(qN)).sort((a,b)=>(b.usos||0)-(a.usos||0));
   const rB=CAT.filter(p=>norm(p.n).includes(qN));
-  if(rP.length===0&&rB.length===0){
-    el.innerHTML='<div class="ac-empty">No encontrado — escríbelo tú ⭐</div>';
-    el.style.display='block';
-    return;
-  }
+  if(rP.length===0&&rB.length===0){el.innerHTML='<div class="ac-empty">No encontrado — escríbelo tú ⭐</div>';el.style.display='block';return;}
   let html='';
-  if(rP.length>0){
-    html+='<div class="ac-sep">⭐ Tus productos</div>'+rP.map(p=>acHTML(p,q,qN,selFn.name||'selAC1')).join('');
-  }
-  if(rB.length>0){
-    if(rP.length>0)html+='<div class="ac-sep">📦 Catálogo</div>';
-    html+=rB.map(p=>acHTML(p,q,qN,selFn.name||'selAC1')).join('');
-  }
-  el.innerHTML=html;
-  el.style.display='block';
+  if(rP.length>0){html+='<div class="ac-sep">⭐ Tus productos</div>'+rP.map(p=>acHTML(p,q,qN,selFn.name||'selAC1')).join('');}
+  if(rB.length>0){if(rP.length>0)html+='<div class="ac-sep">📦 Catálogo</div>';html+=rB.map(p=>acHTML(p,q,qN,selFn.name||'selAC1')).join('');}
+  el.innerHTML=html;el.style.display='block';
 }
-
-/*
- * AUTOCOMPLETE ROBUSTO PARA ANDROID
- * ---------------------------------
- * Antes se usaban ontouchstart + onclick directamente
- * en cada sugerencia. En Android eso puede provocar
- * conflictos entre el gesto táctil y el click sintético.
- *
- * Ahora cada sugerencia solamente guarda:
- *   - data-n   = nombre
- *   - data-fn  = función que debe ejecutarse
- *
- * Un único pointerdown se encarga de seleccionar.
- */
 function acHTML(p,q,qN,fn){
   const nN=norm(p.n),idx=nN.indexOf(qN);
   const a=esc(p.n.slice(0,idx));
   const m=esc(p.n.slice(idx,idx+q.length));
   const d=esc(p.n.slice(idx+q.length));
-  return`<div class="ac-item" data-n="${esc(p.n)}" data-fn="${esc(fn)}">
+
+  return `<div class="ac-item"
+    data-n="${esc(p.n)}"
+    data-ac-select="${fn}"
+    role="option">
     <span class="ac-icono">${p.i}</span>${a}<span class="ac-match">${m}</span>${d}
   </div>`;
 }
-
-window.selAC1=function(el){
-  const nombre=el.getAttribute('data-n');
-  if(!nombre)return;
-  document.getElementById('nom1').value=nombre;
-  document.getElementById('ac1').style.display='none';
-  vib(30);
-};
-
-window.selAcCmp=function(el){
-  const nombre=el.getAttribute('data-n');
-  if(!nombre)return;
-  document.getElementById('cmpProdNom').value=nombre;
-  document.getElementById('acCmp').style.display='none';
-  vib(30);
-};
-
-/*
- * pointerdown funciona tanto para el toque en Android
- * como para mouse/puntero. preventDefault evita que el
- * navegador genere un click posterior que pueda interferir.
- */
-document.addEventListener('pointerdown',e=>{
-  const item=e.target.closest('.ac-item');
-  if(!item)return;
+window.selAC1=function(el){document.getElementById('nom1').value=el.getAttribute('data-n');document.getElementById('ac1').style.display='none';vib(30);};
+document.addEventListener('click',e=>{if(!e.target.closest('.ac-wrap'))document.querySelectorAll('.ac-lista').forEach(l=>l.style.display='none');});
+document.addEventListener('pointerdown', function(e){
+  const el=e.target.closest('.ac-item[data-ac-select]');
+  if(!el)return;
 
   e.preventDefault();
   e.stopPropagation();
 
-  const fn=item.getAttribute('data-fn');
-  if(fn==='selAC1')window.selAC1(item);
-  else if(fn==='selAcCmp')window.selAcCmp(item);
-},{passive:false});
+  const fn=el.getAttribute('data-ac-select');
+  const handler=window[fn];
 
-document.addEventListener('click',e=>{
-  if(!e.target.closest('.ac-wrap')){
-    document.querySelectorAll('.ac-lista').forEach(l=>l.style.display='none');
+  if(typeof handler==='function'){
+    handler(el);
   }
-});
-
+}, {passive:false});
 // ══ FASE 1 ═══════════════════════════════════
 window.agregarNombre=function(){
   const nom=document.getElementById('nom1').value.trim();
@@ -687,22 +643,12 @@ window.agregarNombre=function(){
   document.getElementById('err1').style.display='none';
   const mem=getMem(nom);
   lista.push({id:Date.now(),nom,ico:getIco(nom),moneda:mem?.moneda||'BS',precio:null,iva:'',esPeso:false,precioRef:null,cantRef:null,unidad:'gr',cantUnidad:1,completo:false,confirmado:false,descC:''});
-  document.getElementById('nom1').value='';
-  document.getElementById('ac1').style.display='none';
-  document.getElementById('nom1').focus();
-  vib(50);
-  toast('✅ '+nom+' en la lista');
-  renderF1();
-  guardarProgreso();
+  document.getElementById('nom1').value='';document.getElementById('ac1').style.display='none';document.getElementById('nom1').focus();
+  vib(50);toast('✅ '+nom+' en la lista');renderF1();guardarProgreso();
 };
-
 function renderF1(){
-  const n=lista.length;
-  document.getElementById('cnt1').textContent=n;
-  document.getElementById('cnt1b').textContent=n;
-  const card=document.getElementById('cardLista1');
-  if(n===0){card.style.display='none';return;}
-  card.style.display='block';
+  const n=lista.length;document.getElementById('cnt1').textContent=n;document.getElementById('cnt1b').textContent=n;
+  const card=document.getElementById('cardLista1');if(n===0){card.style.display='none';return;}card.style.display='block';
   document.getElementById('listaF1').innerHTML=lista.map((item,i)=>`
     <div class="item-card" id="drag-${i}" draggable="true"
       ondragstart="dragStart(${i})" ondragover="dragOver(event,${i})" ondrop="dragDrop(event,${i})" ondragend="dragEnd()"
@@ -712,80 +658,14 @@ function renderF1(){
       <button class="btn-sm btn-sm-danger" onclick="event.stopPropagation();elimItem(${i})">✕</button>
     </div>`).join('');
 }
-
-window.elimItem=function(i){
-  lista.splice(i,1);
-  renderF1();
-  guardarProgreso();
-};
-
-window.dragStart=function(i){
-  dragSrcIdx=i;
-  setTimeout(()=>{
-    const el=document.getElementById('drag-'+i);
-    if(el)el.classList.add('dragging');
-  },0);
-};
-
-window.dragOver=function(e,i){
-  e.preventDefault();
-  document.querySelectorAll('#listaF1 .item-card').forEach(c=>c.classList.remove('drag-over'));
-  const el=document.getElementById('drag-'+i);
-  if(el)el.classList.add('drag-over');
-};
-
-window.dragDrop=function(e,i){
-  e.preventDefault();
-  if(dragSrcIdx===null||dragSrcIdx===i)return;
-  const tmp=lista.splice(dragSrcIdx,1)[0];
-  lista.splice(i,0,tmp);
-  renderF1();
-  guardarProgreso();
-};
-
-window.dragEnd=function(){
-  document.querySelectorAll('.item-card').forEach(c=>{
-    c.classList.remove('dragging');
-    c.classList.remove('drag-over');
-  });
-  dragSrcIdx=null;
-};
-
-window.touchStart=function(e,i){
-  dragSrcIdx=i;
-  const el=document.getElementById('drag-'+i);
-  if(!el)return;
-  touchClone=el.cloneNode(true);
-  touchClone.style.cssText='position:fixed;opacity:0.85;pointer-events:none;z-index:9999;width:'+el.offsetWidth+'px;background:#1e293b;border-radius:10px;border:2px solid #38bdf8;';
-  document.body.appendChild(touchClone);
-};
-
-window.touchMove=function(e){
-  if(!touchClone)return;
-  e.preventDefault();
-  const t=e.touches[0];
-  touchClone.style.left=(t.clientX-40)+'px';
-  touchClone.style.top=(t.clientY-20)+'px';
-};
-
-window.touchEnd=function(e,fromIdx){
-  if(!touchClone)return;
-  const t=e.changedTouches[0];
-  if(touchClone.parentNode)touchClone.parentNode.removeChild(touchClone);
-  touchClone=null;
-  let toIdx=fromIdx;
-  document.querySelectorAll('#listaF1 .item-card').forEach((el,i)=>{
-    const r=el.getBoundingClientRect();
-    if(t.clientY>=r.top&&t.clientY<=r.bottom)toIdx=i;
-  });
-  if(toIdx!==fromIdx){
-    const tmp=lista.splice(fromIdx,1)[0];
-    lista.splice(toIdx,0,tmp);
-    renderF1();
-    guardarProgreso();
-  }
-  dragSrcIdx=null;
-};
+window.elimItem=function(i){lista.splice(i,1);renderF1();guardarProgreso();};
+window.dragStart=function(i){dragSrcIdx=i;setTimeout(()=>{const el=document.getElementById('drag-'+i);if(el)el.classList.add('dragging');},0);};
+window.dragOver=function(e,i){e.preventDefault();document.querySelectorAll('#listaF1 .item-card').forEach(c=>c.classList.remove('drag-over'));const el=document.getElementById('drag-'+i);if(el)el.classList.add('drag-over');};
+window.dragDrop=function(e,i){e.preventDefault();if(dragSrcIdx===null||dragSrcIdx===i)return;const tmp=lista.splice(dragSrcIdx,1)[0];lista.splice(i,0,tmp);renderF1();guardarProgreso();};
+window.dragEnd=function(){document.querySelectorAll('.item-card').forEach(c=>{c.classList.remove('dragging');c.classList.remove('drag-over');});dragSrcIdx=null;};
+window.touchStart=function(e,i){dragSrcIdx=i;const el=document.getElementById('drag-'+i);if(!el)return;touchClone=el.cloneNode(true);touchClone.style.cssText='position:fixed;opacity:0.85;pointer-events:none;z-index:9999;width:'+el.offsetWidth+'px;background:#1e293b;border-radius:10px;border:2px solid #38bdf8;';document.body.appendChild(touchClone);};
+window.touchMove=function(e){if(!touchClone)return;e.preventDefault();const t=e.touches[0];touchClone.style.left=(t.clientX-40)+'px';touchClone.style.top=(t.clientY-20)+'px';};
+window.touchEnd=function(e,fromIdx){if(!touchClone)return;const t=e.changedTouches[0];if(touchClone.parentNode)touchClone.parentNode.removeChild(touchClone);touchClone=null;let toIdx=fromIdx;document.querySelectorAll('#listaF1 .item-card').forEach((el,i)=>{const r=el.getBoundingClientRect();if(t.clientY>=r.top&&t.clientY<=r.bottom)toIdx=i;});if(toIdx!==fromIdx){const tmp=lista.splice(fromIdx,1)[0];lista.splice(toIdx,0,tmp);renderF1();guardarProgreso();}dragSrcIdx=null;};
 
 // ══ PANEL ESTABLE (Pasillo y Caja) ═══════════
 function htmlPanel(item,pref){
@@ -810,8 +690,8 @@ function htmlPanel(item,pref){
     <label style="margin-top:10px;">IVA</label>
     <div class="iva-toggle" onclick="event.stopPropagation()">
       <div id="${pref}-iva-agregar-${id}" class="iva-btn${item.iva==='agregar'?' ai':''}" onclick="event.stopPropagation();pSetIva('${pref}',${id},'agregar')">+16%</div>
-      <div id="${pref}-iva-exento-${id}" class="iva-btn${item.iva==='exento'?' ae':''}" onclick="event.stopPropagation();pSetIva('${pref}',${id},'exento')">(E) Exento</div>
-      <div id="${pref}-iva-incl-${id}" class="iva-btn${item.iva==='incluido'?' ain':''}" onclick="event.stopPropagation();pSetIva('${pref}',${id},'incluido')">Incluido</div>
+      <div id="${pref}-iva-exento-${id}"  class="iva-btn${item.iva==='exento'?' ae':''}"  onclick="event.stopPropagation();pSetIva('${pref}',${id},'exento')">(E) Exento</div>
+      <div id="${pref}-iva-incl-${id}"    class="iva-btn${item.iva==='incluido'?' ain':''}" onclick="event.stopPropagation();pSetIva('${pref}',${id},'incluido')">Incluido</div>
     </div>
     <button id="${pref}-btn-peso-${id}" class="btn-peso${item.esPeso?' activo':''}" onclick="event.stopPropagation();pTogglePeso('${pref}',${id})">
       ⚖️ Cobran por peso/volumen${item.esPeso?' ✓':''}
@@ -842,367 +722,142 @@ function htmlPanel(item,pref){
   </div>`;
 }
 
+// Setters del panel — operan directamente en DOM
 window.pSetMon=function(pref,id,m){
-  const item=lista.find(i=>i.id===id);if(!item)return;
-  item.moneda=m;
-  const bs=document.getElementById(pref+'-mon-bs-'+id);
-  const usd=document.getElementById(pref+'-mon-usd-'+id);
-  const lbl=document.getElementById(pref+'-lbl-precio-'+id);
-  if(bs)bs.className='mon-btn'+(m==='BS'?' bs':'');
-  if(usd)usd.className='mon-btn'+(m==='BS'?'':' usd');
-  if(lbl)lbl.textContent='Precio'+(m==='BS'?' (Bs)':' ($)');
+  const item=lista.find(i=>i.id===id);if(!item)return;item.moneda=m;
+  const bs=document.getElementById(pref+'-mon-bs-'+id);const usd=document.getElementById(pref+'-mon-usd-'+id);const lbl=document.getElementById(pref+'-lbl-precio-'+id);
+  if(bs)bs.className='mon-btn'+(m==='BS'?' bs':'');if(usd)usd.className='mon-btn'+(m==='BS'?'':' usd');if(lbl)lbl.textContent='Precio'+(m==='BS'?' (Bs)':' ($)');
   pActHint(pref,id);
 };
-
 window.pSetIva=function(pref,id,v){
-  const item=lista.find(i=>i.id===id);if(!item)return;
-  item.iva=item.iva===v?'':v;
+  const item=lista.find(i=>i.id===id);if(!item)return;item.iva=item.iva===v?'':v;
   const map={agregar:'ai',exento:'ae',incluido:'ain'};
-  ['agregar','exento','incl'].forEach((x,xi)=>{
-    const key=['agregar','exento','incluido'][xi];
-    const el=document.getElementById(pref+'-iva-'+x+'-'+id);
-    if(el)el.className='iva-btn'+(item.iva===key?' '+map[key]:'');
-  });
+  ['agregar','exento','incl'].forEach((x,xi)=>{const key=['agregar','exento','incluido'][xi];const el=document.getElementById(pref+'-iva-'+x+'-'+id);if(el)el.className='iva-btn'+(item.iva===key?' '+map[key]:'');});
 };
-
 window.pTogglePeso=function(pref,id){
-  const item=lista.find(i=>i.id===id);if(!item)return;
-  item.esPeso=!item.esPeso;
-  if(!item.esPeso){item.precioRef=null;item.cantRef=null;}
-  const campos=document.getElementById(pref+'-campos-peso-'+id);
-  const btn=document.getElementById(pref+'-btn-peso-'+id);
+  const item=lista.find(i=>i.id===id);if(!item)return;item.esPeso=!item.esPeso;if(!item.esPeso){item.precioRef=null;item.cantRef=null;}
+  const campos=document.getElementById(pref+'-campos-peso-'+id);const btn=document.getElementById(pref+'-btn-peso-'+id);
   if(campos)campos.style.display=item.esPeso?'block':'none';
-  if(btn){
-    btn.textContent='⚖️ Cobran por peso/volumen'+(item.esPeso?' ✓':'');
-    btn.className='btn-peso'+(item.esPeso?' activo':'');
-  }
+  if(btn){btn.textContent='⚖️ Cobran por peso/volumen'+(item.esPeso?' ✓':'');btn.className='btn-peso'+(item.esPeso?' activo':'');}
 };
-
 window.pSetUnidad=function(pref,id,v){
-  const item=lista.find(i=>i.id===id);if(!item)return;
-  item.unidad=v;
-  const lr=document.getElementById(pref+'-lbl-ref-'+id);
-  const lc=document.getElementById(pref+'-lbl-cant-'+id);
-  const ic=document.getElementById(pref+'-cant-'+id);
-  if(lr)lr.textContent='Precio/'+(v==='ml'?'L':'kg');
-  if(lc)lc.textContent=v==='ml'?'Mililitros':'Gramos';
-  if(ic)ic.placeholder=v==='ml'?'750':'358';
+  const item=lista.find(i=>i.id===id);if(!item)return;item.unidad=v;
+  const lr=document.getElementById(pref+'-lbl-ref-'+id);const lc=document.getElementById(pref+'-lbl-cant-'+id);const ic=document.getElementById(pref+'-cant-'+id);
+  if(lr)lr.textContent='Precio/'+(v==='ml'?'L':'kg');if(lc)lc.textContent=v==='ml'?'Mililitros':'Gramos';if(ic)ic.placeholder=v==='ml'?'750':'358';
   pActHint(pref,id);
 };
-
 window.pActHint=function(pref,id){
   const item=lista.find(i=>i.id===id);if(!item||!item.esPeso)return;
   const hint=document.getElementById(pref+'-hint-'+id);if(!hint)return;
-  const pr=parseFloat(document.getElementById(pref+'-ref-'+id)?.value);
-  const cr=parseFloat(document.getElementById(pref+'-cant-'+id)?.value);
+  const pr=parseFloat(document.getElementById(pref+'-ref-'+id)?.value);const cr=parseFloat(document.getElementById(pref+'-cant-'+id)?.value);
   if(!pr||!cr){hint.style.display='none';return;}
-  const base=(pr*cr)/1000;
-  const mS=item.moneda==='BS'?' Bs':' $';
-  const uR=item.unidad==='ml'?'L':'kg';
-  const uC=item.unidad==='ml'?'ml':'gr';
-  hint.textContent=cr+' '+uC+' a '+f2(pr)+mS+'/'+uR+' → '+f2(base)+mS;
-  hint.style.display='block';
+  const base=(pr*cr)/1000,mS=item.moneda==='BS'?' Bs':' $',uR=item.unidad==='ml'?'L':'kg',uC=item.unidad==='ml'?'ml':'gr';
+  hint.textContent=cr+' '+uC+' a '+f2(pr)+mS+'/'+uR+' → '+f2(base)+mS;hint.style.display='block';
 };
-
-window.pCerrar=function(pref){
-  itemExpandido=null;
-  if(pref==='p')renderF2();else renderF3();
-};
-
+window.pCerrar=function(pref){itemExpandido=null;if(pref==='p')renderF2();else renderF3();};
 window.pConfirmar=function(pref,id){
   const item=lista.find(i=>i.id===id);if(!item)return;
-  const errEl=document.getElementById(pref+'-err-'+id);
-  if(errEl)errEl.style.display='none';
-
+  const errEl=document.getElementById(pref+'-err-'+id);if(errEl)errEl.style.display='none';
   let precioFinal=0,descC='';
-
   if(item.esPeso){
-    const pr=parseFloat(document.getElementById(pref+'-ref-'+id)?.value);
-    const cr=parseFloat(document.getElementById(pref+'-cant-'+id)?.value);
-    if(!pr||pr<=0||!cr||cr<=0){
-      if(errEl){
-        errEl.style.display='block';
-        errEl.textContent='Ingresa precio y cantidad.';
-      }
-      return;
-    }
-    precioFinal=(pr*cr)/1000;
-    const uR=item.unidad==='ml'?'L':'kg';
-    const uC=item.unidad==='ml'?'ml':'gr';
-    descC=cr+' '+uC+' (@'+f2(pr)+(item.moneda==='BS'?' Bs':' $')+'/'+uR+')';
-    item.precioRef=pr;
-    item.cantRef=cr;
+    const pr=parseFloat(document.getElementById(pref+'-ref-'+id)?.value);const cr=parseFloat(document.getElementById(pref+'-cant-'+id)?.value);
+    if(!pr||pr<=0||!cr||cr<=0){if(errEl){errEl.style.display='block';errEl.textContent='Ingresa precio y cantidad.';}return;}
+    precioFinal=(pr*cr)/1000;const uR=item.unidad==='ml'?'L':'kg',uC=item.unidad==='ml'?'ml':'gr';
+    descC=cr+' '+uC+' (@'+f2(pr)+(item.moneda==='BS'?' Bs':' $')+'/'+uR+')';item.precioRef=pr;item.cantRef=cr;
   }else{
-    const p=parseFloat(document.getElementById(pref+'-precio-'+id)?.value);
-    const c=parseInt(document.getElementById(pref+'-qty-'+id)?.value)||1;
-    if(!p||p<=0){
-      if(errEl){
-        errEl.style.display='block';
-        errEl.textContent='Ingresa el precio.';
-      }
-      return;
-    }
-    precioFinal=p*c;
-    descC=c>1?c+' unid.':'';
-    item.cantUnidad=c;
+    const p=parseFloat(document.getElementById(pref+'-precio-'+id)?.value);const c=parseInt(document.getElementById(pref+'-qty-'+id)?.value)||1;
+    if(!p||p<=0){if(errEl){errEl.style.display='block';errEl.textContent='Ingresa el precio.';}return;}
+    precioFinal=p*c;descC=c>1?c+' unid.':'';item.cantUnidad=c;
   }
-
-  if(!item.iva){
-    if(errEl){
-      errEl.style.display='block';
-      errEl.textContent='Selecciona el IVA.';
-    }
-    return;
-  }
-
-  item.precio=precioFinal;
-  item.descC=descC;
-  item.completo=true;
-
+  if(!item.iva){if(errEl){errEl.style.display='block';errEl.textContent='Selecciona el IVA.';}return;}
+  item.precio=precioFinal;item.descC=descC;item.completo=true;
   if(pref==='c'){
-    const calc=calcIVA(precioFinal,item.iva);
-    let bBs,bUsd,iBs,iUsd,tBs,tUsd;
-
-    if(item.moneda==='BS'){
-      bBs=calc.base;
-      iBs=calc.iva;
-      tBs=calc.total;
-      bUsd=bBs/tasa;
-      iUsd=iBs/tasa;
-      tUsd=tBs/tasa;
-    }else{
-      bUsd=calc.base;
-      iUsd=calc.iva;
-      tUsd=calc.total;
-      bBs=bUsd*tasa;
-      iBs=iUsd*tasa;
-      tBs=tUsd*tasa;
-    }
-
-    confirmados=confirmados.filter(c=>c.id!==id);
-    item.confirmado=true;
-
-    confirmados.push({
-      id,
-      nom:item.nom,
-      ico:item.ico,
-      descFinal:descC||(f2(precioFinal)+(item.moneda==='BS'?' Bs':' $')),
-      iva:item.iva,
-      moneda:item.moneda,
-      bBs,bUsd,iBs,iUsd,tBs,tUsd
-    });
-
-    regUso(item.nom,item.moneda);
-    monedaProd=item.moneda;
+    const calc=calcIVA(precioFinal,item.iva);let bBs,bUsd,iBs,iUsd,tBs,tUsd;
+    if(item.moneda==='BS'){bBs=calc.base;iBs=calc.iva;tBs=calc.total;bUsd=bBs/tasa;iUsd=iBs/tasa;tUsd=tBs/tasa;}
+    else{bUsd=calc.base;iUsd=calc.iva;tUsd=calc.total;bBs=bUsd*tasa;iBs=iUsd*tasa;tBs=tUsd*tasa;}
+    confirmados=confirmados.filter(c=>c.id!==id);item.confirmado=true;
+    confirmados.push({id,nom:item.nom,ico:item.ico,descFinal:descC||(f2(precioFinal)+(item.moneda==='BS'?' Bs':' $')),iva:item.iva,moneda:item.moneda,bBs,bUsd,iBs,iUsd,tBs,tUsd});
+    regUso(item.nom,item.moneda);monedaProd=item.moneda;
   }
-
-  catSiNuevo(item.nom,item.moneda);
-  itemExpandido=null;
-  vib(50);
+  catSiNuevo(item.nom,item.moneda);itemExpandido=null;vib(50);
   toast(pref==='c'?'✓ '+item.nom+' confirmado':'✓ '+item.nom+' guardado');
-  guardarProgreso();
-
-  if(pref==='p')renderF2();
-  else renderF3();
+  guardarProgreso();if(pref==='p')renderF2();else renderF3();
 };
 
 // ══ FASE 2 ═══════════════════════════════════
 function renderF2(){
-  const total=lista.length;
-  const comp=lista.filter(i=>i.completo).length;
+  const total=lista.length,comp=lista.filter(i=>i.completo).length;
   document.getElementById('cntPasillo').textContent=comp+'/'+total+' con precio';
   const sp=lista.filter(i=>!i.completo).length;
   let html=sp>0?`<div class="warn-box">⚠️ ${sp} producto(s) sin precio aún</div>`:'';
-
   lista.forEach(item=>{
     const isExp=itemExpandido===item.id;
     const pTxt=item.precio!=null?f2(item.precio)+(item.moneda==='BS'?' Bs':' $'):'toca para cargar';
-
     html+=`<div class="item-card tocable${item.completo?' completo':''}${isExp?' expandido':''}" onclick="tocarF2(${item.id})">
       <span class="item-ico">${item.completo?'✅':item.ico}</span>
-      <div class="item-body">
-        <div class="item-nom">${esc(item.nom)} ${ivaTag(item.iva)} ${monTag(item.moneda)}</div>
-        <div class="item-det">${item.descC||pTxt}</div>
-      </div>
+      <div class="item-body"><div class="item-nom">${esc(item.nom)} ${ivaTag(item.iva)} ${monTag(item.moneda)}</div>
+      <div class="item-det">${item.descC||pTxt}</div></div>
       <div class="item-est" style="color:${item.completo?'#10b981':'#fbbf24'}">${item.completo?'✓':'editar'}</div>
     </div>${isExp?htmlPanel(item,'p'):''}`;
   });
-
   document.getElementById('listaF2').innerHTML=html;
 }
-
-window.tocarF2=function(id){
-  if(itemExpandido===id){
-    itemExpandido=null;
-    renderF2();
-    return;
-  }
-  itemExpandido=id;
-  renderF2();
-
-  setTimeout(()=>{
-    const el=document.getElementById('p-panel-'+id);
-    if(el)el.scrollIntoView({behavior:'smooth',block:'center'});
-    setTimeout(()=>{
-      const inp=document.getElementById('p-precio-'+id);
-      if(inp&&!inp.value)inp.focus();
-    },100);
-  },30);
-};
-
-window.agregarExtraPasillo=function(){
-  const nom=prompt('Nombre del producto extra:');
-  if(!nom||!nom.trim())return;
-  const nombre=nom.trim().charAt(0).toUpperCase()+nom.trim().slice(1);
-  const mem=getMem(nombre);
-
-  lista.push({
-    id:Date.now(),
-    nom:nombre,
-    ico:getIco(nombre),
-    moneda:mem?.moneda||monedaProd,
-    precio:null,
-    iva:'',
-    esPeso:false,
-    precioRef:null,
-    cantRef:null,
-    unidad:'gr',
-    cantUnidad:1,
-    completo:false,
-    confirmado:false,
-    descC:''
-  });
-
-  vib(50);
-  toast('✅ '+nombre+' agregado');
-  guardarProgreso();
-  renderF2();
-};
+window.tocarF2=function(id){if(itemExpandido===id){itemExpandido=null;renderF2();return;}itemExpandido=id;renderF2();setTimeout(()=>{const el=document.getElementById('p-panel-'+id);if(el)el.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>{const inp=document.getElementById('p-precio-'+id);if(inp&&!inp.value)inp.focus();},100);},30);};
+window.agregarExtraPasillo=function(){const nom=prompt('Nombre del producto extra:');if(!nom||!nom.trim())return;const nombre=nom.trim().charAt(0).toUpperCase()+nom.trim().slice(1);const mem=getMem(nombre);lista.push({id:Date.now(),nom:nombre,ico:getIco(nombre),moneda:mem?.moneda||monedaProd,precio:null,iva:'',esPeso:false,precioRef:null,cantRef:null,unidad:'gr',cantUnidad:1,completo:false,confirmado:false,descC:''});vib(50);toast('✅ '+nombre+' agregado');guardarProgreso();renderF2();};
 
 // ══ FASE 3 ═══════════════════════════════════
 function renderF3(){
-  const total=lista.length;
-  const conf=lista.filter(i=>i.confirmado).length;
+  const total=lista.length,conf=lista.filter(i=>i.confirmado).length;
   document.getElementById('cntCaja').textContent=conf+'/'+total+' confirmados';
-
   let html='';
-
   lista.forEach(item=>{
     const isExp=itemExpandido===item.id;
     const pTxt=item.precio!=null?f2(item.precio)+(item.moneda==='BS'?' Bs':' $'):'precio pendiente';
-
     html+=`<div class="item-card${item.confirmado?' confirmado':''}${isExp?' expandido':''} tocable" onclick="${item.confirmado?'event.stopPropagation()':'tocarF3('+item.id+')'}">
       <span class="item-ico">${item.confirmado?'✅':item.ico}</span>
-      <div class="item-body">
-        <div class="item-nom">${esc(item.nom)} ${ivaTag(item.iva)} ${monTag(item.moneda)}</div>
-        <div class="item-det">${item.descC||pTxt}</div>
-      </div>
+      <div class="item-body"><div class="item-nom">${esc(item.nom)} ${ivaTag(item.iva)} ${monTag(item.moneda)}</div>
+      <div class="item-det">${item.descC||pTxt}</div></div>
       <div class="item-est" style="color:${item.confirmado?'#10b981':'#fbbf24'}">${item.confirmado?'✓':'tocar'}</div>
     </div>${isExp?htmlPanel(item,'c'):''}`;
   });
-
   document.getElementById('listaF3').innerHTML=html;
 }
-
-window.tocarF3=function(id){
-  if(itemExpandido===id){
-    itemExpandido=null;
-    renderF3();
-    return;
-  }
-
-  itemExpandido=id;
-  renderF3();
-
-  setTimeout(()=>{
-    const el=document.getElementById('c-panel-'+id);
-    if(el)el.scrollIntoView({behavior:'smooth',block:'center'});
-    setTimeout(()=>{
-      const inp=document.getElementById('c-precio-'+id);
-      if(inp&&!inp.value)inp.focus();
-    },100);
-  },30);
-};
-
-window.qtyC=function(d,id){
-  const i=document.getElementById(id);
-  if(i)i.value=Math.max(1,(parseInt(i.value)||1)+d);
-  vib(30);
-};
+window.tocarF3=function(id){if(itemExpandido===id){itemExpandido=null;renderF3();return;}itemExpandido=id;renderF3();setTimeout(()=>{const el=document.getElementById('c-panel-'+id);if(el)el.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>{const inp=document.getElementById('c-precio-'+id);if(inp&&!inp.value)inp.focus();},100);},30);};
+window.qtyC=function(d,id){const i=document.getElementById(id);if(i)i.value=Math.max(1,(parseInt(i.value)||1)+d);vib(30);};
 
 // ══ RESUMEN ══════════════════════════════════
 function renderResumen(){
   let sBs=0,sUsd=0,iBs=0,iUsd=0,tBs=0,tUsd=0,html='';
-
   confirmados.forEach(p=>{
-    sBs+=p.bBs;
-    sUsd+=p.bUsd;
-    iBs+=p.iBs;
-    iUsd+=p.iUsd;
-    tBs+=p.tBs;
-    tUsd+=p.tUsd;
-
-    html+=`<div class="item-card" style="cursor:default;">
-      <span class="item-ico">${p.ico}</span>
-      <div class="item-body">
-        <div class="item-nom">${esc(p.nom)} ${ivaTag(p.iva)} ${monTag(p.moneda)}</div>
-        <div class="item-det">${p.descFinal}</div>
-      </div>
-      <div style="text-align:right">
-        <div style="font-weight:bold;font-size:0.9rem;">${fbs(p.tBs)}</div>
-        <div style="font-size:0.74rem;color:#64748b;">${fusd(p.tUsd)}</div>
-      </div>
-    </div>`;
+    sBs+=p.bBs;sUsd+=p.bUsd;iBs+=p.iBs;iUsd+=p.iUsd;tBs+=p.tBs;tUsd+=p.tUsd;
+    html+=`<div class="item-card" style="cursor:default;"><span class="item-ico">${p.ico}</span>
+      <div class="item-body"><div class="item-nom">${esc(p.nom)} ${ivaTag(p.iva)} ${monTag(p.moneda)}</div>
+      <div class="item-det">${p.descFinal}</div></div>
+      <div style="text-align:right"><div style="font-weight:bold;font-size:0.9rem;">${fbs(p.tBs)}</div>
+      <div style="font-size:0.74rem;color:#64748b;">${fusd(p.tUsd)}</div></div></div>`;
   });
-
   const pend=lista.filter(i=>!i.confirmado);
-
-  if(pend.length>0){
-    html+=`<div style="margin-top:10px;padding:8px;background:#1c0a00;border-radius:8px;font-size:0.8rem;color:#fb923c;">
-      ⚠️ Sin confirmar: ${pend.map(p=>p.nom).join(', ')}
-    </div>`;
-  }
-
+  if(pend.length>0)html+=`<div style="margin-top:10px;padding:8px;background:#1c0a00;border-radius:8px;font-size:0.8rem;color:#fb923c;">⚠️ Sin confirmar: ${pend.map(p=>p.nom).join(', ')}</div>`;
   document.getElementById('resumenItems').innerHTML=html||'<p style="color:#64748b;text-align:center;padding:20px;">Sin productos.</p>';
-
   document.getElementById('resumenTotales').innerHTML=
     `<div class="res-line"><span>Subtotal base</span><span>${fbs(sBs)} / ${fusd(sUsd)}</span></div>
      <div class="res-line"><span>IVA 16%</span><span>+ ${fbs(iBs)} / ${fusd(iUsd)}</span></div>
      <div class="res-total"><span>TOTAL A PAGAR</span><span>${fbs(tBs)}</span></div>
      <div class="res-usd"><span>${fusd(tUsd)}</span></div>`;
-
-  if(confirmados.length>0){
-    guardarHistorial(tBs,tUsd,confirmados.length);
-    borrarProgreso();
-  }
+  if(confirmados.length>0){guardarHistorial(tBs,tUsd,confirmados.length);borrarProgreso();}
 }
 
 // ══ WHATSAPP MERCADO ═════════════════════════
 window.compartirWA=function(){
   if(confirmados.length===0)return;
-
   const fecha=new Date().toLocaleDateString('es-VE',{day:'2-digit',month:'2-digit',year:'numeric'});
   let sBs=0,sUsd=0,iBs=0,iUsd=0,tBs=0,tUsd=0;
-
   let msg='🛒 *LISTA DE MERCADO*\n📅 '+fecha+' | 💵 $1 = '+f2(tasa)+' Bs\n─────────────────────\n';
-
-  confirmados.forEach((p,i)=>{
-    sBs+=p.bBs;
-    sUsd+=p.bUsd;
-    iBs+=p.iBs;
-    iUsd+=p.iUsd;
-    tBs+=p.tBs;
-    tUsd+=p.tUsd;
-
+  confirmados.forEach((p,i)=>{sBs+=p.bBs;sUsd+=p.bUsd;iBs+=p.iBs;iUsd+=p.iUsd;tBs+=p.tBs;tUsd+=p.tUsd;
     const etiq=p.iva==='exento'?'(E)':p.iva==='incluido'?'(IVA incl.)':'(+16%)';
-
-    msg+=(i+1)+'. '+p.nom+' '+etiq+' '+(p.moneda==='BS'?'[Bs]':'[$]')+'\n';
-    msg+='   '+p.descFinal+'\n';
-    msg+='   💰 '+fbs(p.tBs)+' / '+fusd(p.tUsd)+'\n';
+    msg+=(i+1)+'. '+p.nom+' '+etiq+' '+(p.moneda==='BS'?'[Bs]':'[$]')+'\n   '+p.descFinal+'\n   💰 '+fbs(p.tBs)+' / '+fusd(p.tUsd)+'\n';
   });
-
   msg+='─────────────────────\n📊 Subtotal: '+fbs(sBs)+' / '+fusd(sUsd)+'\n📊 IVA 16%: +'+fbs(iBs)+' / '+fusd(iUsd)+'\n─────────────────────\n✅ *TOTAL: '+fbs(tBs)+' / '+fusd(tUsd)+'*\n─────────────────────\n_(E) Exonerado | (IVA incl.) Ya incluía | (+16%) IVA agregado_\n🏷️ LuAn System™';
-
   window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
 };
 
@@ -1211,8 +866,9 @@ window.compartirWA=function(){
 // ══════════════════════════════════════════════
 
 function cmpNuevoId(){return 'cmp_'+Date.now();}
-function cmpFechaHoy(){return new Date().toISOString().split('T')[0];}
+function cmpFechaHoy(){return new Date().toISOString().split('T')[0];}// YYYY-MM-DD para comparar
 
+// Mostrar comparador
 window.irAComparador=async function(){
   mostrarScreen('screenComparador');
   cmpMostrarPaso('cmpSesiones');
@@ -1221,23 +877,16 @@ window.irAComparador=async function(){
 
 function cmpMostrarPaso(id){
   ['cmpSesiones','cmpEditSesion','cmpEditAbastos','cmpResultados'].forEach(p=>{
-    const el=document.getElementById(p);
-    if(el)el.style.display=p===id?'block':'none';
+    const el=document.getElementById(p);if(el)el.style.display=p===id?'block':'none';
   });
-};
+}
 
 // ── Sesiones ──────────────────────────────────
 async function cmpRenderSesiones(){
   const el=document.getElementById('cmpListaSesiones');
   el.innerHTML='<p style="color:#64748b;font-size:0.85rem;text-align:center;padding:10px;">Cargando...</p>';
-
   const seses=await cmpCargarSesiones();
-
-  if(seses.length===0){
-    el.innerHTML='<p style="color:#64748b;font-size:0.85rem;text-align:center;padding:16px 0;">No tienes comparaciones aún.</p>';
-    return;
-  }
-
+  if(seses.length===0){el.innerHTML='<p style="color:#64748b;font-size:0.85rem;text-align:center;padding:16px 0;">No tienes comparaciones aún.</p>';return;}
   el.innerHTML=seses.map(s=>`
     <div class="ses-card" onclick="cmpAbrirSesion('${s.id}')">
       <div style="display:flex;justify-content:space-between;align-items:start;">
@@ -1252,21 +901,12 @@ async function cmpRenderSesiones(){
 
 window.cmpEliminar=async function(id){
   if(!confirm('¿Eliminar esta comparación?'))return;
-  await cmpEliminarSesion(id);
-  await cmpRenderSesiones();
-  toast('Eliminada','#ef4444');
+  await cmpEliminarSesion(id);await cmpRenderSesiones();toast('Eliminada','#ef4444');
 };
 
 // ── Nueva sesión ──────────────────────────────
 window.cmpNuevaSesion=function(){
-  cmpSesionActual={
-    id:cmpNuevoId(),
-    nom:'',
-    fecha:new Date().toISOString(),
-    productos:[],
-    abastos:[]
-  };
-
+  cmpSesionActual={id:cmpNuevoId(),nom:'',fecha:new Date().toISOString(),productos:[],abastos:[]};
   cmpTipoProd='unidad';
   document.getElementById('cmpSesNom').value='';
   document.getElementById('cmpProdNom').value='';
@@ -1275,17 +915,13 @@ window.cmpNuevaSesion=function(){
   cmpRenderProds();
   document.getElementById('cmpSesNomTitulo').textContent='Nueva comparación';
   cmpMostrarPaso('cmpEditSesion');
-
   setTimeout(()=>document.getElementById('cmpSesNom').focus(),100);
 };
 
 window.cmpAbrirSesion=async function(id){
   const seses=await cmpCargarSesiones();
-  const ses=seses.find(s=>s.id===id);
-  if(!ses)return;
-
-  cmpSesionActual=ses;
-  cmpTipoProd='unidad';
+  const ses=seses.find(s=>s.id===id);if(!ses)return;
+  cmpSesionActual=ses;cmpTipoProd='unidad';
   document.getElementById('cmpSesNom').value=ses.nom;
   document.getElementById('cmpSesNomTitulo').textContent=ses.nom||'Comparación';
   cmpRenderProds();
@@ -1293,107 +929,52 @@ window.cmpAbrirSesion=async function(id){
 };
 
 window.cmpVolverSesiones=async function(){
-  cmpMostrarPaso('cmpSesiones');
-  await cmpRenderSesiones();
+  cmpMostrarPaso('cmpSesiones');await cmpRenderSesiones();
 };
 
 // ── Tipo producto comparador ──────────────────
 window.setCmpTipo=function(t){
   cmpTipoProd=t;
-
-  ['unidad','peso','volumen'].forEach(x=>{
-    document.getElementById('ctp-'+x).className='tipo-btn'+(t===x?' activo':'');
-  });
-
+  ['unidad','peso','volumen'].forEach(x=>{document.getElementById('ctp-'+x).className='tipo-btn'+(t===x?' activo':'');});
   const cantRef=document.getElementById('cmpCantRef');
   cantRef.style.display=t!=='unidad'?'block':'none';
-
-  if(t==='peso'){
-    document.getElementById('cmpLblCantRef').textContent='Cantidad (gr o kg)';
-    document.getElementById('cmpUnidadRef').value='gr';
-  }
-
-  if(t==='volumen'){
-    document.getElementById('cmpLblCantRef').textContent='Cantidad (ml o L)';
-    document.getElementById('cmpUnidadRef').value='ml';
-  }
+  if(t==='peso'){document.getElementById('cmpLblCantRef').textContent='Cantidad (gr o kg)';document.getElementById('cmpUnidadRef').value='gr';}
+  if(t==='volumen'){document.getElementById('cmpLblCantRef').textContent='Cantidad (ml o L)';document.getElementById('cmpUnidadRef').value='ml';}
 };
-
 window.cmpActUnidad=function(){
   const u=document.getElementById('cmpUnidadRef').value;
   document.getElementById('cmpLblCantRef').textContent='Cantidad ('+u+')';
 };
 
-// ── Autocomplete comparador ──────────────────
-window.onNomCmp=function(inp){
-  const q=inp.value;
-  if(q.length>0)inp.value=q.charAt(0).toUpperCase()+q.slice(1);
-  filtAC('acCmp',inp.value.trim(),selAcCmp);
-};
-
-window.selAcCmp=function(el){
-  const nombre=el.getAttribute('data-n');
-  if(!nombre)return;
-  document.getElementById('cmpProdNom').value=nombre;
-  document.getElementById('acCmp').style.display='none';
-  vib(30);
-};
+// Autocomplete comparador
+window.onNomCmp=function(inp){const q=inp.value;if(q.length>0)inp.value=q.charAt(0).toUpperCase()+q.slice(1);filtAC('acCmp',inp.value.trim(),selAcCmp);};
+window.selAcCmp=function(el){document.getElementById('cmpProdNom').value=el.getAttribute('data-n');document.getElementById('acCmp').style.display='none';vib(30);};
 
 // ── Agregar producto a sesión ─────────────────
 window.cmpAgregarProd=function(){
   const nom=document.getElementById('cmpProdNom').value.trim();
-
-  if(!nom){
-    document.getElementById('errCmpProd').style.display='block';
-    document.getElementById('errCmpProd').textContent='Escribe el nombre del producto.';
-    return;
-  }
-
+  if(!nom){document.getElementById('errCmpProd').style.display='block';document.getElementById('errCmpProd').textContent='Escribe el nombre del producto.';return;}
   document.getElementById('errCmpProd').style.display='none';
-
   let cantRef=null,unidad='unidad';
-
   if(cmpTipoProd!=='unidad'){
     const v=parseFloat(document.getElementById('cmpValCantRef').value);
     const u=document.getElementById('cmpUnidadRef').value;
-    if(v>0){
-      cantRef=v;
-      unidad=u;
-    }
+    if(v>0){cantRef=v;unidad=u;}
   }
-
-  cmpSesionActual.productos.push({
-    id:Date.now(),
-    nom,
-    ico:getIco(nom),
-    tipo:cmpTipoProd,
-    cantRef,
-    unidad
-  });
-
-  document.getElementById('cmpProdNom').value='';
-  document.getElementById('cmpValCantRef').value='';
+  cmpSesionActual.productos.push({id:Date.now(),nom,ico:getIco(nom),tipo:cmpTipoProd,cantRef,unidad});
+  document.getElementById('cmpProdNom').value='';document.getElementById('cmpValCantRef').value='';
   document.getElementById('acCmp').style.display='none';
-
-  vib(50);
-  toast('✅ '+nom+' agregado');
-  cmpRenderProds();
+  vib(50);toast('✅ '+nom+' agregado');cmpRenderProds();
 };
 
 function cmpRenderProds(){
   const cont=document.getElementById('cmpListaProds');
   const prods=cmpSesionActual?.productos||[];
-
-  if(prods.length===0){
-    cont.innerHTML='<p style="color:#64748b;font-size:0.82rem;text-align:center;padding:10px 0;">Agrega los productos que vas a comparar.</p>';
-    return;
-  }
-
+  if(prods.length===0){cont.innerHTML='<p style="color:#64748b;font-size:0.82rem;text-align:center;padding:10px 0;">Agrega los productos que vas a comparar.</p>';return;}
   cont.innerHTML=prods.map((p,i)=>{
     let det='';
     if(p.tipo!=='unidad'&&p.cantRef)det=p.cantRef+' '+p.unidad;
     else if(p.tipo!=='unidad')det='(sin cantidad de referencia)';
-
     return`<div class="comp-prod" id="cpd-${i}" draggable="true"
       ondragstart="cmpDragStart(${i})" ondragover="cmpDragOver(event,${i})" ondrop="cmpDragDrop(event,${i})" ondragend="cmpDragEnd()"
       ontouchstart="cmpTouchStart(event,${i})" ontouchmove="cmpTouchMove(event)" ontouchend="cmpTouchEnd(event,${i})">
@@ -1407,210 +988,64 @@ function cmpRenderProds(){
     </div>`;
   }).join('');
 }
-
-window.cmpElimProd=function(i){
-  cmpSesionActual.productos.splice(i,1);
-  cmpRenderProds();
-};
+window.cmpElimProd=function(i){cmpSesionActual.productos.splice(i,1);cmpRenderProds();};
 
 // Drag & drop productos comparador
-window.cmpDragStart=function(i){
-  cmpDragSrc=i;
-  setTimeout(()=>{
-    const el=document.getElementById('cpd-'+i);
-    if(el)el.classList.add('dragging');
-  },0);
-};
-
-window.cmpDragOver=function(e,i){
-  e.preventDefault();
-  document.querySelectorAll('.comp-prod').forEach(c=>c.classList.remove('drag-over'));
-  const el=document.getElementById('cpd-'+i);
-  if(el)el.classList.add('drag-over');
-};
-
-window.cmpDragDrop=function(e,i){
-  e.preventDefault();
-  if(cmpDragSrc===null||cmpDragSrc===i)return;
-  const tmp=cmpSesionActual.productos.splice(cmpDragSrc,1)[0];
-  cmpSesionActual.productos.splice(i,0,tmp);
-  cmpRenderProds();
-};
-
-window.cmpDragEnd=function(){
-  document.querySelectorAll('.comp-prod').forEach(c=>{
-    c.classList.remove('dragging');
-    c.classList.remove('drag-over');
-  });
-  cmpDragSrc=null;
-};
-
-window.cmpTouchStart=function(e,i){
-  cmpDragSrc=i;
-  const el=document.getElementById('cpd-'+i);
-  if(!el)return;
-
-  cmpTouchClone=el.cloneNode(true);
-  cmpTouchClone.style.cssText='position:fixed;opacity:0.85;pointer-events:none;z-index:9999;width:'+el.offsetWidth+'px;background:#1e293b;border-radius:10px;border:2px solid #a78bfa;';
-  document.body.appendChild(cmpTouchClone);
-};
-
-window.cmpTouchMove=function(e){
-  if(!cmpTouchClone)return;
-  e.preventDefault();
-  const t=e.touches[0];
-  cmpTouchClone.style.left=(t.clientX-40)+'px';
-  cmpTouchClone.style.top=(t.clientY-20)+'px';
-};
-
-window.cmpTouchEnd=function(e,fromIdx){
-  if(!cmpTouchClone)return;
-
-  const t=e.changedTouches[0];
-
-  if(cmpTouchClone.parentNode)cmpTouchClone.parentNode.removeChild(cmpTouchClone);
-  cmpTouchClone=null;
-
-  let toIdx=fromIdx;
-
-  document.querySelectorAll('#cmpListaProds .comp-prod').forEach((el,i)=>{
-    const r=el.getBoundingClientRect();
-    if(t.clientY>=r.top&&t.clientY<=r.bottom)toIdx=i;
-  });
-
-  if(toIdx!==fromIdx){
-    const tmp=cmpSesionActual.productos.splice(fromIdx,1)[0];
-    cmpSesionActual.productos.splice(toIdx,0,tmp);
-    cmpRenderProds();
-  }
-
-  cmpDragSrc=null;
-};
+window.cmpDragStart=function(i){cmpDragSrc=i;setTimeout(()=>{const el=document.getElementById('cpd-'+i);if(el)el.classList.add('dragging');},0);};
+window.cmpDragOver=function(e,i){e.preventDefault();document.querySelectorAll('.comp-prod').forEach(c=>c.classList.remove('drag-over'));const el=document.getElementById('cpd-'+i);if(el)el.classList.add('drag-over');};
+window.cmpDragDrop=function(e,i){e.preventDefault();if(cmpDragSrc===null||cmpDragSrc===i)return;const tmp=cmpSesionActual.productos.splice(cmpDragSrc,1)[0];cmpSesionActual.productos.splice(i,0,tmp);cmpRenderProds();};
+window.cmpDragEnd=function(){document.querySelectorAll('.comp-prod').forEach(c=>{c.classList.remove('dragging');c.classList.remove('drag-over');});cmpDragSrc=null;};
+window.cmpTouchStart=function(e,i){cmpDragSrc=i;const el=document.getElementById('cpd-'+i);if(!el)return;cmpTouchClone=el.cloneNode(true);cmpTouchClone.style.cssText='position:fixed;opacity:0.85;pointer-events:none;z-index:9999;width:'+el.offsetWidth+'px;background:#1e293b;border-radius:10px;border:2px solid #a78bfa;';document.body.appendChild(cmpTouchClone);};
+window.cmpTouchMove=function(e){if(!cmpTouchClone)return;e.preventDefault();const t=e.touches[0];cmpTouchClone.style.left=(t.clientX-40)+'px';cmpTouchClone.style.top=(t.clientY-20)+'px';};
+window.cmpTouchEnd=function(e,fromIdx){if(!cmpTouchClone)return;const t=e.changedTouches[0];if(cmpTouchClone.parentNode)cmpTouchClone.parentNode.removeChild(cmpTouchClone);cmpTouchClone=null;let toIdx=fromIdx;document.querySelectorAll('#cmpListaProds .comp-prod').forEach((el,i)=>{const r=el.getBoundingClientRect();if(t.clientY>=r.top&&t.clientY<=r.bottom)toIdx=i;});if(toIdx!==fromIdx){const tmp=cmpSesionActual.productos.splice(fromIdx,1)[0];cmpSesionActual.productos.splice(toIdx,0,tmp);cmpRenderProds();}cmpDragSrc=null;};
 
 // ── Ir a abastos ──────────────────────────────
 window.cmpIrAbastos=async function(){
   const nom=document.getElementById('cmpSesNom').value.trim();
-
-  if(!nom){
-    document.getElementById('errCmpSes').style.display='block';
-    document.getElementById('errCmpSes').textContent='Escribe un nombre para la comparación.';
-    return;
-  }
-
-  if(cmpSesionActual.productos.length===0){
-    document.getElementById('errCmpSes').style.display='block';
-    document.getElementById('errCmpSes').textContent='Agrega al menos un producto.';
-    return;
-  }
-
+  if(!nom){document.getElementById('errCmpSes').style.display='block';document.getElementById('errCmpSes').textContent='Escribe un nombre para la comparación.';return;}
+  if(cmpSesionActual.productos.length===0){document.getElementById('errCmpSes').style.display='block';document.getElementById('errCmpSes').textContent='Agrega al menos un producto.';return;}
   document.getElementById('errCmpSes').style.display='none';
   cmpSesionActual.nom=nom;
-
   await cmpGuardarSesion(cmpSesionActual);
-
   document.getElementById('cmpAbastosTitulo').textContent=nom;
   cmpRenderAbastos();
   cmpMostrarPaso('cmpEditAbastos');
 };
-
 window.cmpVolverEditSesion=function(){
   document.getElementById('cmpSesNom').value=cmpSesionActual.nom;
-  cmpRenderProds();
-  cmpMostrarPaso('cmpEditSesion');
+  cmpRenderProds();cmpMostrarPaso('cmpEditSesion');
 };
 
 // ── Abastos ───────────────────────────────────
 window.cmpAgregarAbasto=async function(){
   const nom=document.getElementById('cmpAbastoNom').value.trim();
-
-  if(!nom){
-    document.getElementById('errCmpAbasto').style.display='block';
-    return;
-  }
-
+  if(!nom){document.getElementById('errCmpAbasto').style.display='block';return;}
   document.getElementById('errCmpAbasto').style.display='none';
-
+  // Detectar si hay abastos del mismo día → copiar lista de productos
   const fechaHoy=cmpFechaHoy();
   const yaHayDelDia=cmpSesionActual.abastos.some(a=>a.fecha===fechaHoy);
-
-  const nuevoAbasto={
-    id:Date.now(),
-    nom,
-    fecha:fechaHoy,
-    precios:{}
-  };
-
+  const nuevoAbasto={id:Date.now(),nom,fecha:fechaHoy,precios:{}};
+  // Pre-rellenar productos desde el primer abasto del día si existe
   if(yaHayDelDia){
-    cmpSesionActual.productos.forEach(p=>{
-      nuevoAbasto.precios[p.id]={
-        precio:null,
-        moneda:'BS',
-        iva:'',
-        canton:1
-      };
-    });
+    // Los productos ya están en cmpSesionActual.productos — solo creamos entradas vacías de precio
+    cmpSesionActual.productos.forEach(p=>{nuevoAbasto.precios[p.id]={precio:null,moneda:'BS',iva:'',canton:1};});
   }else{
-    cmpSesionActual.productos.forEach(p=>{
-      nuevoAbasto.precios[p.id]={
-        precio:null,
-        moneda:'BS',
-        iva:'',
-        canton:1
-      };
-    });
+    cmpSesionActual.productos.forEach(p=>{nuevoAbasto.precios[p.id]={precio:null,moneda:'BS',iva:'',canton:1};});
   }
-
   cmpSesionActual.abastos.push(nuevoAbasto);
   document.getElementById('cmpAbastoNom').value='';
-
   await cmpGuardarSesion(cmpSesionActual);
-
-  vib(50);
-  toast('🏪 '+nom+' agregado');
+  vib(50);toast('🏪 '+nom+' agregado');
   cmpRenderAbastos();
 };
 
 function cmpRenderAbastos(){
   const cont=document.getElementById('cmpListaAbastos');
-
-  if(cmpSesionActual.abastos.length===0){
-    cont.innerHTML='<p style="color:#64748b;font-size:0.82rem;text-align:center;padding:10px 0;">Agrega abastos para ingresar precios.</p>';
-    return;
-  }
-
+  if(cmpSesionActual.abastos.length===0){cont.innerHTML='<p style="color:#64748b;font-size:0.82rem;text-align:center;padding:10px 0;">Agrega abastos para ingresar precios.</p>';return;}
   cont.innerHTML=cmpSesionActual.abastos.map((ab,ai)=>{
-
-    /*
-     * ORDEN VISUAL DE LA COLA
-     * ------------------------
-     * Los productos incompletos permanecen arriba.
-     * Los productos que ya tienen PRECIO + IVA quedan
-     * abajo de la cola.
-     *
-     * IMPORTANTE:
-     * No modificamos cmpSesionActual.productos.
-     * Por tanto, el orden original de la sesión permanece
-     * intacto para resultados y futuras operaciones.
-     */
-    const productosOrdenados=[
-      ...cmpSesionActual.productos.filter(p=>{
-        const pr=ab.precios[p.id];
-        return !(pr&&pr.precio>0&&pr.iva);
-      }),
-      ...cmpSesionActual.productos.filter(p=>{
-        const pr=ab.precios[p.id];
-        return !!(pr&&pr.precio>0&&pr.iva);
-      })
-    ];
-
-    const llenos=cmpSesionActual.productos.filter(p=>{
-      const pr=ab.precios[p.id];
-      return !!(pr&&pr.precio>0&&pr.iva);
-    }).length;
-
+    const llenos=cmpSesionActual.productos.filter(p=>ab.precios[p.id]?.precio>0).length;
     const total=cmpSesionActual.productos.length;
     const isExp=cmpAbastoExpandido===ab.id;
-
     let html=`<div class="abasto-card">
       <div class="abasto-header" onclick="cmpToggleAbasto(${ab.id})">
         <div>
@@ -1622,45 +1057,26 @@ function cmpRenderAbastos(){
           <button class="btn-sm btn-sm-danger" onclick="event.stopPropagation();cmpElimAbasto(${ab.id})">✕</button>
         </div>
       </div>`;
-
     if(isExp){
       html+=`<div style="margin-top:12px;">`;
-
-      productosOrdenados.forEach(p=>{
-        const pr=ab.precios[p.id]||{
-          precio:null,
-          moneda:'BS',
-          iva:'',
-          canton:1
-        };
-
+      cmpSesionActual.productos.forEach(p=>{
+        const pr=ab.precios[p.id]||{precio:null,moneda:'BS',iva:'',canton:1};
         const mBS=pr.moneda==='BS';
-        const completo=pr.precio>0&&!!pr.iva;
-
-        html+=`<div class="cmp-precio-row${completo?' con-precio':''}">
-          <div class="cmp-prod-label">${p.ico} ${esc(p.nom)}</div>
-
+        html+=`<div style="padding:10px 0;border-bottom:1px solid #1e293b;">
+          <div style="font-size:0.88rem;font-weight:bold;color:#f1f5f9;margin-bottom:6px;">${p.ico} ${esc(p.nom)}</div>
           <div class="mon-sel" style="margin-bottom:8px;">
             <div class="mon-btn${mBS?' bs':''}" onclick="cmpSetPrMon(${ab.id},${p.id},'BS')">🟢 Bs</div>
             <div class="mon-btn${mBS?'':' usd'}" onclick="cmpSetPrMon(${ab.id},${p.id},'USD')">🔵 $</div>
           </div>
-
           <div class="row2">
             <div>
               <label style="margin-top:0;">Precio${mBS?' (Bs)':' ($)'}</label>
-              <input type="number"
-                id="cpr-${ab.id}-${p.id}"
-                value="${pr.precio!=null?f2(pr.precio):''}"
-                placeholder="0.00"
-                step="0.01"
-                min="0"
-                inputmode="decimal"
+              <input type="number" id="cpr-${ab.id}-${p.id}" value="${pr.precio!=null?f2(pr.precio):''}" placeholder="0.00" step="0.01" min="0" inputmode="decimal"
                 oninput="cmpGuardarPrecio(${ab.id},${p.id})">
             </div>
-
             <div>
               <label style="margin-top:0;">IVA</label>
-              <select id="civa-${ab.id}-${p.id}" onchange="cmpFinalizarPrecio(${ab.id},${p.id})">
+              <select id="civa-${ab.id}-${p.id}" onchange="cmpGuardarPrecio(${ab.id},${p.id})">
                 <option value="">Sin definir</option>
                 <option value="agregar"${pr.iva==='agregar'?' selected':''}>+16%</option>
                 <option value="exento"${pr.iva==='exento'?' selected':''}>(E) Exento</option>
@@ -1670,216 +1086,94 @@ function cmpRenderAbastos(){
           </div>
         </div>`;
       });
-
       html+=`</div>`;
     }
-
     html+=`</div>`;
     return html;
   }).join('');
 }
 
-window.cmpToggleAbasto=function(id){
-  cmpAbastoExpandido=cmpAbastoExpandido===id?null:id;
-  cmpRenderAbastos();
-};
-
-window.cmpElimAbasto=async function(id){
-  if(!confirm('¿Eliminar este abasto?'))return;
-  cmpSesionActual.abastos=cmpSesionActual.abastos.filter(a=>a.id!==id);
-
-  if(cmpAbastoExpandido===id)cmpAbastoExpandido=null;
-
-  await cmpGuardarSesion(cmpSesionActual);
-  cmpRenderAbastos();
-};
+window.cmpToggleAbasto=function(id){cmpAbastoExpandido=cmpAbastoExpandido===id?null:id;cmpRenderAbastos();};
+window.cmpElimAbasto=async function(id){if(!confirm('¿Eliminar este abasto?'))return;cmpSesionActual.abastos=cmpSesionActual.abastos.filter(a=>a.id!==id);await cmpGuardarSesion(cmpSesionActual);cmpRenderAbastos();};
 
 window.cmpSetPrMon=function(abId,prodId,m){
-  const ab=cmpSesionActual.abastos.find(a=>a.id===abId);
-  if(!ab)return;
-
-  if(!ab.precios[prodId]){
-    ab.precios[prodId]={
-      precio:null,
-      moneda:'BS',
-      iva:'',
-      canton:1
-    };
-  }
-
+  const ab=cmpSesionActual.abastos.find(a=>a.id===abId);if(!ab)return;
+  if(!ab.precios[prodId])ab.precios[prodId]={precio:null,moneda:'BS',iva:'',canton:1};
   ab.precios[prodId].moneda=m;
-
+  // Actualizar botones sin cerrar panel
   const bs=document.querySelector(`[onclick="cmpSetPrMon(${abId},${prodId},'BS')"]`);
   const usd=document.querySelector(`[onclick="cmpSetPrMon(${abId},${prodId},'USD')"]`);
   const lbl=document.querySelector(`#cpr-${abId}-${prodId}`)?.previousElementSibling;
-
   if(bs)bs.className='mon-btn'+(m==='BS'?' bs':'');
   if(usd)usd.className='mon-btn'+(m==='BS'?'':' usd');
   if(lbl)lbl.textContent='Precio'+(m==='BS'?' (Bs)':' ($)');
-
   cmpGuardarPrecioSilencioso(abId,prodId);
 };
 
 window.cmpGuardarPrecio=function(abId,prodId){
-  const ab=cmpSesionActual.abastos.find(a=>a.id===abId);
-  if(!ab)return;
-
-  if(!ab.precios[prodId]){
-    ab.precios[prodId]={
-      precio:null,
-      moneda:'BS',
-      iva:'',
-      canton:1
-    };
-  }
-
+  const ab=cmpSesionActual.abastos.find(a=>a.id===abId);if(!ab)return;
+  if(!ab.precios[prodId])ab.precios[prodId]={precio:null,moneda:'BS',iva:'',canton:1};
   const p=parseFloat(document.getElementById('cpr-'+abId+'-'+prodId)?.value);
   const iva=document.getElementById('civa-'+abId+'-'+prodId)?.value||'';
-
-  ab.precios[prodId].precio=p>0?p:null;
-  ab.precios[prodId].iva=iva;
-
-  /*
-   * Aquí SOLO guardamos.
-   * No redibujamos porque el usuario puede estar
-   * escribiendo el precio y no debemos quitarle el foco.
-   */
+  ab.precios[prodId].precio=p>0?p:null;ab.precios[prodId].iva=iva;
   cmpGuardarPrecioSilencioso(abId,prodId);
+  // Actualizar contador del abasto sin redibujar todo
+  const llenos=cmpSesionActual.productos.filter(pr=>ab.precios[pr.id]?.precio>0).length;
+  const total=cmpSesionActual.productos.length;
+  const card=document.querySelector('.abasto-fecha');// simplificado
 };
-
-/*
- * FINALIZA EL PRODUCTO
- * --------------------
- * Se ejecuta al elegir el IVA, que es el último paso
- * de la captura del producto.
- *
- * Si hay precio válido + IVA seleccionado:
- *     → guarda
- *     → mueve visualmente el producto al final.
- *
- * Si falta uno de los dos:
- *     → permanece arriba como pendiente.
- */
-window.cmpFinalizarPrecio=function(abId,prodId){
-  const ab=cmpSesionActual.abastos.find(a=>a.id===abId);
-  if(!ab)return;
-
-  if(!ab.precios[prodId]){
-    ab.precios[prodId]={
-      precio:null,
-      moneda:'BS',
-      iva:'',
-      canton:1
-    };
-  }
-
-  const input=document.getElementById('cpr-'+abId+'-'+prodId);
-  const select=document.getElementById('civa-'+abId+'-'+prodId);
-
-  const p=parseFloat(input?.value);
-  const iva=select?.value||'';
-
-  ab.precios[prodId].precio=p>0?p:null;
-  ab.precios[prodId].iva=iva;
-
-  cmpGuardarPrecioSilencioso(abId,prodId);
-
-  /*
-   * Mantener abierto exactamente el mismo abasto.
-   * cmpRenderAbastos() reconstruirá solamente la lista
-   * visual usando productosOrdenados.
-   */
-  cmpAbastoExpandido=abId;
-  cmpRenderAbastos();
-
-  if(p>0&&iva){
-    vib(35);
-    toast('✓ Producto registrado');
-  }
-};
-
 function cmpGuardarPrecioSilencioso(abId,prodId){
   cmpGuardarSesion(cmpSesionActual);
 }
 
-window.cmpVolverAbastos=function(){
-  cmpMostrarPaso('cmpEditAbastos');
-};
+window.cmpVolverAbastos=function(){cmpMostrarPaso('cmpEditAbastos');};
 
 // ── Resultados ────────────────────────────────
 window.cmpVerResultados=function(){
-  if(cmpSesionActual.abastos.length<1){
-    toast('Agrega al menos un abasto','#ef4444');
-    return;
-  }
-
+  if(cmpSesionActual.abastos.length<1){toast('Agrega al menos un abasto','#ef4444');return;}
   document.getElementById('cmpResTitulo').textContent=cmpSesionActual.nom;
-
   const prods=cmpSesionActual.productos;
   const abastos=cmpSesionActual.abastos;
   let html='';
 
+  // Por producto — tabla comparativa
   prods.forEach(prod=>{
     html+=`<div style="margin-bottom:16px;">
       <div style="font-size:0.9rem;font-weight:bold;color:#a78bfa;margin-bottom:8px;">${prod.ico} ${esc(prod.nom)}</div>`;
 
+    // Calcular precio equivalente por abasto
     const opciones=[];
-
     abastos.forEach(ab=>{
       const pr=ab.precios[prod.id];
-
       if(!pr||pr.precio==null||pr.precio<=0)return;
-
       let precioBase=pr.precio;
-
-      if(pr.iva){
-        const calc=calcIVA(precioBase,pr.iva);
-        precioBase=calc.total;
-      }
-
+      if(pr.iva){const calc=calcIVA(precioBase,pr.iva);precioBase=calc.total;}
+      // Convertir a USD si está en Bs
       const precioUSD=pr.moneda==='BS'?precioBase/tasa:precioBase;
       const precioBs=pr.moneda==='BS'?precioBase:precioBase*tasa;
-
+      // Calcular equivalente
       let equiv=null,equivLabel='';
-
       if(prod.tipo==='peso'&&prod.cantRef){
         const cantKg=prod.unidad==='kg'?prod.cantRef:prod.cantRef/1000;
         const porKg=precioUSD/cantKg;
-        equiv=porKg;
-        equivLabel='$/kg';
+        equiv=porKg;equivLabel='$/kg';
       }else if(prod.tipo==='volumen'&&prod.cantRef){
         const cantL=prod.unidad==='L'?prod.cantRef:prod.cantRef/1000;
         const porL=precioUSD/cantL;
-        equiv=porL;
-        equivLabel='$/L';
+        equiv=porL;equivLabel='$/L';
       }else{
-        equiv=precioUSD;
-        equivLabel='$/unid';
+        equiv=precioUSD;equivLabel='$/unid';
       }
-
-      opciones.push({
-        abNom:ab.nom,
-        precio:precioBase,
-        moneda:pr.moneda,
-        precioBs,
-        precioUSD,
-        equiv,
-        equivLabel,
-        iva:pr.iva
-      });
+      opciones.push({abNom:ab.nom,precio:precioBase,moneda:pr.moneda,precioBs,precioUSD,equiv,equivLabel,iva:pr.iva});
     });
 
-    if(opciones.length===0){
-      html+=`<p style="color:#64748b;font-size:0.82rem;padding:4px 0;">Sin precios registrados.</p></div>`;
-      return;
-    }
+    if(opciones.length===0){html+=`<p style="color:#64748b;font-size:0.82rem;padding:4px 0;">Sin precios registrados.</p></div>`;return;}
 
     const minEquiv=Math.min(...opciones.map(o=>o.equiv));
 
     opciones.forEach(o=>{
       const esMejor=Math.abs(o.equiv-minEquiv)<0.001;
       const ivaStr=o.iva==='agregar'?'(+16%)':o.iva==='exento'?'(E)':o.iva==='incluido'?'(IVA incl.)':'';
-
       html+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-radius:8px;margin-bottom:4px;background:${esMejor?'#001a0d':'#0f172a'};border:1px solid ${esMejor?'#10b981':'#334155'};">
         <div>
           <div style="font-size:0.85rem;font-weight:bold;color:${esMejor?'#34d399':'#f1f5f9'};">🏪 ${esc(o.abNom)} ${esMejor?'<span style="font-size:0.65rem;background:#10b981;color:#fff;padding:1px 6px;border-radius:20px;">✓ MEJOR</span>':''}</div>
@@ -1891,41 +1185,25 @@ window.cmpVerResultados=function(){
         </div>
       </div>`;
     });
-
     html+=`</div>`;
   });
 
+  // Resumen por abasto — total si compraras TODO allí
   html+=`<div style="border-top:1px solid #334155;padding-top:12px;margin-top:8px;">
     <div style="font-size:0.8rem;font-weight:bold;color:#94a3b8;margin-bottom:8px;">TOTAL SI COMPRAS TODO EN UN SOLO ABASTO</div>`;
-
   const totales=abastos.map(ab=>{
     let totalUSD=0,completo=true;
-
     prods.forEach(prod=>{
       const pr=ab.precios[prod.id];
-
-      if(!pr||pr.precio==null||pr.precio<=0){
-        completo=false;
-        return;
-      }
-
-      let p=pr.precio;
-      if(pr.iva)p=calcIVA(p,pr.iva).total;
-
+      if(!pr||pr.precio==null||pr.precio<=0){completo=false;return;}
+      let p=pr.precio;if(pr.iva){p=calcIVA(p,pr.iva).total;}
       totalUSD+=pr.moneda==='BS'?p/tasa:p;
     });
-
-    return{
-      nom:ab.nom,
-      totalUSD,
-      totalBs:totalUSD*tasa,
-      completo
-    };
+    return{nom:ab.nom,totalUSD,totalBs:totalUSD*tasa,completo};
   }).filter(t=>t.totalUSD>0).sort((a,b)=>a.totalUSD-b.totalUSD);
 
-  if(totales.length===0){
-    html+=`<p style="color:#64748b;font-size:0.82rem;">Sin datos suficientes.</p>`;
-  }else{
+  if(totales.length===0){html+=`<p style="color:#64748b;font-size:0.82rem;">Sin datos suficientes.</p>`;}
+  else{
     totales.forEach((t,i)=>{
       html+=`<div class="abasto-resumen${i===0?' ganador':''}">
         <div class="abasto-res-nom">${i===0?'🏆':'🏪'} ${esc(t.nom)}${!t.completo?' <span style="font-size:0.7rem;color:#fbbf24;">(incompleto)</span>':''}</div>
@@ -1934,7 +1212,6 @@ window.cmpVerResultados=function(){
       </div>`;
     });
   }
-
   html+=`</div>`;
 
   document.getElementById('cmpResContenido').innerHTML=html;
@@ -1943,83 +1220,36 @@ window.cmpVerResultados=function(){
 
 // WhatsApp comparador
 window.cmpCompartirWA=function(){
-  const prods=cmpSesionActual.productos;
-  const abastos=cmpSesionActual.abastos;
-
+  const prods=cmpSesionActual.productos;const abastos=cmpSesionActual.abastos;
   let msg='🏪 *COMPARADOR DE PRECIOS — LuAn System™*\n';
   msg+='📋 '+esc(cmpSesionActual.nom)+'\n📅 '+hoy()+' | 💵 $1 = '+f2(tasa)+' Bs\n─────────────────────\n';
-
   prods.forEach(prod=>{
     msg+=prod.ico+' *'+prod.nom+'*\n';
-
     const opts=[];
-
     abastos.forEach(ab=>{
-      const pr=ab.precios[prod.id];
-      if(!pr||!pr.precio)return;
-
-      let p=pr.precio;
-      if(pr.iva)p=calcIVA(p,pr.iva).total;
-
+      const pr=ab.precios[prod.id];if(!pr||!pr.precio)return;
+      let p=pr.precio;if(pr.iva)p=calcIVA(p,pr.iva).total;
       const pUSD=pr.moneda==='BS'?p/tasa:p;
       let equiv='';
-
-      if(prod.tipo==='peso'&&prod.cantRef){
-        const kg=prod.unidad==='kg'?prod.cantRef:prod.cantRef/1000;
-        equiv=' → '+fusd(pUSD/kg)+'/kg';
-      }else if(prod.tipo==='volumen'&&prod.cantRef){
-        const l=prod.unidad==='L'?prod.cantRef:prod.cantRef/1000;
-        equiv=' → '+fusd(pUSD/l)+'/L';
-      }
-
-      opts.push({
-        nom:ab.nom,
-        p,
-        moneda:pr.moneda,
-        pUSD,
-        equiv
-      });
+      if(prod.tipo==='peso'&&prod.cantRef){const kg=prod.unidad==='kg'?prod.cantRef:prod.cantRef/1000;equiv=' → '+fusd(pUSD/kg)+'/kg';}
+      else if(prod.tipo==='volumen'&&prod.cantRef){const l=prod.unidad==='L'?prod.cantRef:prod.cantRef/1000;equiv=' → '+fusd(pUSD/l)+'/L';}
+      opts.push({nom:ab.nom,p,moneda:pr.moneda,pUSD,equiv});
     });
-
-    if(opts.length===0)return;
-
     const minUSD=Math.min(...opts.map(o=>o.pUSD));
-
-    opts.forEach(o=>{
-      msg+='  🏪 '+o.nom+': '+f2(o.p)+(o.moneda==='BS'?' Bs':' $')+o.equiv+(Math.abs(o.pUSD-minUSD)<0.001?' ✓':'')+'\n';
-    });
-
+    opts.forEach(o=>{msg+='  🏪 '+o.nom+': '+f2(o.p)+(o.moneda==='BS'?' Bs':' $')+o.equiv+(Math.abs(o.pUSD-minUSD)<0.001?' ✓':'')+ '\n';});
     msg+='\n';
   });
-
   msg+='─────────────────────\n🏷️ LuAn System™';
-
   window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
 };
 
 // ══ ARRANQUE ═════════════════════════════════
-document.getElementById('nom1').addEventListener('keypress',e=>{
-  if(e.key==='Enter')agregarNombre();
-});
-
-document.getElementById('tasa').addEventListener('keypress',e=>{
-  if(e.key==='Enter')guardarTasa();
-});
-
-document.getElementById('cmpProdNom').addEventListener('keypress',e=>{
-  if(e.key==='Enter')cmpAgregarProd();
-});
-
-document.getElementById('cmpSesNom').addEventListener('keypress',e=>{
-  if(e.key==='Enter')cmpIrAbastos();
-});
-
-document.getElementById('cmpAbastoNom').addEventListener('keypress',e=>{
-  if(e.key==='Enter')cmpAgregarAbasto();
-});
-
+document.getElementById('nom1').addEventListener('keypress',e=>{if(e.key==='Enter')agregarNombre();});
+document.getElementById('tasa').addEventListener('keypress',e=>{if(e.key==='Enter')guardarTasa();});
+document.getElementById('cmpProdNom').addEventListener('keypress',e=>{if(e.key==='Enter')cmpAgregarProd();});
+document.getElementById('cmpSesNom').addEventListener('keypress',e=>{if(e.key==='Enter')cmpIrAbastos();});
+document.getElementById('cmpAbastoNom').addEventListener('keypress',e=>{if(e.key==='Enter')cmpAgregarAbasto();});
 if('serviceWorker' in navigator)navigator.serviceWorker.register('/MercadoLuan/sw.js');
-
 cargarTasa();
 await cargarCat();
 await verificarProgreso();
