@@ -754,8 +754,6 @@ function filtAC(elId,q,cb){
   el.style.display='block';
 }
 
-window.onNom1=function(inp){const q=inp.value;if(q.length>0)inp.value=q.charAt(0).toUpperCase()+q.slice(1);filtAC('ac1',inp.value.trim(),n=>{inp.value=n;document.getElementById('ac1').style.display='none';inp.focus();vib(30);});};
-window.onNomCmp=function(inp){const q=inp.value;if(q.length>0)inp.value=q.charAt(0).toUpperCase()+q.slice(1);filtAC('acCmp',inp.value.trim(),n=>{inp.value=n;document.getElementById('acCmp').style.display='none';inp.focus();vib(30);});};
 
 document.addEventListener('click',e=>{if(!e.target.closest('.ac-wrap'))document.querySelectorAll('.ac-lista').forEach(l=>{l.style.display='none';l.innerHTML='';});});
 
@@ -868,7 +866,7 @@ window.pSetIva=function(pref,id,v){
     const el=document.getElementById(pref+'-iva-'+x+'-'+id);
     if(el)el.className='iva-btn'+(item.iva===key?' '+map[key]:'');
   });
-  pAutoCompletar(id);
+  if(item.precio!=null&&item.iva!==''){itemExpandido=null;if(pref==='p')renderF2();else renderF3();}
 };
 window.pTogglePeso=function(pref,id){const item=lista.find(i=>i.id===id);if(!item)return;item.esPeso=!item.esPeso;if(!item.esPeso){item.precioRef=null;item.cantRef=null;}const campos=document.getElementById(pref+'-campos-peso-'+id);const btn=document.getElementById(pref+'-btn-peso-'+id);if(campos)campos.style.display=item.esPeso?'block':'none';if(btn){btn.textContent='⚖️ Cobran por peso/volumen'+(item.esPeso?' ✓':'');btn.className='btn-peso'+(item.esPeso?' activo':'');}};
 window.pSetUnidad=function(pref,id,v){const item=lista.find(i=>i.id===id);if(!item)return;item.unidad=v;const lr=document.getElementById(pref+'-lbl-ref-'+id);const lc=document.getElementById(pref+'-lbl-cant-'+id);const ic=document.getElementById(pref+'-cant-'+id);if(lr)lr.textContent='Precio/'+(v==='ml'?'L':'kg');if(lc)lc.textContent=v==='ml'?'Mililitros':'Gramos';if(ic)ic.placeholder=v==='ml'?'750':'358';pActHint(pref,id);};
