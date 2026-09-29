@@ -481,10 +481,20 @@ button{width:100%;padding:11px;border-radius:8px;border:none;font-size:0.95rem;f
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, addDoc, getDocs, orderBy, query, limit, where, writeBatch } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
-const firebaseConfig={apiKey:"AIzaSyDff6f06jAPxmH8zL2bo3N0nPKGUf5109A",authDomain:"quinielaluan.firebaseapp.com",projectId:"quinielaluan",storageBucket:"quinielaluan.firebasestorage.app",messagingSenderId:"861747323783",appId:"1:861747323783:web:0f603b3c55570a4cb1a922"};
-const USER_ID='luis-arichuna'; // ID compartido familiar
-const app=initializeApp(firebaseConfig);
-const db=getFirestore(app);
+// Configuración CORRECTA de Mercado-LuAn
+const firebaseConfig = {
+  apiKey: "AIzaSyBKeKxcXgo_NYPdo9dj2roibLWLkwhKvLw",
+  authDomain: "mercado-luan.firebaseapp.com",
+  projectId: "mercado-luan",
+  storageBucket: "mercado-luan.firebasestorage.app",
+  messagingSenderId: "1011437257690",
+  appId: "1:1011437257690:web:5ebd8180bca6bf6a6c36e3"
+};
+
+const USER_ID = 'luis-arichuna'; // ID compartido familiar
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
 
 const CAT=[
 {n:'Arroz',i:'🌾'},{n:'Caraotas negras',i:'🫘'},{n:'Caraotas rojas',i:'🫘'},{n:'Lentejas',i:'🫘'},{n:'Frijoles',i:'🫘'},{n:'Arvejas',i:'🫘'},{n:'Harina de maíz',i:'🌽'},{n:'Harina de trigo',i:'🌾'},{n:'Pasta corta',i:'🍝'},{n:'Pasta larga',i:'🍝'},{n:'Avena',i:'🌾'},{n:'Maíz pilado',i:'🌽'},{n:'Pollo entero',i:'🍗'},{n:'Pechuga de pollo',i:'🍗'},{n:'Muslo de pollo',i:'🍗'},{n:'Carne molida',i:'🥩'},{n:'Bistec de res',i:'🥩'},{n:'Costilla de res',i:'🥩'},{n:'Chuleta de cerdo',i:'🥩'},{n:'Pernil de cerdo',i:'🥩'},{n:'Mortadela',i:'🥓'},{n:'Jamón',i:'🥓'},{n:'Salchicha',i:'🌭'},{n:'Milanesa',i:'🥩'},{n:'Sardinas lata',i:'🐟'},{n:'Atún lata',i:'🐟'},{n:'Huevos',i:'🥚'},{n:'Leche entera',i:'🥛'},{n:'Leche descremada',i:'🥛'},{n:'Leche en polvo',i:'🥛'},{n:'Queso blanco',i:'🧀'},{n:'Queso amarillo',i:'🧀'},{n:'Queso de mano',i:'🧀'},{n:'Queso telita',i:'🧀'},{n:'Mantequilla',i:'🧈'},{n:'Margarina',i:'🧈'},{n:'Nata',i:'🥛'},{n:'Yogur',i:'🥛'},{n:'Aceite de maíz',i:'🫙'},{n:'Aceite de girasol',i:'🫙'},{n:'Aceite de soya',i:'🫙'},{n:'Aceite de oliva',i:'🫙'},{n:'Papa',i:'🥔'},{n:'Yuca',i:'🌿'},{n:'Apio',i:'🌿'},{n:'Ocumo',i:'🌿'},{n:'Ñame',i:'🌿'},{n:'Plátano maduro',i:'🍌'},{n:'Plátano verde',i:'🍌'},{n:'Tomate',i:'🍅'},{n:'Cebolla',i:'🧅'},{n:'Ajo',i:'🧄'},{n:'Pimentón',i:'🫑'},{n:'Zanahoria',i:'🥕'},{n:'Repollo',i:'🥬'},{n:'Lechuga',i:'🥬'},{n:'Berenjena',i:'🍆'},{n:'Calabacín',i:'🥒'},{n:'Chayota',i:'🌿'},{n:'Remolacha',i:'🌿'},{n:'Naranja',i:'🍊'},{n:'Mandarina',i:'🍊'},{n:'Mango',i:'🥭'},{n:'Cambur',i:'🍌'},{n:'Lechosa',i:'🍈'},{n:'Guayaba',i:'🍏'},{n:'Limón',i:'🍋'},{n:'Patilla',i:'🍉'},{n:'Melón',i:'🍈'},{n:'Piña',i:'🍍'},{n:'Sal',i:'🧂'},{n:'Azúcar',i:'🍬'},{n:'Papelón',i:'🍬'},{n:'Mayonesa',i:'🫙'},{n:'Mostaza',i:'🫙'},{n:'Ketchup',i:'🫙'},{n:'Salsa de tomate',i:'🍅'},{n:'Salsa inglesa',i:'🫙'},{n:'Salsa de soya',i:'🫙'},{n:'Cubito de pollo',i:'🧂'},{n:'Onoto',i:'🌶️'},{n:'Comino',i:'🌿'},{n:'Pimienta',i:'🌶️'},{n:'Orégano',i:'🌿'},{n:'Ají dulce',i:'🫑'},{n:'Vinagre',i:'🫙'},{n:'Pan de sandwich',i:'🍞'},{n:'Pan canilla',i:'🥖'},{n:'Galletas soda',i:'🫙'},{n:'Galletas dulces',i:'🍪'},{n:'Agua mineral',i:'💧'},{n:'Refresco cola',i:'🥤'},{n:'Refresco naranja',i:'🥤'},{n:'Jugo de naranja',i:'🍊'},{n:'Café molido',i:'☕'},{n:'Café papeleta',i:'☕'},{n:'Té',i:'🍵'},{n:'Detergente en polvo',i:'🧴'},{n:'Detergente líquido',i:'🧴'},{n:'Jabón de lavar',i:'🧼'},{n:'Jabón de baño',i:'🧼'},{n:'Shampoo',i:'🧴'},{n:'Papel sanitario',i:'🧻'},{n:'Pasta dental',i:'🪥'},{n:'Cloro',i:'🧴'},{n:'Suavitel',i:'🧴'},{n:'Pañales',i:'👶'},{n:'Toallas sanitarias',i:'🛒'},{n:'Manteca vegetal',i:'🫙'},{n:'Chocolate en polvo',i:'🍫'},{n:'Gelatina',i:'🍮'},{n:'Maicena',i:'🌽'},{n:'Bicarbonato',i:'🫙'},{n:'Levadura',i:'🍞'}
