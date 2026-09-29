@@ -1741,7 +1741,6 @@ document.getElementById('cmpAbastoNom').addEventListener('keypress',e=>{if(e.key
 if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js');
 
 // Arranque
-cargarTasa(); // esto solo llena la variable local temporalmente
 async function arrancarApp(){
   sync('loading');
   // 1. Cargar usuario
