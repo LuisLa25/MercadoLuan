@@ -1525,6 +1525,8 @@ window.cmpAgregarProd=function(){
     const u=document.getElementById('cmpUnidadRef').value;
     if(v>0){cantRef=v;unidad=u;}
   }
+  catSiNuevo(nom,'BS');
+  regUso(nom,'BS');
   cmpSesionActual.productos.push({id:Date.now()+Math.floor(Math.random()*1000),nom,ico:getIco(nom),tipo:cmpTipoProd,cantRef,unidad});
   document.getElementById('cmpProdNom').value='';document.getElementById('cmpValCantRef').value='';
   document.getElementById('acCmp').style.display='none';
