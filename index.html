@@ -151,7 +151,6 @@ button{width:100%;padding:11px;border-radius:8px;border:none;font-size:0.95rem;f
 .abasto-res-det{font-size:0.75rem;color:#64748b;margin-top:2px;}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#10b981;color:#fff;padding:8px 20px;border-radius:20px;font-size:0.85rem;font-weight:bold;opacity:0;pointer-events:none;transition:opacity 0.2s;white-space:nowrap;z-index:999;}
 .toast.show{opacity:1;}
-#panelTasa{display:none;}
 #bannerRetomar{display:none;}
 .user-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:#1e293b;border:1px solid #334155;border-radius:20px;font-size:0.75rem;color:#cbd5e1;}
 .user-chip b{color:#38bdf8;}
@@ -171,7 +170,6 @@ button{width:100%;padding:11px;border-radius:8px;border:none;font-size:0.95rem;f
 </head>
 <body>
 
-<!-- LOGIN (solo primera vez) -->
 <div class="screen" id="screenLogin">
   <h1>🛒 Mercado LuAn</h1>
   <p class="subtitle">Bienvenido</p>
@@ -189,7 +187,6 @@ button{width:100%;padding:11px;border-radius:8px;border:none;font-size:0.95rem;f
   </div>
 </div>
 
-<!-- TASA DEL DÍA (nueva lógica BCV) -->
 <div class="screen" id="screenTasa">
   <h1>💵 Tasa BCV</h1>
   <p class="subtitle" id="tasaSub">Cargando...</p>
@@ -204,7 +201,6 @@ button{width:100%;padding:11px;border-radius:8px;border:none;font-size:0.95rem;f
   </div>
 </div>
 
-<!-- INICIO -->
 <div class="screen activo" id="screenInicio">
   <h1>🛒 Mercado LuAn</h1>
   <p class="subtitle"><span class="sync-dot" id="syncDot"></span><span class="sync-label" id="syncLabel">Conectando...</span></p>
@@ -238,7 +234,6 @@ button{width:100%;padding:11px;border-radius:8px;border:none;font-size:0.95rem;f
   </button>
 </div>
 
-<!-- HISTORIAL -->
 <div class="screen" id="screenHistorial">
   <h1>📊 Historial</h1>
   <div style="max-width:480px;margin:0 auto;padding:0 16px;">
@@ -247,7 +242,6 @@ button{width:100%;padding:11px;border-radius:8px;border:none;font-size:0.95rem;f
   </div>
 </div>
 
-<!-- CONFIGURACIÓN -->
 <div class="screen" id="screenConfig">
   <h1>⚙️ Configuración</h1>
   <div style="max-width:480px;margin:0 auto;padding:0 16px;">
@@ -300,7 +294,6 @@ button{width:100%;padding:11px;border-radius:8px;border:none;font-size:0.95rem;f
   </div>
 </div>
 
-<!-- MERCADO LUAN -->
 <div class="screen" id="screenLista">
   <h1>🛒 Mercado LuAn</h1>
   <p class="subtitle"><span class="sync-dot" id="syncDot2"></span><span class="sync-label" id="syncLabel2">—</span></p>
@@ -367,7 +360,6 @@ button{width:100%;padding:11px;border-radius:8px;border:none;font-size:0.95rem;f
   </div>
 </div>
 
-<!-- COMPARADOR -->
 <div class="screen" id="screenComparador">
   <div id="cmpSesiones">
     <h1>🏪 Comparador</h1>
@@ -464,7 +456,6 @@ button{width:100%;padding:11px;border-radius:8px;border:none;font-size:0.95rem;f
   </div>
 </div>
 
-<!-- MODAL CONFIRMACIÓN -->
 <div class="modal-overlay" id="modalConfirm">
   <div class="modal-box">
     <h3 id="modalTitulo">Confirmar</h3>
@@ -479,9 +470,8 @@ button{width:100%;padding:11px;border-radius:8px;border:none;font-size:0.95rem;f
 <div class="toast" id="toast"></div>
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, addDoc, getDocs, orderBy, query, limit, where, writeBatch } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, addDoc, getDocs, orderBy, query, limit } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
-// Configuración CORRECTA de Mercado-LuAn
 const firebaseConfig = {
   apiKey: "AIzaSyBKeKxcXgo_NYPdo9dj2roibLWLkwhKvLw",
   authDomain: "mercado-luan.firebaseapp.com",
@@ -491,25 +481,22 @@ const firebaseConfig = {
   appId: "1:1011437257690:web:5ebd8180bca6bf6a6c36e3"
 };
 
-const USER_ID = 'luis-arichuna'; // ID compartido familiar
+const USER_ID = 'luis-arichuna';
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-
 
 const CAT=[
 {n:'Arroz',i:'🌾'},{n:'Caraotas negras',i:'🫘'},{n:'Caraotas rojas',i:'🫘'},{n:'Lentejas',i:'🫘'},{n:'Frijoles',i:'🫘'},{n:'Arvejas',i:'🫘'},{n:'Harina de maíz',i:'🌽'},{n:'Harina de trigo',i:'🌾'},{n:'Pasta corta',i:'🍝'},{n:'Pasta larga',i:'🍝'},{n:'Avena',i:'🌾'},{n:'Maíz pilado',i:'🌽'},{n:'Pollo entero',i:'🍗'},{n:'Pechuga de pollo',i:'🍗'},{n:'Muslo de pollo',i:'🍗'},{n:'Carne molida',i:'🥩'},{n:'Bistec de res',i:'🥩'},{n:'Costilla de res',i:'🥩'},{n:'Chuleta de cerdo',i:'🥩'},{n:'Pernil de cerdo',i:'🥩'},{n:'Mortadela',i:'🥓'},{n:'Jamón',i:'🥓'},{n:'Salchicha',i:'🌭'},{n:'Milanesa',i:'🥩'},{n:'Sardinas lata',i:'🐟'},{n:'Atún lata',i:'🐟'},{n:'Huevos',i:'🥚'},{n:'Leche entera',i:'🥛'},{n:'Leche descremada',i:'🥛'},{n:'Leche en polvo',i:'🥛'},{n:'Queso blanco',i:'🧀'},{n:'Queso amarillo',i:'🧀'},{n:'Queso de mano',i:'🧀'},{n:'Queso telita',i:'🧀'},{n:'Mantequilla',i:'🧈'},{n:'Margarina',i:'🧈'},{n:'Nata',i:'🥛'},{n:'Yogur',i:'🥛'},{n:'Aceite de maíz',i:'🫙'},{n:'Aceite de girasol',i:'🫙'},{n:'Aceite de soya',i:'🫙'},{n:'Aceite de oliva',i:'🫙'},{n:'Papa',i:'🥔'},{n:'Yuca',i:'🌿'},{n:'Apio',i:'🌿'},{n:'Ocumo',i:'🌿'},{n:'Ñame',i:'🌿'},{n:'Plátano maduro',i:'🍌'},{n:'Plátano verde',i:'🍌'},{n:'Tomate',i:'🍅'},{n:'Cebolla',i:'🧅'},{n:'Ajo',i:'🧄'},{n:'Pimentón',i:'🫑'},{n:'Zanahoria',i:'🥕'},{n:'Repollo',i:'🥬'},{n:'Lechuga',i:'🥬'},{n:'Berenjena',i:'🍆'},{n:'Calabacín',i:'🥒'},{n:'Chayota',i:'🌿'},{n:'Remolacha',i:'🌿'},{n:'Naranja',i:'🍊'},{n:'Mandarina',i:'🍊'},{n:'Mango',i:'🥭'},{n:'Cambur',i:'🍌'},{n:'Lechosa',i:'🍈'},{n:'Guayaba',i:'🍏'},{n:'Limón',i:'🍋'},{n:'Patilla',i:'🍉'},{n:'Melón',i:'🍈'},{n:'Piña',i:'🍍'},{n:'Sal',i:'🧂'},{n:'Azúcar',i:'🍬'},{n:'Papelón',i:'🍬'},{n:'Mayonesa',i:'🫙'},{n:'Mostaza',i:'🫙'},{n:'Ketchup',i:'🫙'},{n:'Salsa de tomate',i:'🍅'},{n:'Salsa inglesa',i:'🫙'},{n:'Salsa de soya',i:'🫙'},{n:'Cubito de pollo',i:'🧂'},{n:'Onoto',i:'🌶️'},{n:'Comino',i:'🌿'},{n:'Pimienta',i:'🌶️'},{n:'Orégano',i:'🌿'},{n:'Ají dulce',i:'🫑'},{n:'Vinagre',i:'🫙'},{n:'Pan de sandwich',i:'🍞'},{n:'Pan canilla',i:'🥖'},{n:'Galletas soda',i:'🫙'},{n:'Galletas dulces',i:'🍪'},{n:'Agua mineral',i:'💧'},{n:'Refresco cola',i:'🥤'},{n:'Refresco naranja',i:'🥤'},{n:'Jugo de naranja',i:'🍊'},{n:'Café molido',i:'☕'},{n:'Café papeleta',i:'☕'},{n:'Té',i:'🍵'},{n:'Detergente en polvo',i:'🧴'},{n:'Detergente líquido',i:'🧴'},{n:'Jabón de lavar',i:'🧼'},{n:'Jabón de baño',i:'🧼'},{n:'Shampoo',i:'🧴'},{n:'Papel sanitario',i:'🧻'},{n:'Pasta dental',i:'🪥'},{n:'Cloro',i:'🧴'},{n:'Suavitel',i:'🧴'},{n:'Pañales',i:'👶'},{n:'Toallas sanitarias',i:'🛒'},{n:'Manteca vegetal',i:'🫙'},{n:'Chocolate en polvo',i:'🍫'},{n:'Gelatina',i:'🍮'},{n:'Maicena',i:'🌽'},{n:'Bicarbonato',i:'🫙'},{n:'Levadura',i:'🍞'}
 ];
 
-// ══ ESTADO ═══════════════════════════════════
 let tasa=0,catPersonal=[],fbListo=false;
 let lista=[],confirmados=[],monedaProd='BS',itemExpandido=null,faseActual=1;
 let dragSrcIdx=null,touchClone=null;
 let cmpSesionActual=null,cmpTipoProd='unidad',cmpDragSrc=null,cmpTouchClone=null,cmpAbastoExpandido=null;
-let usuarioActual=null; // { id, nombre }
+let usuarioActual=null;
 let diasConservar=3;
 let modalCallback=null;
 
-// ══ UTILS ════════════════════════════════════
 function f2(n){return Number(n).toFixed(2);}
 function fbs(n){return f2(n)+' Bs';}
 function fusd(n){return '$'+f2(n);}
@@ -538,7 +525,6 @@ function genUUID(){
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0,v=c==='x'?r:(r&0x3|0x8);return v.toString(16);});
 }
 
-// ══ SYNC ═════════════════════════════════════
 function sync(e){
   ['syncDot','syncDot2'].forEach(id=>{
     const d=document.getElementById(id);if(!d)return;
@@ -550,7 +536,6 @@ function sync(e){
   });
 }
 
-// ══ MODAL ════════════════════════════════════
 window.abrirModal=function(titulo,msg,onOk,labelOk){
   document.getElementById('modalTitulo').textContent=titulo;
   document.getElementById('modalMsg').innerHTML=msg;
@@ -567,7 +552,6 @@ window.confirmarModal=function(){
   cerrarModal();
 };
 
-// ══ USUARIO (LOGIN) ══════════════════════════
 function cargarUsuarioLocal(){
   try{
     const raw=localStorage.getItem('luan_usuario');
@@ -591,26 +575,21 @@ async function guardarUsuarioFirebase(usuario){
       creado:usuario.creado||new Date().toISOString()
     });
     return true;
-  }catch(e){return false;}
+  }catch(_){return false;}
 }
 async function inicializarUsuario(){
-  // 1. Intentar cargar de localStorage
   let local=cargarUsuarioLocal();
   if(local&&local.id&&local.nombre){
     usuarioActual=local;
-    // Verificar que existe en Firebase (re-sincronizar por si acaso)
     const remoto=await cargarUsuarioFirebase(local.id);
     if(remoto&&remoto.nombre){
       usuarioActual.nombre=remoto.nombre;
       try{localStorage.setItem('luan_usuario',JSON.stringify(usuarioActual));}catch(_){}
     }else{
-      // No existe en Firebase → recrearlo
       await guardarUsuarioFirebase(usuarioActual);
     }
     return true;
   }
-  // 2. Buscar en Firebase si hay algún usuario con nombre coincidente... (no, UUID es único por teléfono)
-  // 3. Pedir nombre
   return false;
 }
 window.loginGuardar=async function(){
@@ -636,10 +615,6 @@ function irAInicio(){
   document.getElementById('userNombre').textContent=usuarioActual?.nombre||'—';
 }
 
-// ══ TASA BCV POR DÍA ═════════════════════════
-// Lógica: una tasa por día, buscar hacia atrás si falta
-// Después 5pm lun-vie: sugerir tasa de mañana
-
 async function cargarTasaFecha(fechaISO_){
   try{
     const s=await getDoc(doc(db,'tasas_bcv',fechaISO_));
@@ -649,7 +624,6 @@ async function cargarTasaFecha(fechaISO_){
 }
 
 async function cargarTasaVigente(){
-  // Buscar hacia atrás desde hoy hasta 15 días
   for(let i=0;i<15;i++){
     const d=new Date();
     d.setDate(d.getDate()-i);
@@ -670,21 +644,23 @@ async function guardarTasaDia(fechaISO_,valor,quien){
       fecha_carga:new Date().toISOString()
     });
     return true;
-  }catch(e){return false;}
+  }catch(_){return false;}
 }
 
-// ¿El BCV publica hoy? (lun-vie)
 function bcvPublicaHoy(){
-  const d=new Date().getDay(); // 0=dom, 6=sab
+  const d=new Date().getDay();
   return d>=1&&d<=5;
 }
 
-// ¿Es después de las 5pm?
+function esDiaLaboral(fecha){
+  const d=fecha.getDay();
+  return d>=1&&d<=5;
+}
+
 function esDespues5pm(){
   return new Date().getHours()>=17;
 }
 
-// ¿Ya hay tasa cargada para mañana?
 async function hayTasaManana(){
   const man=new Date();
   man.setDate(man.getDate()+1);
@@ -693,10 +669,8 @@ async function hayTasaManana(){
 }
 
 async function verificarTasaAlArrancar(){
-  // 1. ¿Hay tasa vigente hoy?
   const vigente=await cargarTasaVigente();
   if(!vigente){
-    // No hay tasa → pedirla
     mostrarScreen('screenTasa');
     document.getElementById('tasaTitulo').textContent='Tasa del día';
     document.getElementById('tasaMsg').innerHTML='No hay tasa cargada. Escribe el valor de hoy para poder continuar.';
@@ -706,15 +680,13 @@ async function verificarTasaAlArrancar(){
     document.getElementById('tasaValor').focus();
     return;
   }
-  // Hay tasa vigente → usarla
   tasa=vigente.tasa;
   actualizarLblTasa(vigente.fecha,vigente.diasAtras);
   
-  // 2. ¿Es después 5pm, es día BCV, no hay tasa mañana? → sugerir
-  if(esDespues5pm()&&bcvPublicaHoy()&&!(await hayTasaManana())){
+  const man=new Date();
+  man.setDate(man.getDate()+1);
+  if(esDespues5pm()&&bcvPublicaHoy()&&esDiaLaboral(man)&&!(await hayTasaManana())){
     mostrarScreen('screenTasa');
-    const man=new Date();
-    man.setDate(man.getDate()+1);
     document.getElementById('tasaTitulo').textContent='💵 Tasa de mañana';
     document.getElementById('tasaMsg').innerHTML='El BCV ya publicó la tasa para mañana <b>'+man.toLocaleDateString('es-VE',{weekday:'long',day:'2-digit',month:'long'})+'</b>. ¿Cuál es?';
     document.getElementById('tasaSub').textContent='Opcional — puedes omitir';
@@ -724,7 +696,6 @@ async function verificarTasaAlArrancar(){
     return;
   }
   
-  // 3. Todo bien → ir a inicio
   irAInicio();
 }
 
@@ -746,7 +717,6 @@ window.tasaGuardar=async function(){
   }
   document.getElementById('tasaErr').style.display='none';
   
-  // Determinar la fecha a guardar
   let fechaGuardar=hoyISO();
   const titulo=document.getElementById('tasaTitulo').textContent;
   if(titulo.includes('mañana')){
@@ -759,7 +729,6 @@ window.tasaGuardar=async function(){
   
   if(titulo.includes('mañana')){
     toast('✓ Tasa de mañana guardada');
-    // La tasa de hoy sigue siendo la vigente
     const vigente=await cargarTasaVigente();
     if(vigente){tasa=vigente.tasa;actualizarLblTasa(vigente.fecha,vigente.diasAtras);}
   }else{
@@ -776,8 +745,17 @@ window.tasaOmitir=function(){
   irAInicio();
 };
 
-// ══ FIREBASE — CATÁLOGO ══════════════════════
-async function cargarCat(){   sync('loading');   try{     const s=await getDoc(doc(db,'catalogo_familiar','compartido'));     catPersonal=s.exists()?(s.data().productos||[]):[];     fbListo=true;sync('ok');   }catch(e){     fbListo=false;sync('err');     try{const l=localStorage.getItem('luan_cat');if(l)catPersonal=JSON.parse(l);}catch(_){}   } }
+async function cargarCat(){
+  sync('loading');
+  try{
+    const s=await getDoc(doc(db,'catalogo_familiar','compartido'));
+    catPersonal=s.exists()?(s.data().productos||[]):[];
+    fbListo=true;sync('ok');
+  }catch(_){
+    fbListo=false;sync('err');
+    try{const l=localStorage.getItem('luan_cat');if(l)catPersonal=JSON.parse(l);}catch(_){}
+  }
+}
 async function guardarCat(){
   try{localStorage.setItem('luan_cat',JSON.stringify(catPersonal));}catch(_){}
   if(!fbListo)return;
@@ -814,7 +792,6 @@ function catSiNuevo(nombre,moneda){
 }
 function getMem(nombre){return catPersonal.find(p=>p.n.toLowerCase()===nombre.toLowerCase())||null;}
 
-// ══ PROGRESO MERCADO ═════════════════════════
 async function guardarProgreso(){
   const e={lista,confirmados,faseActual,monedaProd,tasa,fecha:new Date().toISOString(),usuario:usuarioActual?.nombre||'—',usuarioId:usuarioActual?.id||'—'};
   try{localStorage.setItem('luan_progreso',JSON.stringify(e));}catch(_){}
@@ -832,7 +809,6 @@ async function cargarProgreso(){
   return null;
 }
 
-// ══ HISTORIAL ════════════════════════════════
 async function guardarHistorial(tBs,tUsd,n){
   const e={
     fecha:new Date().toISOString(),
@@ -854,11 +830,9 @@ async function cargarHistorial(){
   try{return JSON.parse(localStorage.getItem('luan_hist')||'[]');}catch(_){return[];}
 }
 
-// ══ NAVEGACIÓN ═══════════════════════════════
 function mostrarScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('activo'));document.getElementById(id).classList.add('activo');}
 window.volverInicio=function(){mostrarScreen('screenInicio');};
 
-// ══ CONFIGURACIÓN ════════════════════════════
 window.abrirConfig=async function(){
   mostrarScreen('screenConfig');
   document.getElementById('cfgNombre').value=usuarioActual?.nombre||'';
@@ -893,10 +867,6 @@ window.cfgGuardarTasa=async function(){
 
 window.cfgSetDias=function(n){
   diasConservar=n;
-  document.querySelectorAll('#cfgDias .dias-btn').forEach((b,i)=>{
-    b.className='dias-btn'+(i+1===1&&n===1?' activo':'')+(i+1===2&&n===3?' activo':'')+(i+1===3&&n===5?' activo':'')+(i+1===4&&n===7?' activo':'');
-  });
-  // Corrección más simple:
   const btns=document.querySelectorAll('#cfgDias .dias-btn');
   btns.forEach(b=>b.classList.remove('activo'));
   btns.forEach((b,i)=>{
@@ -909,9 +879,6 @@ window.cfgSetDias=function(n){
 async function cfgRefrescarInfo(){
   if(!fbListo){document.getElementById('cfgLimpiezaInfo').textContent='—';return;}
   try{
-    const q2=query(collection(db,'precios_comparador'),where('userId','==',USER_ID));
-    // Ya que no hemos migrado, mejor contamos de la colección vieja + nueva
-    // Contamos todo lo que hay en comparador_ actual
     const snap=await getDocs(collection(db,'comparador_'+USER_ID));
     document.getElementById('cfgLimpiezaInfo').textContent=snap.size+' sesiones/comparaciones guardadas';
   }catch(_){
@@ -939,7 +906,7 @@ window.cfgCargarAbastos=async function(){
       o.value=nom;o.textContent=nom;
       sel.appendChild(o);
     });
-  }catch(e){
+  }catch(_){
     sel.innerHTML='<option value="">Error cargando</option>';
   }
 };
@@ -961,7 +928,7 @@ window.cfgLimpiarViejos=async function(){
 };
 
 async function ejecutarLimpieza(corteISO){
-  let borrados=0;
+  let totalBorrados=0;
   try{
     const snap=await getDocs(collection(db,'comparador_'+USER_ID));
     for(const d of snap.docs){
@@ -970,9 +937,9 @@ async function ejecutarLimpieza(corteISO){
       if(data.abastos){
         data.abastos.forEach(ab=>{
           if(ab.fecha&&ab.fecha<corteISO){
-            // Marcar precios como viejos para eliminar
             Object.keys(ab.precios||{}).forEach(pid=>{
-              ab.precios[pid]={precio:null,moneda:'BS',iva:'',borrado:true};
+              delete ab.precios[pid];
+              totalBorrados++;
               cambio=true;
             });
           }
@@ -981,12 +948,11 @@ async function ejecutarLimpieza(corteISO){
       if(cambio){
         try{
           await setDoc(doc(db,'comparador_'+USER_ID,d.id),data);
-          borrados++;
         }catch(_){}
       }
     }
-  }catch(e){}
-  return borrados;
+  }catch(_){}
+  return totalBorrados;
 }
 
 window.cfgBorrarAbasto=async function(){
@@ -1022,11 +988,10 @@ async function ejecutarBorrarAbasto(nom){
         }
       }
     }
-  }catch(e){}
+  }catch(_){}
   return n;
 }
 
-// ══ VERIFICAR PROGRESO ═══════════════════════
 async function verificarProgreso(){
   const e=await cargarProgreso();
   if(!e||!e.lista||e.lista.length===0)return;
@@ -1041,6 +1006,7 @@ window.retomarLista=function(){
   const e=window._pendiente;if(!e)return;
   lista=e.lista||[];confirmados=e.confirmados||[];faseActual=e.faseActual||1;monedaProd=e.monedaProd||'BS';
   if(e.tasa&&e.tasa>0){tasa=e.tasa;actualizarLblTasa(hoyISO(),0);}
+  window._historialGuardado=false;
   document.getElementById('bannerRetomar').style.display='none';
   document.getElementById('nom1').value='';
   mostrarScreen('screenLista');irFase(faseActual);toast('▶ Lista retomada');
@@ -1064,6 +1030,7 @@ window.irAHistorial=async function(){
 window.irACrearLista=function(){
   if(tasa<=0){toast('💵 Configura la tasa primero','#f97316');return;}
   lista=[];confirmados=[];monedaProd='BS';itemExpandido=null;faseActual=1;
+  window._historialGuardado=false;
   document.getElementById('nom1').value='';borrarProgreso();
   mostrarScreen('screenLista');irFase(1);
 };
@@ -1074,10 +1041,9 @@ window.irFase=function(n){
   if(n===1)renderF1();if(n===2)renderF2();if(n===3)renderF3();if(n===4)renderResumen();
   guardarProgreso();
 };
-window.nuevaLista=function(){if(!confirm('¿Nueva lista?'))return;lista=[];confirmados=[];faseActual=1;document.getElementById('nom1').value='';borrarProgreso();irFase(1);};
+window.nuevaLista=function(){if(!confirm('¿Nueva lista?'))return;lista=[];confirmados=[];faseActual=1;window._historialGuardado=false;document.getElementById('nom1').value='';borrarProgreso();irFase(1);};
 window.validarIrACaja=function(){const sp=lista.filter(i=>i.precio===null||i.precio===undefined);if(sp.length>0&&!confirm('⚠️ '+sp.length+' sin precio:\n'+sp.map(p=>p.nom).join(', ')+'\n\n¿Ir a caja de todas formas?'))return;irFase(3);};
 
-// ══ AUTOCOMPLETE ═════════════════════════════
 function hacerAcItem(p,q,qN){
   const nN=norm(p.n),idx=nN.indexOf(qN);
   const a=esc(p.n.slice(0,idx));
@@ -1153,7 +1119,6 @@ window.onNomCmp=function(inp){
   });
 };
 
-// ══ FASE 1 ═══════════════════════════════════
 window.agregarNombre=function(){
   const nom=document.getElementById('nom1').value.trim();
   if(!nom){document.getElementById('err1').style.display='block';return;}
@@ -1186,7 +1151,6 @@ window.touchStart=function(e,i){dragSrcIdx=i;const el=document.getElementById('d
 window.touchMove=function(e){if(!touchClone)return;e.preventDefault();const t=e.touches[0];touchClone.style.left=(t.clientX-40)+'px';touchClone.style.top=(t.clientY-20)+'px';};
 window.touchEnd=function(e,fromIdx){if(!touchClone)return;const t=e.changedTouches[0];if(touchClone.parentNode)touchClone.parentNode.removeChild(touchClone);touchClone=null;let toIdx=fromIdx;document.querySelectorAll('#listaF1 .item-card').forEach((el,i)=>{const r=el.getBoundingClientRect();if(t.clientY>=r.top&&t.clientY<=r.bottom)toIdx=i;});if(toIdx!==fromIdx){const tmp=lista.splice(fromIdx,1)[0];lista.splice(toIdx,0,tmp);renderF1();guardarProgreso();}dragSrcIdx=null;};
 
-// ══ PANEL PRODUCTO ══════════════════════════
 function htmlPanel(item,pref){
   const id=item.id,mBS=item.moneda==='BS';
   return`<div class="panel" id="${pref}-panel-${id}" onclick="event.stopPropagation()">
@@ -1250,7 +1214,7 @@ window.pSetMon=function(pref,id,m){
   if(usd)usd.className='mon-btn'+(m==='BS'?'':' usd');
   if(lbl)lbl.textContent='Precio'+(m==='BS'?' (Bs)':' ($)');
   pActHint(pref,id);
-  pAutoCompletar(id);
+  pAutoCompletar(id,pref);
 };
 window.pSetIva=function(pref,id,v){
   const item=lista.find(i=>i.id===id);if(!item)return;
@@ -1261,29 +1225,29 @@ window.pSetIva=function(pref,id,v){
     const el=document.getElementById(pref+'-iva-'+x+'-'+id);
     if(el)el.className='iva-btn'+(item.iva===key?' '+map[key]:'');
   });
-  pAutoCompletar(id);
+  pAutoCompletar(id,pref);
 };
 window.pTogglePeso=function(pref,id){const item=lista.find(i=>i.id===id);if(!item)return;item.esPeso=!item.esPeso;if(!item.esPeso){item.precioRef=null;item.cantRef=null;}const campos=document.getElementById(pref+'-campos-peso-'+id);const btn=document.getElementById(pref+'-btn-peso-'+id);if(campos)campos.style.display=item.esPeso?'block':'none';if(btn){btn.textContent='⚖️ Cobran por peso/volumen'+(item.esPeso?' ✓':'');btn.className='btn-peso'+(item.esPeso?' activo':'');}};
 window.pSetUnidad=function(pref,id,v){const item=lista.find(i=>i.id===id);if(!item)return;item.unidad=v;const lr=document.getElementById(pref+'-lbl-ref-'+id);const lc=document.getElementById(pref+'-lbl-cant-'+id);const ic=document.getElementById(pref+'-cant-'+id);if(lr)lr.textContent='Precio/'+(v==='ml'?'L':'kg');if(lc)lc.textContent=v==='ml'?'Mililitros':'Gramos';if(ic)ic.placeholder=v==='ml'?'750':'358';pActHint(pref,id);};
 window.pActHint=function(pref,id){const item=lista.find(i=>i.id===id);if(!item||!item.esPeso)return;const hint=document.getElementById(pref+'-hint-'+id);if(!hint)return;const pr=parseFloat(document.getElementById(pref+'-ref-'+id)?.value);const cr=parseFloat(document.getElementById(pref+'-cant-'+id)?.value);if(!pr||!cr){hint.style.display='none';return;}const base=(pr*cr)/1000,mS=item.moneda==='BS'?' Bs':' $',uR=item.unidad==='ml'?'L':'kg',uC=item.unidad==='ml'?'ml':'gr';hint.textContent=cr+' '+uC+' a '+f2(pr)+mS+'/'+uR+' → '+f2(base)+mS;hint.style.display='block';};
 window.pCerrar=function(pref){itemExpandido=null;if(pref==='p')renderF2();else renderF3();};
 
-// ══ FASE 2 — AUTOCOMPLETAR CON REGLA 3 CAMPOS ══
-function pAutoCompletar(id){
+function pAutoCompletar(id,pref){
+  pref=pref||'p';
   const item=lista.find(i=>i.id===id);
   if(!item)return false;
-  if(item.completo)return false;
+  if(item.completo&&pref==='p')return false;
   let precioFinal=0,descC='',pr=null,cr=null,p=null,c=1;
   if(item.esPeso){
-    pr=parseFloat(document.getElementById('p-ref-'+id)?.value);
-    cr=parseFloat(document.getElementById('p-cant-'+id)?.value);
+    pr=parseFloat(document.getElementById(pref+'-ref-'+id)?.value);
+    cr=parseFloat(document.getElementById(pref+'-cant-'+id)?.value);
     if(pr&&pr>0&&cr&&cr>0){
       precioFinal=(pr*cr)/1000;
       descC=item.unidad==='ml'?f2(cr)+' ml':f2(cr)+' g';
     }
   }else{
-    p=parseFloat(document.getElementById('p-precio-'+id)?.value);
-    c=parseInt(document.getElementById('p-qty-'+id)?.value)||1;
+    p=parseFloat(document.getElementById(pref+'-precio-'+id)?.value);
+    c=parseInt(document.getElementById(pref+'-qty-'+id)?.value)||1;
     if(p&&p>0){precioFinal=p*c;descC=c>1?c+' unid.':'';}
   }
   if(item.esPeso){if(pr&&pr>0)item.precioRef=pr;if(cr&&cr>0)item.cantRef=cr;}
@@ -1292,21 +1256,25 @@ function pAutoCompletar(id){
   const tieneMoneda=item.moneda==='BS'||item.moneda==='USD';
   const tieneIVA=['exento','agregar','incluido'].includes(item.iva);
   if(!tieneMoneda||!tieneIVA||precioFinal<=0)return false;
-  item.completo=true;
-  itemExpandido=null;
-  catSiNuevo(item.nom,item.moneda);
-  regUso(item.nom,item.moneda);
-  guardarProgreso();
-  vib(50);
-  renderF2();
-  return true;
+  if(pref==='p'){
+    item.completo=true;
+    itemExpandido=null;
+    catSiNuevo(item.nom,item.moneda);
+    regUso(item.nom,item.moneda);
+    guardarProgreso();
+    vib(50);
+    renderF2();
+    return true;
+  }
+  return false;
 }
 document.addEventListener('change',e=>{
   const id=e.target?.id||'';
-  if(id.startsWith('p-precio-')||id.startsWith('p-qty-')||id.startsWith('p-ref-')||id.startsWith('p-cant-')){
-    const n=id.split('-').pop();
-    const itemId=Number(n);
-    if(Number.isFinite(itemId))pAutoCompletar(itemId);
+  const m=id.match(/^(p|c)-(precio|qty|ref|cant)-(\d+)$/);
+  if(m){
+    const pref=m[1];
+    const itemId=Number(m[3]);
+    if(Number.isFinite(itemId))pAutoCompletar(itemId,pref);
   }
 });
 window.pConfirmar=function(pref,id){
@@ -1332,13 +1300,13 @@ window.pConfirmar=function(pref,id){
     confirmados=confirmados.filter(c=>c.id!==id);item.confirmado=true;
     confirmados.push({id,nom:item.nom,ico:item.ico,descFinal:descC||(f2(precioFinal)+(item.moneda==='BS'?' Bs':' $')),iva:item.iva,moneda:item.moneda,bBs,bUsd,iBs,iUsd,tBs,tUsd});
     regUso(item.nom,item.moneda);monedaProd=item.moneda;
+    window._historialGuardado=false;
   }
   catSiNuevo(item.nom,item.moneda);itemExpandido=null;vib(50);
   toast(pref==='c'?'✓ '+item.nom+' confirmado':'✓ '+item.nom+' guardado');
   guardarProgreso();if(pref==='p')renderF2();else renderF3();
 };
 
-// ══ FASE 2 — RENDER ══════════════════════════
 function renderF2(){
   const total=lista.length,comp=lista.filter(i=>i.completo).length;
   document.getElementById('cntPasillo').textContent=comp+'/'+total+' con precio';
@@ -1370,7 +1338,6 @@ window.agregarExtraPasillo=function(){
   vib(50);toast('✅ '+nombre+' agregado');guardarProgreso();renderF2();
 };
 
-// ══ FASE 3 — RENDER ══════════════════════════
 function renderF3(){
   const total=lista.length,conf=lista.filter(i=>i.confirmado).length;
   document.getElementById('cntCaja').textContent=conf+'/'+total+' confirmados';
@@ -1392,7 +1359,6 @@ function renderF3(){
 window.tocarF3=function(id){if(itemExpandido===id){itemExpandido=null;renderF3();return;}itemExpandido=id;renderF3();setTimeout(()=>{const el=document.getElementById('c-panel-'+id);if(el)el.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>{const inp=document.getElementById('c-precio-'+id);if(inp&&!inp.value)inp.focus();},100);},30);};
 window.qtyC=function(d,id){const i=document.getElementById(id);if(i)i.value=Math.max(1,(parseInt(i.value)||1)+d);vib(30);};
 
-// ══ RESUMEN ══════════════════════════════════
 function renderResumen(){
   let sBs=0,sUsd=0,iBs=0,iUsd=0,tBs=0,tUsd=0,html='';
   confirmados.forEach(p=>{
@@ -1411,10 +1377,13 @@ function renderResumen(){
      <div class="res-line"><span>IVA 16%</span><span>+ ${fbs(iBs)} / ${fusd(iUsd)}</span></div>
      <div class="res-total"><span>TOTAL A PAGAR</span><span>${fbs(tBs)}</span></div>
      <div class="res-usd"><span>${fusd(tUsd)}</span></div>`;
-  if(confirmados.length>0){guardarHistorial(tBs,tUsd,confirmados.length);borrarProgreso();}
+  if(confirmados.length>0 && !window._historialGuardado){
+    guardarHistorial(tBs,tUsd,confirmados.length);
+    borrarProgreso();
+    window._historialGuardado=true;
+  }
 }
 
-// ══ WHATSAPP MERCADO ═════════════════════════
 window.compartirWA=function(){
   if(confirmados.length===0)return;
   const fecha=new Date().toLocaleDateString('es-VE',{day:'2-digit',month:'2-digit',year:'numeric'});
@@ -1429,7 +1398,6 @@ window.compartirWA=function(){
   window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
 };
 
-// ══ COMPARADOR (estructura actual, sin tocar) ═
 function cmpNuevoId(){return 'cmp_'+Date.now()+'_'+Math.floor(Math.random()*1000);}
 function cmpFechaHoy(){return new Date().toISOString().split('T')[0];}
 function cmpMostrarPaso(id){
@@ -1761,7 +1729,6 @@ window.cmpCompartirWA=function(){
   window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
 };
 
-// ══ ARRANQUE ═════════════════════════════════
 document.getElementById('nom1').addEventListener('keypress',e=>{if(e.key==='Enter')agregarNombre();});
 document.getElementById('loginNombre').addEventListener('keypress',e=>{if(e.key==='Enter')loginGuardar();});
 document.getElementById('tasaValor').addEventListener('keypress',e=>{if(e.key==='Enter')tasaGuardar();});
@@ -1770,24 +1737,24 @@ document.getElementById('cmpSesNom').addEventListener('keypress',e=>{if(e.key===
 document.getElementById('cmpAbastoNom').addEventListener('keypress',e=>{if(e.key==='Enter')cmpAgregarAbasto();});
 if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js');
 
-// Arranque
 async function arrancarApp(){
   sync('loading');
-  // 1. Cargar usuario
   const hayUsuario=await inicializarUsuario();
   if(!hayUsuario){
     mostrarScreen('screenLogin');
     setTimeout(()=>document.getElementById('loginNombre').focus(),200);
     return;
   }
-  // 2. Cargar catálogo
   await cargarCat();
-  // 3. Verificar tasa (puede pedirla o sugerir la de mañana)
   await verificarTasaAlArrancar();
-  // 4. Verificar progreso
   await verificarProgreso();
 }
-arrancarApp();
+arrancarApp().catch(e=>{
+  console.error('Error en arranque:',e);
+  sync('err');
+  toast('Error al arrancar','#ef4444');
+  mostrarScreen('screenInicio');
+});
 </script>
 </body>
 </html>
