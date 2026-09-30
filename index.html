@@ -606,9 +606,8 @@ window.loginGuardar=async function(){
   const ok=await guardarUsuarioFirebase(usuarioActual);
   document.getElementById('loginStatus').textContent=ok?'✓ Guardado':'⚠️ Guardado local (sin conexión)';
   setTimeout(()=>{
-    document.getElementById('userNombre').textContent=usuarioActual.nombre;
-    irAInicio();
-  },500);
+  arrancarApp();
+},500);
 };
 function irAInicio(){
   mostrarScreen('screenInicio');
