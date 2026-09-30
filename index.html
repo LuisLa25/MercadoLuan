@@ -603,11 +603,15 @@ window.loginGuardar=async function(){
   const uuid=genUUID();
   usuarioActual={id:uuid,nombre,creado:new Date().toISOString()};
   try{localStorage.setItem('luan_usuario',JSON.stringify(usuarioActual));}catch(_){}
-  const ok=await guardarUsuarioFirebase(usuarioActual);
+   const ok=await guardarUsuarioFirebase(usuarioActual);
   document.getElementById('loginStatus').textContent=ok?'✓ Guardado':'⚠️ Guardado local (sin conexión)';
   setTimeout(()=>{
-  arrancarApp();
-},500);
+    arrancarApp().catch(e=>{
+      console.error('Error en re-arranque tras login:',e);
+      sync('err');
+      toast('Error al reconectar','#ef4444');
+    });
+  },500);
 };
 function irAInicio(){
   mostrarScreen('screenInicio');
