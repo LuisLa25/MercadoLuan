@@ -1650,6 +1650,8 @@ window.cmpVerResultados=function(){
   const prods=cmpSesionActual.productos;
   const abastos=cmpSesionActual.abastos;
   let html='';
+
+  // ── BLOQUE 1: Detalle por producto (todos los abastos que lo tengan) ──
   prods.forEach(prod=>{
     html+=`<div style="margin-bottom:16px;"><div style="font-size:0.9rem;font-weight:bold;color:#a78bfa;margin-bottom:8px;">${prod.ico} ${esc(prod.nom)}</div>`;
     const opciones=[];
@@ -1684,26 +1686,56 @@ window.cmpVerResultados=function(){
     });
     html+=`</div>`;
   });
-  html+=`<div style="border-top:1px solid #334155;padding-top:12px;margin-top:4px;">
-    <div style="font-size:0.8rem;font-weight:bold;color:#94a3b8;margin-bottom:8px;text-transform:uppercase;">Total si compras todo en un solo abasto</div>`;
-  const totales=abastos.map(ab=>{
-    let totalUSD=0,completo=true;
-    prods.forEach(prod=>{
-      const pr=ab.precios[prod.id];
-      if(!pr||pr.precio==null||pr.precio<=0){completo=false;return;}
-      let p=pr.precio;if(pr.iva)p=calcIVA(p,pr.iva).total;
-      totalUSD+=pr.moneda==='BS'?p/tasa:p;
+
+  // ── BLOQUE 2: Canasta común (solo productos que TODOS los abastos tienen) ──
+  const abastosConAlgo=abastos.filter(ab=>prods.some(p=>{const pr=ab.precios[p.id];return pr&&pr.precio>0&&pr.iva;}));
+  const comunes=prods.filter(p=>abastosConAlgo.every(ab=>{
+    const pr=ab.precios[p.id];
+    return pr&&pr.precio>0&&pr.iva;
+  }));
+  const excluidos=prods.filter(p=>!comunes.includes(p));
+
+  html+=`<div style="border-top:2px solid #a78bfa;padding-top:14px;margin-top:16px;">
+    <div style="font-size:0.85rem;font-weight:bold;color:#a78bfa;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;">🏆 Comparación equivalente</div>
+    <div style="font-size:0.75rem;color:#94a3b8;margin-bottom:12px;">${abastosConAlgo.length} abastos · ${comunes.length} de ${prods.length} productos comunes</div>`;
+
+  if(comunes.length===0){
+    html+=`<p style="color:#fbbf24;font-size:0.85rem;padding:10px;background:#1c0a00;border-radius:8px;line-height:1.5;">⚠️ No se puede comparar: los abastos no coinciden en ningún producto completo (precio + IVA). Carga más precios para habilitar la comparación.</p>`;
+  }else{
+    const totalesComunes=abastosConAlgo.map(ab=>{
+      let totalUSD=0;
+      comunes.forEach(prod=>{
+        const pr=ab.precios[prod.id];
+        let p=pr.precio;if(pr.iva)p=calcIVA(p,pr.iva).total;
+        totalUSD+=pr.moneda==='BS'?p/tasa:p;
+      });
+      return{nom:ab.nom,quien:ab.quien,totalUSD,totalBs:totalUSD*tasa,n:comunes.length};
+    }).sort((a,b)=>a.totalUSD-b.totalUSD);
+    const minUSD=totalesComunes[0].totalUSD;
+    totalesComunes.forEach((t,i)=>{
+      const esMejor=i===0;
+      html+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-radius:8px;margin-bottom:6px;background:${esMejor?'#001a0d':'#0f172a'};border:2px solid ${esMejor?'#10b981':'#334155'};">
+        <div>
+          <div style="font-size:0.88rem;font-weight:bold;color:${esMejor?'#34d399':'#f1f5f9'};">${esMejor?'🏆':'🏪'} ${esc(t.nom)}${t.quien?' ('+esc(t.quien)+')':''}</div>
+          <div style="font-size:0.72rem;color:#64748b;">${t.n}/${comunes.length} productos comunes</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:1rem;font-weight:bold;color:${esMejor?'#34d399':'#38bdf8'};">${fusd(t.totalUSD)}</div>
+          <div style="font-size:0.72rem;color:#64748b;">${fbs(t.totalBs)}${esMejor?'':` · +${fusd(t.totalUSD-minUSD)}`}</div>
+        </div>
+      </div>`;
     });
-    return{nom:ab.nom,quien:ab.quien,totalUSD,totalBs:totalUSD*tasa,completo};
-  }).filter(t=>t.totalUSD>0).sort((a,b)=>a.totalUSD-b.totalUSD);
-  if(!totales.length){html+=`<p style="color:#64748b;font-size:0.82rem;">Sin datos suficientes.</p>`;}
-  else{totales.forEach((t,i)=>{
-    html+=`<div class="abasto-resumen${i===0?' ganador':''}">
-      <div class="abasto-res-nom">${i===0?'🏆':'🏪'} ${esc(t.nom)}${t.quien?' ('+esc(t.quien)+')':''}${!t.completo?' <span style="font-size:0.7rem;color:#fbbf24;">(incompleto)</span>':''}</div>
-      <div class="abasto-res-total">${fusd(t.totalUSD)} / ${fbs(t.totalBs)}</div>
-      <div class="abasto-res-det">${i===0?'✓ Más económico':'+ '+fusd(t.totalUSD-totales[0].totalUSD)+' más caro'}</div>
+    html+=`<p style="font-size:0.72rem;color:#64748b;margin-top:8px;line-height:1.5;">💡 Los totales comparan solo los productos comunes a todos los abastos. NO es el costo real de toda la compra.</p>`;
+  }
+
+  if(excluidos.length>0){
+    html+=`<div style="margin-top:12px;padding:10px 12px;background:#1c0a00;border:1px solid #fb923c;border-radius:8px;">
+      <div style="font-size:0.78rem;font-weight:bold;color:#fb923c;margin-bottom:6px;">⚠️ Excluidos de esta comparación (${excluidos.length})</div>
+      <div style="font-size:0.75rem;color:#fb923c;line-height:1.6;">${excluidos.map(p=>'❌ '+esc(p.nom)).join('<br>')}</div>
+      <div style="font-size:0.7rem;color:#94a3b8;margin-top:8px;line-height:1.5;">Estos productos fueron excluidos porque no tienen precio + IVA en todos los abastos con datos.</div>
     </div>`;
-  });}
+  }
+
   html+=`</div>`;
   document.getElementById('cmpResContenido').innerHTML=html;
   cmpMostrarPaso('cmpResultados');
@@ -1712,6 +1744,8 @@ window.cmpCompartirWA=function(){
   if(!cmpSesionActual)return;
   const prods=cmpSesionActual.productos,abastos=cmpSesionActual.abastos;
   let msg='🏪 *COMPARADOR DE PRECIOS*\n📋 '+cmpSesionActual.nom+'\n📅 '+hoy()+' | 💵 $1 = '+f2(tasa)+' Bs\n─────────────────────\n';
+
+  // Detalle por producto
   prods.forEach(prod=>{
     msg+=prod.ico+' *'+prod.nom+'*\n';
     const opts=[];
@@ -1728,6 +1762,43 @@ window.cmpCompartirWA=function(){
     opts.sort((a,b)=>a.pUSD-b.pUSD).forEach(o=>{msg+='  🏪 '+o.nom+(o.quien?' ('+o.quien+')':'')+': '+f2(o.p)+(o.moneda==='BS'?' Bs':' $')+o.equiv+(Math.abs(o.pUSD-minUSD)<0.0001?' ✓':'')+'\n';});
     msg+='\n';
   });
+
+  // Canasta común
+  const abastosConAlgo=abastos.filter(ab=>prods.some(p=>{const pr=ab.precios[p.id];return pr&&pr.precio>0&&pr.iva;}));
+  const comunes=prods.filter(p=>abastosConAlgo.every(ab=>{
+    const pr=ab.precios[p.id];
+    return pr&&pr.precio>0&&pr.iva;
+  }));
+  const excluidos=prods.filter(p=>!comunes.includes(p));
+
+  msg+='─────────────────────\n🏆 *COMPARACIÓN EQUIVALENTE*\n';
+  msg+=abastosConAlgo.length+' abastos · '+comunes.length+' de '+prods.length+' productos comunes\n\n';
+
+  if(comunes.length>0){
+    const totales=abastosConAlgo.map(ab=>{
+      let totalUSD=0;
+      comunes.forEach(prod=>{
+        const pr=ab.precios[prod.id];
+        let p=pr.precio;if(pr.iva)p=calcIVA(p,pr.iva).total;
+        totalUSD+=pr.moneda==='BS'?p/tasa:p;
+      });
+      return{nom:ab.nom,quien:ab.quien,totalUSD,totalBs:totalUSD*tasa};
+    }).sort((a,b)=>a.totalUSD-b.totalUSD);
+    const minUSD=totales[0].totalUSD;
+    totales.forEach((t,i)=>{
+      msg+=(i===0?'🥇 ':'🏪 ')+t.nom+(t.quien?' ('+t.quien+')':'')+': '+fusd(t.totalUSD)+' / '+fbs(t.totalBs)+(i===0?'':` (+${fusd(t.totalUSD-minUSD)})`)+'\n';
+    });
+    msg+='\n💡 Los totales comparan solo los productos comunes. NO es el costo real de toda la compra.\n';
+  }else{
+    msg+='⚠️ No se puede comparar: los abastos no coinciden en ningún producto completo.\n';
+  }
+
+  if(excluidos.length>0){
+    msg+='\n❌ *Excluidos de la comparación* ('+excluidos.length+'):\n';
+    excluidos.forEach(p=>{msg+='❌ '+p.nom+'\n';});
+    msg+='Porque no tienen precio + IVA en todos los abastos.\n';
+  }
+
   msg+='─────────────────────\n🏷️ LuAn System™';
   window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
 };
@@ -1761,4 +1832,3 @@ arrancarApp().catch(e=>{
 </script>
 </body>
 </html>
-
