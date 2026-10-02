@@ -468,7 +468,9 @@ button{width:100%;padding:11px;border-radius:8px;border:none;font-size:0.95rem;f
 </div>
 
 <div class="toast" id="toast"></div>
-<script type="module">
+<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+<script>eruda.init();</script>
+  <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, addDoc, getDocs, orderBy, query, limit } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
