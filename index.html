@@ -289,7 +289,7 @@ button{width:100%;padding:11px;border-radius:8px;border:none;font-size:0.95rem;f
     
     <div class="config-section">
       <h3>ℹ️ Acerca de</h3>
-      <p>Mercado LuAn v2 · Parte 1<br>Login + Configuración + Tasa BCV por día</p>
+      <p>Mercado LuAn v2 · LuAn System™<br>Lista · Pasillo · Caja · Comparador · Picker de mercados</p>
     </div>
   </div>
 </div>
@@ -457,7 +457,7 @@ button{width:100%;padding:11px;border-radius:8px;border:none;font-size:0.95rem;f
   </div>
 </div>
 
-<div class="modal-overlay" id="modalPicker">
+<div class="modal-overlay" id="modalPicker" onclick="if(event.target===this)cerrarPicker()">
   <div class="modal-box">
     <h3>Elige un mercado</h3>
     <p style="font-size:0.8rem;color:#94a3b8;margin-bottom:12px;">Toca el mercado que quieras agregar</p>
@@ -469,7 +469,7 @@ button{width:100%;padding:11px;border-radius:8px;border:none;font-size:0.95rem;f
   </div>
 </div>
   
-<div class="modal-overlay" id="modalConfirm">
+<div class="modal-overlay" id="modalConfirm" onclick="if(event.target===this)cerrarModal()">
   <div class="modal-box">
     <h3 id="modalTitulo">Confirmar</h3>
     <p id="modalMsg">—</p>
@@ -632,8 +632,12 @@ window.loginGuardar=async function(){
   const ok=await guardarUsuarioFirebase(usuarioActual);
   document.getElementById('loginStatus').textContent=ok?'✓ Guardado':'⚠️ Guardado local (sin conexión)';
   setTimeout(()=>{
-  arrancarApp();
-},500);
+    arrancarApp().catch(e=>{
+      console.error('Error en re-arranque tras login:',e);
+      sync('err');
+      toast('Error al reconectar','#ef4444');
+    });
+  },500);
 };
 function irAInicio(){
   mostrarScreen('screenInicio');
@@ -1522,8 +1526,8 @@ window.cmpAgregarProd=function(){
     const u=document.getElementById('cmpUnidadRef').value;
     if(v>0){cantRef=v;unidad=u;}
   }
-  catSiNuevo(nom,'USD');
-  regUso(nom,'USD');
+  catSiNuevo(nom,'BS');
+  regUso(nom,'BS');
   cmpSesionActual.productos.push({id:Date.now()+Math.floor(Math.random()*1000),nom,ico:getIco(nom),tipo:cmpTipoProd,cantRef,unidad});
   document.getElementById('cmpProdNom').value='';document.getElementById('cmpValCantRef').value='';
   document.getElementById('acCmp').style.display='none';
@@ -1690,7 +1694,7 @@ window.cmpGuardarPrecio=function(abId,prodId){
   cmpGuardarSesion(cmpSesionActual);
   if(!estabaCompleto&&ahoraCompleto){cmpRenderAbastos();}
 };
-window.cmpVolverAbastos=function(){cmpMostrarPaso('cmpEditAbastos');};
+window.cmpVolverAbastos=function(){cmpFiltro=null;cmpMostrarPaso('cmpEditAbastos');};
 window.cmpVerResultados=function(){
   if(!cmpSesionActual.abastos.length){toast('Agrega al menos un abasto','#ef4444');return;}
   document.getElementById('cmpResTitulo').textContent=cmpSesionActual.nom;
@@ -1872,8 +1876,8 @@ const totalProductoUSD=conPrecio.reduce((s,x)=>s+x.mejor.usd,0);
       <div style="color:#38bdf8;">${fusd(totalProductoUSD)}</div>
     </div></div>`;
   }
-
- // BLOQUE 4: Estado por mercado
+  
+  // BLOQUE 4: Estado por mercado
 html+=`<div style="margin-top:12px;padding:10px 12px;background:#0f172a;border:1px solid #334155;border-radius:8px;">
   <div style="font-size:0.78rem;font-weight:bold;color:#94a3b8;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;">📋 Estado por mercado (${prods.length} productos)</div>`;
 abastos.forEach(ab=>{
@@ -1885,7 +1889,12 @@ abastos.forEach(ab=>{
   }
 });
 html+=`</div>`;
-
+  if(sinPrecio.length>0){
+    html+=`<div style="margin-top:8px;padding:10px 12px;background:#1c0a00;border:1px solid #ef4444;border-radius:8px;">
+      <div style="font-size:0.78rem;font-weight:bold;color:#ef4444;margin-bottom:6px;">🚫 Sin precio en ningún abasto (${sinPrecio.length})</div>
+      <div style="font-size:0.75rem;color:#ef4444;line-height:1.6;">${sinPrecio.map(x=>'❌ '+esc(x.prod.nom)).join('<br>')}</div>
+    </div>`;
+  }
   document.getElementById('cmpResContenido').innerHTML=html;
   cmpMostrarPaso('cmpResultados');
 };
