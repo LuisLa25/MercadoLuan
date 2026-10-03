@@ -457,9 +457,9 @@ button{width:100%;padding:11px;border-radius:8px;border:none;font-size:0.95rem;f
   </div>
 </div>
 
-  <div class="modal-overlay" id="modalPicker">
+<div class="modal-overlay" id="modalPicker">
   <div class="modal-box">
-    <h3 id="pickerTitulo">Elige un mercado</h3>
+    <h3>Elige un mercado</h3>
     <p style="font-size:0.8rem;color:#94a3b8;margin-bottom:12px;">Toca el mercado que quieras agregar</p>
     <div id="pickerLista" style="max-height:50vh;overflow-y:auto;margin-bottom:12px;"></div>
     <div class="row2">
@@ -468,7 +468,7 @@ button{width:100%;padding:11px;border-radius:8px;border:none;font-size:0.95rem;f
     </div>
   </div>
 </div>
-
+  
 <div class="modal-overlay" id="modalConfirm">
   <div class="modal-box">
     <h3 id="modalTitulo">Confirmar</h3>
@@ -1148,9 +1148,10 @@ window.agregarNombre=function(){
   const nom=document.getElementById('nom1').value.trim();
   if(!nom){document.getElementById('err1').style.display='block';return;}
   document.getElementById('err1').style.display='none';
-  catSiNuevo(nom,'BS');
-  regUso(nom,'BS');
-  const mem=getMem(nom);
+ const mem=getMem(nom);
+const mon=mem?.moneda||'BS';
+catSiNuevo(nom,mon);
+regUso(nom,mon);
   lista.push({id:Date.now()+Math.floor(Math.random()*1000),nom,ico:getIco(nom),moneda:mem?.moneda||'BS',precio:null,iva:'',esPeso:false,precioRef:null,cantRef:null,unidad:'gr',cantUnidad:1,completo:false,confirmado:false,descC:''});
   document.getElementById('nom1').value='';document.getElementById('ac1').style.display='none';document.getElementById('nom1').focus();
   vib(50);toast('✅ '+nom+' en la lista');renderF1();guardarProgreso();
@@ -1356,9 +1357,10 @@ window.agregarExtraPasillo=function(){
   const nom=prompt('Nombre del producto extra:');
   if(!nom||!nom.trim())return;
   const nombre=nom.trim().charAt(0).toUpperCase()+nom.trim().slice(1);
-  catSiNuevo(nombre,monedaProd);
-  regUso(nombre,monedaProd);
-  const mem=getMem(nombre);
+ const mem=getMem(nombre);
+const mon=mem?.moneda||monedaProd;
+catSiNuevo(nombre,mon);
+regUso(nombre,mon);
   lista.push({id:Date.now()+Math.floor(Math.random()*1000),nom:nombre,ico:getIco(nombre),moneda:mem?.moneda||monedaProd,precio:null,iva:'',esPeso:false,precioRef:null,cantRef:null,unidad:'gr',cantUnidad:1,completo:false,confirmado:false,descC:''});
   vib(50);toast('✅ '+nombre+' agregado');guardarProgreso();renderF2();
 };
@@ -1424,7 +1426,7 @@ window.compartirWA=function(){
 };
 
 function cmpNuevoId(){return 'cmp_'+Date.now()+'_'+Math.floor(Math.random()*1000);}
-function cmpFechaHoy(){return new Date().toISOString().split('T')[0];}
+function cmpFechaHoy(){return hoyISO();}
 function cmpMostrarPaso(id){
   ['cmpSesiones','cmpEditSesion','cmpEditAbastos','cmpResultados'].forEach(p=>{
     const el=document.getElementById(p);if(el)el.style.display=p===id?'block':'none';
@@ -1479,6 +1481,7 @@ window.cmpEliminar=async function(id){
 window.cmpNuevaSesion=function(){
   cmpSesionActual={id:cmpNuevoId(),nom:'',fecha:new Date().toISOString(),productos:[],abastos:[],quien:usuarioActual?.nombre||'—'};
   cmpTipoProd='unidad';
+  cmpFiltro=null;
   document.getElementById('cmpSesNom').value='';
   document.getElementById('cmpProdNom').value='';
   document.getElementById('cmpValCantRef').value='';
@@ -1492,7 +1495,8 @@ window.cmpAbrirSesion=async function(id){
   const seses=await cmpCargarSesiones();
   const ses=seses.find(s=>s.id===id);if(!ses)return;
   cmpSesionActual=ses;cmpTipoProd='unidad';
-  document.getElementById('cmpSesNom').value=ses.nom;
+cmpFiltro=null;
+document.getElementById('cmpSesNom').value=ses.nom;
   document.getElementById('cmpSesNomTitulo').textContent=ses.nom||'Comparación';
   cmpRenderProds();
   cmpMostrarPaso('cmpEditSesion');
@@ -1518,8 +1522,8 @@ window.cmpAgregarProd=function(){
     const u=document.getElementById('cmpUnidadRef').value;
     if(v>0){cantRef=v;unidad=u;}
   }
-  catSiNuevo(nom,'BS');
-  regUso(nom,'BS');
+  catSiNuevo(nom,'USD');
+  regUso(nom,'USD');
   cmpSesionActual.productos.push({id:Date.now()+Math.floor(Math.random()*1000),nom,ico:getIco(nom),tipo:cmpTipoProd,cantRef,unidad});
   document.getElementById('cmpProdNom').value='';document.getElementById('cmpValCantRef').value='';
   document.getElementById('acCmp').style.display='none';
@@ -1998,9 +2002,18 @@ const totalProductoUSD=conPrecio.reduce((s,x)=>s+x.mejor.usd,0);
     sinPrecio.forEach(x=>{msg+='❌ '+x.prod.nom+'\n';});
   }
 
-  msg+='─────────────────────\n🏷️ LuAn System™';
+   msg+='─────────────────────\n🏷️ LuAn System™';
   window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
 };
+
+window.toggleFiltroProd=function(id){
+  const all=cmpSesionActual.productos.map(p=>p.id);
+  if(!cmpFiltro)cmpFiltro=all.filter(x=>x!==id);
+  else cmpFiltro=cmpFiltro.includes(id)?cmpFiltro.filter(x=>x!==id):[...cmpFiltro,id];
+  cmpVerResultados();
+};
+window.filtroTodos=function(){cmpFiltro=null;cmpVerResultados();};
+window.filtroNinguno=function(){cmpFiltro=[];cmpVerResultados();};
 
 document.getElementById('nom1').addEventListener('keypress',e=>{if(e.key==='Enter')agregarNombre();});
 document.getElementById('loginNombre').addEventListener('keypress',e=>{if(e.key==='Enter')loginGuardar();});
