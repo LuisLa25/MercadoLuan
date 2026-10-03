@@ -1873,19 +1873,18 @@ const totalProductoUSD=conPrecio.reduce((s,x)=>s+x.mejor.usd,0);
     </div></div>`;
   }
 
-  // BLOQUE 4: Excluidos y sin precio
-  if(excluidos.length>0){
-    html+=`<div style="margin-top:12px;padding:10px 12px;background:#1c0a00;border:1px solid #fb923c;border-radius:8px;">
-      <div style="font-size:0.78rem;font-weight:bold;color:#fb923c;margin-bottom:6px;">⚠️ Excluidos de canasta común (${excluidos.length})</div>
-      <div style="font-size:0.75rem;color:#fb923c;line-height:1.6;">${excluidos.map(p=>'❌ '+esc(p.nom)).join('<br>')}</div>
-    </div>`;
+ // BLOQUE 4: Estado por mercado
+html+=`<div style="margin-top:12px;padding:10px 12px;background:#0f172a;border:1px solid #334155;border-radius:8px;">
+  <div style="font-size:0.78rem;font-weight:bold;color:#94a3b8;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;">📋 Estado por mercado (${prods.length} productos)</div>`;
+abastos.forEach(ab=>{
+  const faltantes=prods.filter(p=>precioUSDDe(ab,p)===null);
+  if(faltantes.length===0){
+    html+=`<div style="font-size:0.82rem;color:#34d399;padding:4px 0;border-bottom:1px solid #1e293b;">🏪 <b>${esc(ab.nom)}</b>: ✓ tiene los ${prods.length} productos</div>`;
+  }else{
+    html+=`<div style="font-size:0.82rem;color:#fbbf24;padding:4px 0;border-bottom:1px solid #1e293b;">🏪 <b>${esc(ab.nom)}</b>: le falta${faltantes.length>1?'n':''} ${faltantes.map(p=>esc(p.nom)).join(', ')}</div>`;
   }
-  if(sinPrecio.length>0){
-    html+=`<div style="margin-top:12px;padding:10px 12px;background:#1c0a00;border:1px solid #ef4444;border-radius:8px;">
-      <div style="font-size:0.78rem;font-weight:bold;color:#ef4444;margin-bottom:6px;">🚫 Sin precio en ningún abasto (${sinPrecio.length})</div>
-      <div style="font-size:0.75rem;color:#ef4444;line-height:1.6;">${sinPrecio.map(x=>'❌ '+esc(x.prod.nom)).join('<br>')}</div>
-    </div>`;
-  }
+});
+html+=`</div>`;
 
   document.getElementById('cmpResContenido').innerHTML=html;
   cmpMostrarPaso('cmpResultados');
