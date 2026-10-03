@@ -1546,7 +1546,7 @@ window.cmpAgregarAbasto=async function(){
   if(!nom){document.getElementById('errCmpAbasto').style.display='block';return;}
   document.getElementById('errCmpAbasto').style.display='none';
   const nuevoAbasto={id:Date.now()+Math.floor(Math.random()*1000),nom,fecha:cmpFechaHoy(),precios:{},quien:usuarioActual?.nombre||'—'};
-  cmpSesionActual.productos.forEach(p=>{nuevoAbasto.precios[p.id]={precio:null,moneda:'BS',iva:''};});
+  cmpSesionActual.productos.forEach(p=>{nuevoAbasto.precios[p.id]={precio:null,moneda:'USD',iva:''};});
   cmpSesionActual.abastos.push(nuevoAbasto);
   document.getElementById('cmpAbastoNom').value='';
   cmpAbastoExpandido=nuevoAbasto.id;
