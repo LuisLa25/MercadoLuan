@@ -1710,9 +1710,8 @@ window.cmpVerResultados=function(){
     porProducto.push({prod,mejor});
   });
   const conPrecio=porProducto.filter(x=>x.mejor);
-  const sinPrecio=porProducto.filter(x=>!x.mejor);
-  const comunesConPrecio=porProducto.filter(x=>comunes.includes(x.prod)&&x.mejor);
-  const totalProductoUSD=comunesConPrecio.reduce((s,x)=>s+x.mejor.usd,0);
+const sinPrecio=porProducto.filter(x=>!x.mejor);
+const totalProductoUSD=conPrecio.reduce((s,x)=>s+x.mejor.usd,0);
 
   const abastosInfo=abastos.map(ab=>{
     const propios=[];const faltantes=[];
@@ -1776,7 +1775,7 @@ window.cmpVerResultados=function(){
     html+=`<div style="padding:12px;background:#0c2a3a;border:2px solid #38bdf8;border-radius:10px;margin-bottom:8px;">
       <div style="font-size:0.75rem;color:#38bdf8;font-weight:bold;margin-bottom:4px;">💰 PRODUCTO A PRODUCTO</div>
       <div style="font-size:1.1rem;font-weight:bold;color:#38bdf8;">${fusd(totalProductoUSD)} / ${fbs(totalProductoUSD*tasa)}</div>
-      <div style="font-size:0.72rem;color:#64748b;margin-top:4px;">${comunesConPrecio.length} productos comunes</div>
+      <div style="font-size:0.72rem;color:#64748b;margin-top:4px;">${conPrecio.length} productos</div>
     </div>`;
   }
 
@@ -1870,9 +1869,8 @@ window.cmpCompartirWA=function(){
     porProducto.push({prod,mejor});
   });
   const conPrecio=porProducto.filter(x=>x.mejor);
-  const sinPrecio=porProducto.filter(x=>!x.mejor);
-  const comunesConPrecio=porProducto.filter(x=>comunes.includes(x.prod)&&x.mejor);
-  const totalProductoUSD=comunesConPrecio.reduce((s,x)=>s+x.mejor.usd,0);
+const sinPrecio=porProducto.filter(x=>!x.mejor);
+const totalProductoUSD=conPrecio.reduce((s,x)=>s+x.mejor.usd,0);
 
   const abastosInfo=abastos.map(ab=>{
     const propios=[];const faltantes=[];
