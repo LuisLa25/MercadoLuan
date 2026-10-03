@@ -432,8 +432,9 @@ button{width:100%;padding:11px;border-radius:8px;border:none;font-size:0.95rem;f
       </div>
       <div style="background:#0f172a;border:1px solid #334155;border-radius:10px;padding:12px;margin-bottom:14px;">
         <div style="font-size:0.8rem;font-weight:bold;color:#a78bfa;margin-bottom:8px;">🏪 Agregar establecimiento</div>
-        <label style="margin-top:0;">Nombre del abasto</label>
-        <input type="text" id="cmpAbastoNom" placeholder="Ej: Abasto El Rey, Supermercado Central...">
+       <label style="margin-top:0;">Nombre del abasto</label>
+<button class="btn-primary" onclick="abrirPicker()" style="margin-top:0;">🏪 Elegir mercado</button>
+<input type="text" id="cmpAbastoNom" placeholder="O escribe otro nombre..." style="margin-top:8px;">
         <p id="errCmpAbasto" class="err">Escribe el nombre del abasto.</p>
         <button class="btn-purple" onclick="cmpAgregarAbasto()" style="margin-top:8px;padding:9px;">➕ Agregar abasto</button>
       </div>
@@ -453,6 +454,18 @@ button{width:100%;padding:11px;border-radius:8px;border:none;font-size:0.95rem;f
     </div>
     <button class="btn-wa" onclick="cmpCompartirWA()">📲 Compartir por WhatsApp</button>
     <button class="btn-ghost" onclick="cmpVolverSesiones()" style="margin-top:8px;">← Mis comparaciones</button>
+  </div>
+</div>
+
+  <div class="modal-overlay" id="modalPicker">
+  <div class="modal-box">
+    <h3 id="pickerTitulo">Elige un mercado</h3>
+    <p style="font-size:0.8rem;color:#94a3b8;margin-bottom:12px;">Toca el mercado que quieras agregar</p>
+    <div id="pickerLista" style="max-height:50vh;overflow-y:auto;margin-bottom:12px;"></div>
+    <div class="row2">
+      <button class="btn-ghost" onclick="cerrarPicker()" style="margin:0;">Cancelar</button>
+      <button class="btn-primary" onclick="modoEscribirLibre()" style="margin:0;">Escribir otro</button>
+    </div>
   </div>
 </div>
 
@@ -485,6 +498,18 @@ const USER_ID = 'luis-arichuna';
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+const MIS_MERCADOS=[
+  'EUROMAX',
+  'HIPER LÍDER',
+  'GRANJA',
+  'EL MARACUCHO',
+  'C.C. LA ESMERALDA',
+  'LA MINA',
+  'COMEVAL',
+  'LA CHIMENEA',
+  'EL CHACAL'
+];
+  
 const CAT=[
 {n:'Arroz',i:'🌾'},{n:'Caraotas negras',i:'🫘'},{n:'Caraotas rojas',i:'🫘'},{n:'Lentejas',i:'🫘'},{n:'Frijoles',i:'🫘'},{n:'Arvejas',i:'🫘'},{n:'Harina de maíz',i:'🌽'},{n:'Harina de trigo',i:'🌾'},{n:'Pasta corta',i:'🍝'},{n:'Pasta larga',i:'🍝'},{n:'Avena',i:'🌾'},{n:'Maíz pilado',i:'🌽'},{n:'Pollo entero',i:'🍗'},{n:'Pechuga de pollo',i:'🍗'},{n:'Muslo de pollo',i:'🍗'},{n:'Carne molida',i:'🥩'},{n:'Bistec de res',i:'🥩'},{n:'Costilla de res',i:'🥩'},{n:'Chuleta de cerdo',i:'🥩'},{n:'Pernil de cerdo',i:'🥩'},{n:'Mortadela',i:'🥓'},{n:'Jamón',i:'🥓'},{n:'Salchicha',i:'🌭'},{n:'Milanesa',i:'🥩'},{n:'Sardinas lata',i:'🐟'},{n:'Atún lata',i:'🐟'},{n:'Huevos',i:'🥚'},{n:'Leche entera',i:'🥛'},{n:'Leche descremada',i:'🥛'},{n:'Leche en polvo',i:'🥛'},{n:'Queso blanco',i:'🧀'},{n:'Queso amarillo',i:'🧀'},{n:'Queso de mano',i:'🧀'},{n:'Queso telita',i:'🧀'},{n:'Mantequilla',i:'🧈'},{n:'Margarina',i:'🧈'},{n:'Nata',i:'🥛'},{n:'Yogur',i:'🥛'},{n:'Aceite de maíz',i:'🫙'},{n:'Aceite de girasol',i:'🫙'},{n:'Aceite de soya',i:'🫙'},{n:'Aceite de oliva',i:'🫙'},{n:'Papa',i:'🥔'},{n:'Yuca',i:'🌿'},{n:'Apio',i:'🌿'},{n:'Ocumo',i:'🌿'},{n:'Ñame',i:'🌿'},{n:'Plátano maduro',i:'🍌'},{n:'Plátano verde',i:'🍌'},{n:'Tomate',i:'🍅'},{n:'Cebolla',i:'🧅'},{n:'Ajo',i:'🧄'},{n:'Pimentón',i:'🫑'},{n:'Zanahoria',i:'🥕'},{n:'Repollo',i:'🥬'},{n:'Lechuga',i:'🥬'},{n:'Berenjena',i:'🍆'},{n:'Calabacín',i:'🥒'},{n:'Chayota',i:'🌿'},{n:'Remolacha',i:'🌿'},{n:'Naranja',i:'🍊'},{n:'Mandarina',i:'🍊'},{n:'Mango',i:'🥭'},{n:'Cambur',i:'🍌'},{n:'Lechosa',i:'🍈'},{n:'Guayaba',i:'🍏'},{n:'Limón',i:'🍋'},{n:'Patilla',i:'🍉'},{n:'Melón',i:'🍈'},{n:'Piña',i:'🍍'},{n:'Sal',i:'🧂'},{n:'Azúcar',i:'🍬'},{n:'Papelón',i:'🍬'},{n:'Mayonesa',i:'🫙'},{n:'Mostaza',i:'🫙'},{n:'Ketchup',i:'🫙'},{n:'Salsa de tomate',i:'🍅'},{n:'Salsa inglesa',i:'🫙'},{n:'Salsa de soya',i:'🫙'},{n:'Cubito de pollo',i:'🧂'},{n:'Onoto',i:'🌶️'},{n:'Comino',i:'🌿'},{n:'Pimienta',i:'🌶️'},{n:'Orégano',i:'🌿'},{n:'Ají dulce',i:'🫑'},{n:'Vinagre',i:'🫙'},{n:'Pan de sandwich',i:'🍞'},{n:'Pan canilla',i:'🥖'},{n:'Galletas soda',i:'🫙'},{n:'Galletas dulces',i:'🍪'},{n:'Agua mineral',i:'💧'},{n:'Refresco cola',i:'🥤'},{n:'Refresco naranja',i:'🥤'},{n:'Jugo de naranja',i:'🍊'},{n:'Café molido',i:'☕'},{n:'Café papeleta',i:'☕'},{n:'Té',i:'🍵'},{n:'Detergente en polvo',i:'🧴'},{n:'Detergente líquido',i:'🧴'},{n:'Jabón de lavar',i:'🧼'},{n:'Jabón de baño',i:'🧼'},{n:'Shampoo',i:'🧴'},{n:'Papel sanitario',i:'🧻'},{n:'Pasta dental',i:'🪥'},{n:'Cloro',i:'🧴'},{n:'Suavitel',i:'🧴'},{n:'Pañales',i:'👶'},{n:'Toallas sanitarias',i:'🛒'},{n:'Manteca vegetal',i:'🫙'},{n:'Chocolate en polvo',i:'🍫'},{n:'Gelatina',i:'🍮'},{n:'Maicena',i:'🌽'},{n:'Bicarbonato',i:'🫙'},{n:'Levadura',i:'🍞'}
 ];
@@ -496,6 +521,7 @@ let cmpSesionActual=null,cmpTipoProd='unidad',cmpDragSrc=null,cmpTouchClone=null
 let usuarioActual=null;
 let diasConservar=3;
 let modalCallback=null;
+let cmpFiltro=null; // null = todos, array de IDs = solo esos
 
 function f2(n){return Number(n).toFixed(2);}
 function fbs(n){return f2(n)+' Bs';}
@@ -1541,6 +1567,27 @@ window.cmpIrAbastos=async function(){
   cmpMostrarPaso('cmpEditAbastos');
 };
 window.cmpVolverEditSesion=function(){document.getElementById('cmpSesNom').value=cmpSesionActual.nom;cmpRenderProds();cmpMostrarPaso('cmpEditSesion');};
+  window.abrirPicker=function(){
+  const cont=document.getElementById('pickerLista');
+  cont.innerHTML=MIS_MERCADOS.map(m=>`
+    <button onclick="seleccionarMercado('${m.replace(/'/g,"\\'")}')" style="width:100%;padding:14px;margin-top:6px;border-radius:8px;border:1px solid #334155;background:#0f172a;color:#f1f5f9;font-size:0.95rem;font-weight:bold;cursor:pointer;text-align:left;">🏪 ${m}</button>
+  `).join('');
+  document.getElementById('modalPicker').classList.add('show');
+};
+window.cerrarPicker=function(){
+  document.getElementById('modalPicker').classList.remove('show');
+};
+window.seleccionarMercado=function(nombre){
+  document.getElementById('cmpAbastoNom').value=nombre;
+  cerrarPicker();
+  cmpAgregarAbasto();
+};
+window.modoEscribirLibre=function(){
+  cerrarPicker();
+  const inp=document.getElementById('cmpAbastoNom');
+  inp.value='';
+  inp.focus();
+};
 window.cmpAgregarAbasto=async function(){
   const nom=document.getElementById('cmpAbastoNom').value.trim();
   if(!nom){document.getElementById('errCmpAbasto').style.display='block';return;}
@@ -1643,9 +1690,25 @@ window.cmpVolverAbastos=function(){cmpMostrarPaso('cmpEditAbastos');};
 window.cmpVerResultados=function(){
   if(!cmpSesionActual.abastos.length){toast('Agrega al menos un abasto','#ef4444');return;}
   document.getElementById('cmpResTitulo').textContent=cmpSesionActual.nom;
-  const prods=cmpSesionActual.productos;
+  const prodsAll=cmpSesionActual.productos;
   const abastos=cmpSesionActual.abastos;
+  const prods=cmpFiltro?prodsAll.filter(p=>cmpFiltro.includes(p.id)):prodsAll;
   let html='';
+  
+  // Panel de filtros
+  html+=`<div style="background:#0f172a;border:1px solid #334155;border-radius:8px;padding:10px;margin-bottom:12px;">
+    <div style="font-size:0.75rem;color:#94a3b8;font-weight:bold;margin-bottom:8px;text-transform:uppercase;">🔎 Filtrar productos (${prods.length}/${prodsAll.length})</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;">`;
+  prodsAll.forEach(p=>{
+    const activo=!cmpFiltro||cmpFiltro.includes(p.id);
+    html+=`<button onclick="toggleFiltroProd(${p.id})" style="padding:6px 10px;border-radius:8px;border:1px solid ${activo?'#38bdf8':'#334155'};background:${activo?'#0c2a3a':'#0f172a'};color:${activo?'#38bdf8':'#64748b'};font-size:0.78rem;font-weight:bold;cursor:pointer;">${p.ico} ${esc(p.nom)}</button>`;
+  });
+  html+=`</div>
+    <div style="display:flex;gap:8px;margin-top:8px;">
+      <button class="btn-ghost" onclick="filtroTodos()" style="margin:0;padding:6px;font-size:0.75rem;">Todos</button>
+      <button class="btn-ghost" onclick="filtroNinguno()" style="margin:0;padding:6px;font-size:0.75rem;">Ninguno</button>
+    </div>
+  </div>`;
 
   const precioUSDDe=function(ab,prod){
     const pr=ab.precios[prod.id];
