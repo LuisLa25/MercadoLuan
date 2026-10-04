@@ -1100,6 +1100,7 @@ function renderF1(){
       <button class="btn-sm btn-sm-success" onclick="event.stopPropagation();consultarDesdeLista('${item.nom.replace(/'/g,"\\'")}')" style="margin-right:6px;">🔎</button>
       <button class="btn-sm btn-sm-danger" onclick="event.stopPropagation();elimItem(${i})">✕</button>
     </div>`).join('');
+  } 
     window.consultarDesdeLista=async function(nombre){
   abrirModal('🔎 '+nombre,'Cargando precios...',null,'Cerrar',true);
   try{
