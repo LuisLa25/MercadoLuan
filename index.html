@@ -416,16 +416,7 @@ button{width:100%;padding:11px;border-radius:8px;border:none;font-size:0.95rem;f
   </div>
 </div>
 
-<div class="modal-overlay" id="modalConfirm" onclick="if(event.target===this)cerrarModal()">
-  <div class="modal-box">
-    <h3 id="modalTitulo">Confirmar</h3>
-    <p id="modalMsg">—</p>
-    <div class="row2">
-      <button class="btn-ghost" onclick="cerrarModal()" style="margin:0;">Cancelar</button>
-      <button class="btn-danger" id="modalOk" onclick="confirmarModal()" style="margin:0;">Borrar</button>
-    </div>
-  </div>
-</div>
+<div class="modal-overlay" id="modalConfirm" onclick="if(event.target===this)cerrarModal()">   <div class="modal-box">     <h3 id="modalTitulo">Confirmar</h3>     <div id="modalMsg" style="max-height:60vh;overflow-y:auto;">—</div>     <div class="row2">       <button class="btn-ghost" id="modalCancelar" onclick="cerrarModal()" style="margin:0;">Cancelar</button>       <button class="btn-danger" id="modalOk" onclick="confirmarModal()" style="margin:0;">Borrar</button>     </div>   </div> </div>
 
 <div class="toast" id="toast"></div>
 <script type="module">
@@ -506,14 +497,22 @@ function sync(e){
     if(e==='err'){d.classList.add('err');l.textContent='Sin conexión (local)';}
   });
 }
-
-window.abrirModal=function(titulo,msg,onOk,labelOk){
+window.abrirModal=function(titulo,msg,onOk,labelOk,esSoloCerrar){
   document.getElementById('modalTitulo').textContent=titulo;
   document.getElementById('modalMsg').innerHTML=msg;
   document.getElementById('modalOk').textContent=labelOk||'Confirmar';
+  document.getElementById('modalCancelar').style.display=esSoloCerrar?'none':'block';
+  if(esSoloCerrar){
+    document.getElementById('modalOk').className='btn-primary';
+    document.getElementById('modalOk').onclick=cerrarModal;
+  }else{
+    document.getElementById('modalOk').className='btn-danger';
+    document.getElementById('modalOk').onclick=confirmarModal;
+  }
   modalCallback=onOk;
   document.getElementById('modalConfirm').classList.add('show');
 };
+
 window.cerrarModal=function(){
   document.getElementById('modalConfirm').classList.remove('show');
   modalCallback=null;
@@ -1098,9 +1097,88 @@ function renderF1(){
       ontouchstart="touchStart(event,${i})" ontouchmove="touchMove(event)" ontouchend="touchEnd(event,${i})">
       <span class="drag-handle">☰</span><span class="item-ico">${item.ico}</span>
       <div class="item-body"><div class="item-nom">${esc(item.nom)}</div></div>
+      <button class="btn-sm btn-sm-success" onclick="event.stopPropagation();consultarDesdeLista('${item.nom.replace(/'/g,"\\'")}')" style="margin-right:6px;">🔎</button>
       <button class="btn-sm btn-sm-danger" onclick="event.stopPropagation();elimItem(${i})">✕</button>
     </div>`).join('');
-}
+    window.consultarDesdeLista=async function(nombre){
+  abrirModal('🔎 '+nombre,'Cargando precios...',null,'Cerrar',true);
+  try{
+    const normProd=norm(nombre);
+    const snap=await getDocs(collection(db,'precios_compartidos'));
+    const porAbasto={};
+    snap.forEach(d=>{
+      const r=d.data();
+      if(r.producto_norm!==normProd)return;
+      if(!porAbasto[r.abasto])porAbasto[r.abasto]=[];
+      porAbasto[r.abasto].push(r);
+    });
+    
+    if(Object.keys(porAbasto).length===0){
+      document.getElementById('modalMsg').innerHTML='<span style="color:#64748b;">Sin precios registrados.<br><br>Ve a 💾 Cargar Precio para agregar el primero.</span>';
+      document.getElementById('modalOk').textContent='Cerrar';
+      return;
+    }
+    
+    const hoy=hoyISO();
+    const hace15=new Date();hace15.setDate(hace15.getDate()-15);
+    const hace15ISO=fechaISO(hace15);
+    
+    const lista2=[];
+    Object.keys(porAbasto).forEach(ab=>{
+      const regs=porAbasto[ab].sort((a,b)=>b.fecha.localeCompare(a.fecha));
+      const ult=regs[0];
+      let precioUSD=ult.moneda==='BS'?ult.precio/tasa:ult.precio;
+      if(ult.iva==='agregar')precioUSD*=1.16;
+      const precioBs=ult.moneda==='BS'?ult.precio:ult.precio*tasa;
+      const antiguo=ult.fecha<hace15ISO;
+      const diasAtras=Math.floor((new Date(hoy)-new Date(ult.fecha))/(1000*60*60*24));
+      lista2.push({
+        abasto:ab,
+        quien:ult.quien,
+        fecha:ult.fecha,
+        precioUSD,
+        precioBs,
+        oferta:ult.oferta,
+        oferta_dur:ult.oferta_dur,
+        antiguo,
+        diasAtras
+      });
+    });
+    
+    lista2.sort((a,b)=>a.precioUSD-b.precioUSD);
+    const mejor=lista2[0];
+    const peor=lista2[lista2.length-1];
+    const ahorro=peor.precioUSD-mejor.precioUSD;
+    
+    let html='';
+    lista2.forEach((r,i)=>{
+      const esMejor=i===0;
+      html+=`<div style="padding:8px;border-radius:6px;margin-bottom:6px;background:${esMejor?'#001a0d':'#0f172a'};border:1px solid ${esMejor?'#10b981':'#334155'};${r.antiguo?'opacity:0.7;':''}text-align:left;">
+        <div style="display:flex;justify-content:space-between;align-items:start;">
+          <div>
+            <div style="font-size:0.82rem;font-weight:bold;color:${esMejor?'#34d399':'#f1f5f9'};">🏪 ${esc(r.abasto)}${esMejor?' ✓':''}</div>
+            <div style="font-size:0.7rem;color:#64748b;margin-top:2px;">${esc(r.quien)} · ${r.fecha}${r.diasAtras>0?' ('+r.diasAtras+'d)':' (hoy)'}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:0.9rem;font-weight:bold;color:${esMejor?'#34d399':'#38bdf8'};">${fusd(r.precioUSD)}</div>
+          </div>
+        </div>
+        ${r.oferta?`<div style="font-size:0.68rem;color:#fb923c;margin-top:2px;">🔥${r.oferta_dur?' '+esc(r.oferta_dur):''}</div>`:''}
+        ${r.antiguo?`<div style="font-size:0.68rem;color:#fbbf24;margin-top:2px;">⚠️ +15 días</div>`:''}
+      </div>`;
+    });
+    
+    if(ahorro>0.005){
+      html+=`<div style="padding:8px;background:#0c2a3a;border:1px solid #38bdf8;border-radius:6px;margin-top:6px;font-size:0.78rem;color:#38bdf8;text-align:center;">💰 Ahorro vs caro: <b>${fusd(ahorro)}</b></div>`;
+    }
+    
+    document.getElementById('modalMsg').innerHTML=html;
+    document.getElementById('modalOk').textContent='Cerrar';
+  }catch(e){
+    document.getElementById('modalMsg').innerHTML='<span style="color:#ef4444;">Error consultando</span>';
+    document.getElementById('modalOk').textContent='Cerrar';
+  }
+};
 window.elimItem=function(i){lista.splice(i,1);renderF1();guardarProgreso();};
 window.dragStart=function(i){dragSrcIdx=i;setTimeout(()=>{const el=document.getElementById('drag-'+i);if(el)el.classList.add('dragging');},0);};
 window.dragOver=function(e,i){e.preventDefault();document.querySelectorAll('#listaF1 .item-card').forEach(c=>c.classList.remove('drag-over'));const el=document.getElementById('drag-'+i);if(el)el.classList.add('drag-over');};
