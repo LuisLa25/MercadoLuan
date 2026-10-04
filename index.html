@@ -1059,7 +1059,6 @@ function instalarEventosAc(elId){
   });
 }
 instalarEventosAc('ac1');
-instalarEventosAc('acCmp');
 instalarEventosAc('acCargar');
 instalarEventosAc('acConsulta');
 document.addEventListener('click',e=>{
@@ -1464,7 +1463,7 @@ window.cargarGuardar=async function(){
     creado:new Date().toISOString()
   };
   
-  if(!cargarEsOferta){
+  if(!cargarEsOferta && tasa>0){
     try{
       const q2=query(collection(db,'precios_compartidos'),where('producto_norm','==',reg.producto_norm));
       const snap=await getDocs(q2);
