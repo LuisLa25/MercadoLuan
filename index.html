@@ -1577,9 +1577,19 @@ window.cmpIrAbastos=async function(){
 window.cmpVolverEditSesion=function(){document.getElementById('cmpSesNom').value=cmpSesionActual.nom;cmpRenderProds();cmpMostrarPaso('cmpEditSesion');};
   window.abrirPicker=function(){
   const cont=document.getElementById('pickerLista');
-  cont.innerHTML=MIS_MERCADOS.map(m=>`
-    <button onclick="seleccionarMercado('${m.replace(/'/g,"\\'")}')" style="width:100%;padding:14px;margin-top:6px;border-radius:8px;border:1px solid #334155;background:#0f172a;color:#f1f5f9;font-size:0.95rem;font-weight:bold;cursor:pointer;text-align:left;">🏪 ${m}</button>
-  `).join('');
+  const yaAgregados=new Set((cmpSesionActual?.abastos||[]).map(ab=>ab.nom.trim().toUpperCase()));
+  const disponibles=MIS_MERCADOS.filter(m=>!yaAgregados.has(m.trim().toUpperCase()));
+  const usados=MIS_MERCADOS.filter(m=>yaAgregados.has(m.trim().toUpperCase()));
+  const htmlDisponibles=disponibles.map(m=>
+    `<button onclick="seleccionarMercado('${m.replace(/'/g,"\\'")}');event.stopPropagation()" style="width:100%;padding:14px;margin-top:6px;border-radius:8px;border:1px solid #334155;background:#0f172a;color:#f1f5f9;font-size:0.95rem;font-weight:bold;cursor:pointer;text-align:left;">🏪 ${m}</button>`
+  ).join('');
+  const htmlUsados=usados.length>0
+    ?`<div style="border-top:1px solid #334155;margin-top:10px;padding-top:6px;font-size:0.7rem;color:#475569;text-transform:uppercase;letter-spacing:0.5px;font-weight:bold;">Ya agregados</div>`
+    +usados.map(m=>
+      `<div style="width:100%;padding:12px 14px;margin-top:6px;border-radius:8px;border:1px solid #10b981;background:#001a0d;color:#34d399;font-size:0.92rem;font-weight:bold;text-align:left;opacity:0.55;">✅ ${m}</div>`
+    ).join('')
+    :'';
+  cont.innerHTML=htmlDisponibles+htmlUsados;
   document.getElementById('modalPicker').classList.add('show');
 };
 window.cerrarPicker=function(){
@@ -1599,6 +1609,12 @@ window.modoEscribirLibre=function(){
 window.cmpAgregarAbasto=async function(){
   const nom=document.getElementById('cmpAbastoNom').value.trim();
   if(!nom){document.getElementById('errCmpAbasto').style.display='block';return;}
+  const yaExiste=(cmpSesionActual?.abastos||[]).some(ab=>ab.nom.trim().toUpperCase()===nom.toUpperCase());
+  if(yaExiste){
+    toast('🏪 '+nom+' ya está en la lista','#f97316');
+    document.getElementById('cmpAbastoNom').value='';
+    return;
+  }
   document.getElementById('errCmpAbasto').style.display='none';
   const nuevoAbasto={id:Date.now()+Math.floor(Math.random()*1000),nom,fecha:cmpFechaHoy(),precios:{},quien:usuarioActual?.nombre||'—'};
   cmpSesionActual.productos.forEach(p=>{nuevoAbasto.precios[p.id]={precio:null,moneda:'USD',iva:''};});
