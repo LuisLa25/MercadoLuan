@@ -359,10 +359,10 @@ button{width:100%;padding:11px;border-radius:8px;border:none;font-size:0.95rem;f
     <div class="card">
       <div class="card-title">💰 Precio</div>
       <div class="mon-sel">
-        <div id="cargarMonBs" class="mon-btn bs" onclick="cargarSetMon('BS')">🟢 Bs</div>
-        <div id="cargarMonUsd" class="mon-btn" onclick="cargarSetMon('USD')">🔵 $</div>
-      </div>
-      <label id="cargarLblPrecio" style="margin-top:10px;">Precio (Bs)</label>
+  <div id="cargarMonBs" class="mon-btn" onclick="cargarSetMon('BS')">🟢 Bs</div>
+  <div id="cargarMonUsd" class="mon-btn usd" onclick="cargarSetMon('USD')">🔵 $</div>
+</div>
+<label id="cargarLblPrecio" style="margin-top:10px;">Precio ($)</label>
       <input type="number" id="cargarValor" placeholder="0.00" step="0.01" min="0" inputmode="decimal">
       <label style="margin-top:10px;">IVA</label>
       <div class="iva-toggle">
@@ -1556,7 +1556,7 @@ window.compartirWA=function(){
 let cargarAbasto='',cargarMoneda='BS',cargarIva='',cargarEsOferta=false;
 
 window.irACargarPrecio=function(){
-  cargarAbasto='';cargarMoneda='BS';cargarIva='';cargarEsOferta=false;
+  cargarAbasto='';cargarMoneda='USD';cargarIva='';cargarEsOferta=false;
   document.getElementById('cargarAbastoNom').value='';
   document.getElementById('cargarProdNom').value='';
   document.getElementById('cargarValor').value='';
@@ -1565,9 +1565,9 @@ window.irACargarPrecio=function(){
   document.getElementById('cargarBtnOferta').textContent='🔥 Marcar como oferta';
   document.getElementById('cargarBtnOferta').className='btn-orange';
   document.getElementById('cargarErr').style.display='none';
-  document.getElementById('cargarMonBs').className='mon-btn bs';
-  document.getElementById('cargarMonUsd').className='mon-btn';
-  document.getElementById('cargarLblPrecio').textContent='Precio (Bs)';
+  document.getElementById('cargarMonBs').className='mon-btn';
+document.getElementById('cargarMonUsd').className='mon-btn usd';
+document.getElementById('cargarLblPrecio').textContent='Precio ($)';
   document.getElementById('cargarIvaAgregar').className='iva-btn';
   document.getElementById('cargarIvaExento').className='iva-btn';
   document.getElementById('cargarIvaIncluido').className='iva-btn';
