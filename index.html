@@ -299,7 +299,8 @@ button{width:100%;padding:11px;border-radius:8px;border:none;font-size:0.95rem;f
         </div>
         <div id="listaF1"></div>
       </div>
-      <button class="btn-orange" onclick="irFase(2)">🏪 Ir al mercado →</button>
+      <button class="btn-primary" onclick="analizarLista()" style="margin-bottom:8px;">🔎 Analizar precios de mi lista</button>
+<button class="btn-orange" onclick="irFase(2)">🏪 Ir al mercado →</button>
     </div>
   </div>
   <div id="fase2" style="display:none;">
@@ -1100,7 +1101,7 @@ function renderF1(){
       <button class="btn-sm btn-sm-success" onclick="event.stopPropagation();consultarDesdeLista('${item.nom.replace(/'/g,"\\'")}')" style="margin-right:6px;">🔎</button>
       <button class="btn-sm btn-sm-danger" onclick="event.stopPropagation();elimItem(${i})">✕</button>
     </div>`).join('');
-  } 
+}
     window.consultarDesdeLista=async function(nombre){
   abrirModal('🔎 '+nombre,'Cargando precios...',null,'Cerrar',true);
   try{
@@ -1180,6 +1181,115 @@ function renderF1(){
     document.getElementById('modalOk').textContent='Cerrar';
   }
 };
+window.analizarLista=async function(){
+  if(lista.length===0){toast('Agrega productos primero','#f97316');return;}
+  abrirModal('🔎 Analizando...','<p style="text-align:center;color:#64748b;">Consultando precios...</p>',null,'Cerrar',true);
+  try{
+    const snap=await getDocs(collection(db,'precios_compartidos'));
+    const porProducto={};
+    snap.forEach(d=>{
+      const r=d.data();
+      if(!porProducto[r.producto_norm])porProducto[r.producto_norm]=[];
+      porProducto[r.producto_norm].push(r);
+    });
+    
+    const resultados=[];
+    const porMercado={};
+    let totalMejor=0;
+    const faltantes=[];
+    
+    lista.forEach(item=>{
+      const key=norm(item.nom);
+      const regs=porProducto[key];
+      if(!regs||regs.length===0){
+        faltantes.push(item.nom);
+        return;
+      }
+      const porAbasto={};
+      regs.forEach(r=>{
+        if(!porAbasto[r.abasto]||r.fecha>porAbasto[r.abasto].fecha){
+          porAbasto[r.abasto]=r;
+        }
+      });
+      const opciones=[];
+      Object.keys(porAbasto).forEach(ab=>{
+        const r=porAbasto[ab];
+        let p=r.moneda==='BS'?r.precio/tasa:r.precio;
+        if(r.iva==='agregar')p*=1.16;
+        opciones.push({abasto:ab,precioUSD:p,quien:r.quien,fecha:r.fecha,oferta:r.oferta,oferta_dur:r.oferta_dur});
+      });
+      opciones.sort((a,b)=>a.precioUSD-b.precioUSD);
+      const mejor=opciones[0];
+      const peor=opciones[opciones.length-1];
+      const ahorro=peor.precioUSD-mejor.precioUSD;
+      resultados.push({nom:item.nom,ico:item.ico,opciones,mejor,ahorro});
+      totalMejor+=mejor.precioUSD;
+      if(!porMercado[mejor.abasto])porMercado[mejor.abasto]=[];
+      porMercado[mejor.abasto].push({nom:item.nom,precio:mejor.precioUSD});
+    });
+    
+    let html='';
+    
+    if(resultados.length>0){
+      html+=`<div style="font-size:0.75rem;color:#38bdf8;font-weight:bold;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">📋 Por producto</div>`;
+      resultados.forEach((r,i)=>{
+        html+=`<div style="padding:8px 10px;background:#0f172a;border-radius:6px;margin-bottom:5px;text-align:left;border-left:3px solid #10b981;">
+          <div style="font-size:0.85rem;font-weight:bold;color:#f1f5f9;">${r.ico||'🛒'} ${esc(r.nom)}</div>
+          <div style="font-size:0.8rem;color:#34d399;margin-top:3px;">✓ <b>${esc(r.mejor.abasto)}</b> · ${fusd(r.mejor.precioUSD)}</div>`;
+        if(r.opciones.length>1){
+          html+=`<div style="font-size:0.7rem;color:#64748b;margin-top:3px;">Otros: ${r.opciones.slice(1,4).map(o=>esc(o.abasto)+' '+fusd(o.precioUSD)).join(' · ')}${r.opciones.length>4?' · +'+(r.opciones.length-4):''}</div>`;
+        }
+        if(r.ahorro>0.005){
+          html+=`<div style="font-size:0.7rem;color:#38bdf8;margin-top:2px;">💰 Ahorro: ${fusd(r.ahorro)}</div>`;
+        }
+        html+=`</div>`;
+      });
+    }
+    
+    if(Object.keys(porMercado).length>0){
+      html+=`<div style="font-size:0.75rem;color:#a78bfa;font-weight:bold;text-transform:uppercase;letter-spacing:0.5px;margin:14px 0 8px;">🏪 Si vas a un solo mercado</div>`;
+      const mercadosArr=Object.keys(porMercado).map(m=>({
+        nom:m,
+        items:porMercado[m],
+        total:porMercado[m].reduce((s,x)=>s+x.precio,0)
+      })).sort((a,b)=>b.items.length-a.items.length);
+      mercadosArr.forEach(m=>{
+        html+=`<div style="padding:8px 10px;background:#0f172a;border-radius:6px;margin-bottom:5px;text-align:left;border-left:3px solid #a78bfa;">
+          <div style="display:flex;justify-content:space-between;align-items:start;">
+            <div>
+              <div style="font-size:0.85rem;font-weight:bold;color:#a78bfa;">${esc(m.nom)}</div>
+              <div style="font-size:0.72rem;color:#64748b;">${m.items.length} de ${lista.length} productos más baratos</div>
+            </div>
+            <div style="font-size:0.9rem;font-weight:bold;color:#38bdf8;text-align:right;">${fusd(m.total)}</div>
+          </div>
+        </div>`;
+      });
+    }
+    
+    if(resultados.length>0){
+      html+=`<div style="padding:10px;background:#0c2a3a;border:2px solid #38bdf8;border-radius:8px;margin-top:12px;text-align:center;">
+        <div style="font-size:0.72rem;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;">💰 Producto a producto (más barato de cada uno)</div>
+        <div style="font-size:1.2rem;font-weight:bold;color:#38bdf8;margin-top:4px;">${fusd(totalMejor)}</div>
+        <div style="font-size:0.72rem;color:#64748b;">${fbs(totalMejor*tasa)}</div>
+      </div>`;
+    }
+    
+    if(faltantes.length>0){
+      html+=`<div style="padding:8px 10px;background:#1c0a00;border:1px solid #fb923c;border-radius:6px;margin-top:10px;text-align:left;font-size:0.72rem;color:#fb923c;line-height:1.5;">
+        <b>⚠️ Sin precios cargados (${faltantes.length}):</b><br>${faltantes.map(f=>esc(f)).join('<br>')}
+      </div>`;
+    }
+    
+    document.getElementById('modalTitulo').textContent='📊 Análisis de tu lista';
+    document.getElementById('modalMsg').innerHTML=html;
+    document.getElementById('modalOk').textContent='Cerrar';
+  }catch(e){
+    document.getElementById('modalTitulo').textContent='⚠️ Error';
+    document.getElementById('modalMsg').innerHTML='<span style="color:#ef4444;">Error analizando. Verifica tu conexión.</span>';
+    document.getElementById('modalOk').textContent='Cerrar';
+    console.error(e);
+  }
+};  
 window.elimItem=function(i){lista.splice(i,1);renderF1();guardarProgreso();};
 window.dragStart=function(i){dragSrcIdx=i;setTimeout(()=>{const el=document.getElementById('drag-'+i);if(el)el.classList.add('dragging');},0);};
 window.dragOver=function(e,i){e.preventDefault();document.querySelectorAll('#listaF1 .item-card').forEach(c=>c.classList.remove('drag-over'));const el=document.getElementById('drag-'+i);if(el)el.classList.add('drag-over');};
@@ -1569,19 +1679,17 @@ window.cargarGuardar=async function(){
     catSiNuevo(producto,cargarMoneda);
     regUso(producto,cargarMoneda);
     toast('✅ Precio guardado'+(reg.oferta?' 🔥 OFERTA':''));
-    irAInicio();
   }catch(e){
     toast('Error guardando','#ef4444');
     console.error(e);
   }
 };
 
-// ══ CONSULTAR PRECIOS ═══════════════════════════════════
 window.irAComparador=async function(){
   document.getElementById('consultaBuscar').value='';
   document.getElementById('consultaProductos').innerHTML='';
   document.getElementById('consultaResultado').innerHTML='';
-  mostrarScreen('screenComparador');
+  mostrarScreen('screenComparado r');
   await cargarListaProductos();
 };
 
