@@ -344,8 +344,9 @@ button{width:100%;padding:11px;border-radius:8px;border:none;font-size:0.95rem;f
     
     <div class="card">
       <div class="card-title">🏪 Mercado</div>
-      <button class="btn-primary" onclick="abrirPickerCargar()" style="margin-top:0;">🏪 Elegir mercado</button>
-      <input type="text" id="cargarAbastoNom" placeholder="O escribe otro..." style="margin-top:8px;">
+     <button class="btn-primary" onclick="abrirPickerCargar()" style="margin-top:0;">🏪 Elegir mercado</button>
+<input type="text" id="cargarAbastoNom" placeholder="O escribe otro..." style="margin-top:8px;" oninput="onAbastoManual(this)"> 
+      
     </div>
 
     <div class="card">
@@ -394,15 +395,17 @@ button{width:100%;padding:11px;border-radius:8px;border:none;font-size:0.95rem;f
     <button class="btn-ghost" onclick="volverInicio()" style="margin-bottom:14px;">← Volver</button>
 
     <div class="card">
-      <div class="card-title">🔎 Buscar producto</div>
-      <div class="ac-wrap">
-        <input type="text" id="consultaBuscar" placeholder="Escribe el nombre del producto..." autocomplete="off" oninput="onConsultaBuscar(this)">
-        <div class="ac-lista" id="acConsulta"></div>
-      </div>
-      <div id="consultaProductos" style="margin-top:12px;"></div>
-    </div>
+  <div class="card-title">🔎 Buscar producto</div>
+  <div class="ac-wrap">
+    <input type="text" id="consultaBuscar" placeholder="Escribe el nombre del producto..." autocomplete="off" oninput="onConsultaBuscar(this)">
+    <div class="ac-lista" id="acConsulta"></div>
+  </div>
+  <div id="consultaProductos" style="margin-top:12px;"></div>
+</div>
 
-    <div id="consultaResultado"></div>
+<button class="btn-ghost" id="btnVolverProductos" onclick="volverListaProductos()" style="display:none;margin-bottom:12px;">← Todos los productos</button>
+
+<div id="consultaResultado"></div>
   </div>
 </div>
 
@@ -806,6 +809,7 @@ window.volverInicio=function(){mostrarScreen('screenInicio');mostrarOfertasInici
 async function mostrarOfertasInicio(){
   const cont=document.getElementById('ofertasInicio');
   if(!cont)return;
+  if(!(tasa>0)){cont.innerHTML='';return;}   // ← GUARD
   cont.innerHTML='';
   try{
     const hace7=new Date();hace7.setDate(hace7.getDate()-7);
@@ -1574,6 +1578,13 @@ document.getElementById('cargarLblPrecio').textContent='Precio ($)';
   mostrarScreen('screenCargar');
 };
 
+window.onAbastoManual=function(inp){
+  // Si el usuario escribe algo distinto del elegido, soltamos cargarAbasto
+  if(cargarAbasto && inp.value.trim() !== cargarAbasto){
+    cargarAbasto='';
+  }
+};  
+
 window.abrirPickerCargar=function(){
   const cont=document.getElementById('pickerLista');
   const html=MIS_MERCADOS.map(m=>
@@ -1705,6 +1716,7 @@ window.irAComparador=async function(){
   document.getElementById('consultaBuscar').value='';
   document.getElementById('consultaProductos').innerHTML='';
   document.getElementById('consultaResultado').innerHTML='';
+  document.getElementById('btnVolverProductos').style.display='none';
   mostrarScreen('screenComparador');
   await cargarListaProductos();
 };
@@ -1747,8 +1759,16 @@ window.onConsultaBuscar=function(inp){
 window.verProducto=async function(nombre){
   document.getElementById('consultaProductos').innerHTML='';
   document.getElementById('consultaBuscar').value=nombre;
+  document.getElementById('btnVolverProductos').style.display='block';
   const cont=document.getElementById('consultaResultado');
   cont.innerHTML='<p style="color:#64748b;font-size:0.85rem;text-align:center;padding:20px;">Cargando precios...</p>';
+
+  window.volverListaProductos=async function(){
+  document.getElementById('consultaResultado').innerHTML='';
+  document.getElementById('consultaBuscar').value='';
+  document.getElementById('btnVolverProductos').style.display='none';
+  await cargarListaProductos();
+};
   
   try{
     const normProd=norm(nombre);
@@ -1860,7 +1880,7 @@ async function arrancarApp(){
   await cargarCat();
   await verificarTasaAlArrancar();
   await verificarProgreso();
-  await mostrarOfertasInicio();
+  // mostrarOfertasInicio() ya la llama irAInicio() dentro de verificarTasaAlArrancar
 }
 arrancarApp().catch(e=>{
   console.error('Error en arranque:',e);
