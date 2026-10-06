@@ -1011,6 +1011,7 @@ window.irACrearLista=function(){
   mostrarScreen('screenLista');irFase(1);
 };
 window.irFase=function(n){
+  if(n===4 && !(tasa>0)){toast('💵 Configura la tasa primero','#f97316');return;}
   faseActual=n;itemExpandido=null;
   [1,2,3,4].forEach(i=>{document.getElementById('fase'+i).style.display=i===n?'block':'none';});
   ['pill1','pill2','pill3','pill4'].forEach((id,i)=>{document.getElementById(id).className='fase-pill '+(i+1===n?'activa':i+1<n?'completa':'inactiva');});
@@ -1762,13 +1763,6 @@ window.verProducto=async function(nombre){
   document.getElementById('btnVolverProductos').style.display='block';
   const cont=document.getElementById('consultaResultado');
   cont.innerHTML='<p style="color:#64748b;font-size:0.85rem;text-align:center;padding:20px;">Cargando precios...</p>';
-
-  window.volverListaProductos=async function(){
-  document.getElementById('consultaResultado').innerHTML='';
-  document.getElementById('consultaBuscar').value='';
-  document.getElementById('btnVolverProductos').style.display='none';
-  await cargarListaProductos();
-};
   
   try{
     const normProd=norm(nombre);
@@ -1857,8 +1851,43 @@ window.verProducto=async function(nombre){
   }
 };
 
+  window.volverListaProductos=async function(){
+  document.getElementById('consultaResultado').innerHTML='';
+  document.getElementById('consultaBuscar').value='';
+  document.getElementById('btnVolverProductos').style.display='none';
+  await cargarListaProductos();
+};
+
 // ══ ARRANQUE ═══════════════════════════════════════════
-document.getElementById('nom1').addEventListener('keypress',e=>{if(e.key==='Enter')agregarNombre();});
+document.getElementById('nom1').addEventListener('keypress',e=>{
+  if(e.key!=='Enter')return;
+  const ac=document.getElementById('ac1');
+  if(ac && ac.style.display==='block'){
+    const primero=ac.querySelector('.ac-item');
+    if(primero && primero.dataset.nombre){
+      document.getElementById('nom1').value=primero.dataset.nombre;
+      ac.style.display='none';
+      ac.innerHTML='';
+    }
+  }
+  agregarNombre();
+});
+document.getElementById('cargarProdNom').addEventListener('keypress',e=>{
+  if(e.key!=='Enter')return;
+  const ac=document.getElementById('acCargar');
+  if(ac && ac.style.display==='block'){
+    const primero=ac.querySelector('.ac-item');
+    if(primero && primero.dataset.nombre){
+      document.getElementById('cargarProdNom').value=primero.dataset.nombre;
+      ac.style.display='none';
+      ac.innerHTML='';
+    }
+  }
+  document.getElementById('cargarValor').focus();
+});
+document.getElementById('cargarValor').addEventListener('keypress',e=>{
+  if(e.key==='Enter')cargarGuardar();
+});
 document.getElementById('loginNombre').addEventListener('keypress',e=>{if(e.key==='Enter')loginGuardar();});
 document.getElementById('tasaValor').addEventListener('keypress',e=>{if(e.key==='Enter')tasaGuardar();});
 if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js');
