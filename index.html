@@ -1639,7 +1639,7 @@ window.onNomCargar=function(inp){
 };
 
 window.cargarGuardar=async function(){
-  const abasto=cargarAbasto||document.getElementById('cargarAbastoNom').value.trim();
+ const abasto=document.getElementById('cargarAbastoNom').value.trim();
   const producto=document.getElementById('cargarProdNom').value.trim();
   const precio=parseFloat(document.getElementById('cargarValor').value);
   if(!abasto||!producto||!precio||precio<=0){
