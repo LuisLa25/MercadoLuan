@@ -191,7 +191,7 @@ button{width:100%;padding:11px;border-radius:8px;border:none;font-size:0.95rem;f
     </div>
   </div>
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px;">
-    <button class="btn-link" onclick="abrirConfig()" style="font-size:0.85rem;">💵 Tasa: <span id="lblTasa">—</span></button>
+    <button class="btn-link" onclick="abrirConfig()" style="font-size:0.85rem;border:1px solid #334155;border-radius:20px;padding:6px 12px;text-decoration:none;">⚙️ 💵 Tasa: <span id="lblTasa">—</span></button>
     <span id="lblTasaFecha" style="font-size:0.7rem;color:#64748b;"></span>
   </div>
   <div id="ofertasInicio"></div>
@@ -227,7 +227,7 @@ button{width:100%;padding:11px;border-radius:8px;border:none;font-size:0.95rem;f
     <button class="btn-ghost" onclick="volverInicio()" style="margin-bottom:14px;">← Volver</button>
     <div class="config-section">
       <h3>👤 Usuario</h3>
-      <p>Tu nombre firma las listas y precios que cargas.</p>
+      <p>Tu nombre firma las listas y precios que cargas. Los registros anteriores conservan el nombre con el que se guardaron.</p>
       <label>Nombre actual</label>
       <input type="text" id="cfgNombre" placeholder="Tu nombre" maxlength="30">
       <button class="btn-primary" onclick="cfgGuardarNombre()">✓ Guardar nombre</button>
@@ -490,7 +490,7 @@ function ivaTag(tr){
   if(tr==='exento')return'<span class="tag-e">(E)</span>';
   if(tr==='incluido')return'<span class="tag-incl">(IVA incl.)</span>';
   if(tr==='agregar')return'<span class="tag-iva">(+16%)</span>';
-  return'<span class="tag-pend">IVA?</span>';
+  return'<span class="tag-pend">⚪ IVA</span>';
 }
 function monTag(m){return m==='BS'?'<span class="tag-bs">Bs</span>':'<span class="tag-usd">$</span>';}
 function calcIVA(p,tr){
@@ -805,11 +805,16 @@ function catSiNuevo(nombre,moneda){
 }
 function getMem(nombre){return catPersonal.find(p=>p.n.toLowerCase()===nombre.toLowerCase())||null;}
 
-async function guardarProgreso(){
+let _progresoTimer=null;
+function guardarProgreso(){
   const e={lista,confirmados,faseActual,monedaProd,tasa,fecha:new Date().toISOString(),usuario:usuarioActual?.nombre||'—',usuarioId:usuarioActual?.id||'—'};
   try{localStorage.setItem('luan_progreso',JSON.stringify(e));}catch(_){}
   if(!fbListo)return;
-  try{await setDoc(doc(db,'lista_progreso',USER_ID),e);}catch(_){}
+  if(_progresoTimer)clearTimeout(_progresoTimer);
+  _progresoTimer=setTimeout(async()=>{
+    try{await setDoc(doc(db,'lista_progreso',USER_ID),e);}catch(_){}
+    _progresoTimer=null;
+  },500);
 }
 async function borrarProgreso(){
   try{localStorage.removeItem('luan_progreso');}catch(_){}
@@ -844,7 +849,6 @@ async function cargarHistorial(){
 }
 
 function mostrarScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('activo'));document.getElementById(id).classList.add('activo');}
-window.volverInicio=function(){mostrarScreen('screenInicio');mostrarOfertasInicio();};
 
 async function mostrarOfertasInicio(){
   const cont=document.getElementById('ofertasInicio');
@@ -1941,10 +1945,29 @@ document.getElementById('loginNombre').addEventListener('keypress',e=>{if(e.key=
 document.getElementById('tasaValor').addEventListener('keypress',e=>{if(e.key==='Enter')tasaGuardar();});
 if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js');
 
-function irAInicio(){
+window.irAInicio=function(){
   mostrarScreen('screenInicio');
   document.getElementById('userNombre').textContent=usuarioActual?.nombre||'—';
   mostrarOfertasInicio();
+};
+  window.volverInicio=window.irAInicio;
+
+async function limpiarViejosAuto(){
+  try{
+    const d=new Date();
+    d.setDate(d.getDate()-7);
+    const corteISO=fechaISO(d);
+    const snap=await getDocs(collection(db,'precios_compartidos'));
+    let borrados=0;
+    for(const d2 of snap.docs){
+      const r=d2.data();
+      if(r.fecha&&r.fecha<corteISO){
+        await deleteDoc(doc(db,'precios_compartidos',d2.id));
+        borrados++;
+      }
+    }
+    if(borrados>0)console.log('🧹 Limpieza automática: '+borrados+' precios viejos');
+  }catch(_){}
 }
 
 async function arrancarApp(){
@@ -1958,7 +1981,8 @@ async function arrancarApp(){
   await cargarCat();
   await verificarTasaAlArrancar();
   await verificarProgreso();
-  // mostrarOfertasInicio() ya la llama irAInicio() dentro de verificarTasaAlArrancar
+  // Limpieza silenciosa de precios con más de 7 días (no bloquea UI)
+  limpiarViejosAuto();
 }
 arrancarApp().catch(e=>{
   console.error('Error en arranque:',e);
