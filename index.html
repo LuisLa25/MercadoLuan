@@ -422,6 +422,18 @@ button{width:100%;padding:11px;border-radius:8px;border:none;font-size:0.95rem;f
 
 <div class="modal-overlay" id="modalConfirm" onclick="if(event.target===this)cerrarModal()">   <div class="modal-box">     <h3 id="modalTitulo">Confirmar</h3>     <div id="modalMsg" style="max-height:60vh;overflow-y:auto;">—</div>     <div class="row2">       <button class="btn-ghost" id="modalCancelar" onclick="cerrarModal()" style="margin:0;">Cancelar</button>       <button class="btn-danger" id="modalOk" onclick="confirmarModal()" style="margin:0;">Borrar</button>     </div>   </div> </div>
 
+<div class="modal-overlay" id="modalPrompt" onclick="if(event.target===this)cerrarPrompt()">
+  <div class="modal-box">
+    <h3 id="promptTitulo">Título</h3>
+    <p id="promptMsg" style="font-size:0.85rem;color:#94a3b8;margin-bottom:10px;">—</p>
+    <input type="text" id="promptInput" autocomplete="off">
+    <div class="row2">
+      <button class="btn-ghost" onclick="cerrarPrompt()" style="margin:0;">Cancelar</button>
+      <button class="btn-success" onclick="confirmarPrompt()" style="margin:0;">Aceptar</button>
+    </div>
+  </div>
+</div>  
+
 <div class="toast" id="toast"></div>
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
@@ -525,6 +537,29 @@ window.confirmarModal=function(){
   if(typeof modalCallback==='function')modalCallback();
   cerrarModal();
 };
+
+let promptCallback=null;
+window.abrirPrompt=function(titulo,msg,valorInicial,onOk){
+  document.getElementById('promptTitulo').textContent=titulo;
+  document.getElementById('promptMsg').textContent=msg||'';
+  const inp=document.getElementById('promptInput');
+  inp.value=valorInicial||'';
+  promptCallback=onOk;
+  document.getElementById('modalPrompt').classList.add('show');
+  setTimeout(()=>inp.focus(),100);
+};
+window.cerrarPrompt=function(){
+  document.getElementById('modalPrompt').classList.remove('show');
+  promptCallback=null;
+};
+window.confirmarPrompt=function(){
+  const v=document.getElementById('promptInput').value.trim();
+  if(typeof promptCallback==='function')promptCallback(v);
+  cerrarPrompt();
+};
+document.getElementById('promptInput').addEventListener('keypress',e=>{
+  if(e.key==='Enter')confirmarPrompt();
+});  
 
 function cargarUsuarioLocal(){
   try{
@@ -988,9 +1023,9 @@ window.retomarLista=function(){
   mostrarScreen('screenLista');irFase(faseActual);toast('▶ Lista retomada');
 };
 window.descartarLista=function(){
-  if(!confirm('¿Descartar la lista guardada?'))return;
-  borrarProgreso();document.getElementById('bannerRetomar').style.display='none';
-  window._pendiente=null;toast('🗑️ Descartada','#ef4444');
+  abrirModal('🗑️ Descartar lista','¿Descartar la lista guardada?',
+    function(){borrarProgreso();document.getElementById('bannerRetomar').style.display='none';window._pendiente=null;toast('🗑️ Descartada','#ef4444');},
+    '🗑️ Descartar');
 };
 window.irAHistorial=async function(){
   mostrarScreen('screenHistorial');
@@ -1018,8 +1053,18 @@ window.irFase=function(n){
   if(n===1)renderF1();if(n===2)renderF2();if(n===3)renderF3();if(n===4)renderResumen();
   guardarProgreso();
 };
-window.nuevaLista=function(){if(!confirm('¿Nueva lista?'))return;lista=[];confirmados=[];faseActual=1;window._historialGuardado=false;document.getElementById('nom1').value='';borrarProgreso();irFase(1);};
-window.validarIrACaja=function(){const sp=lista.filter(i=>i.precio===null||i.precio===undefined);if(sp.length>0&&!confirm('⚠️ '+sp.length+' sin precio:\n'+sp.map(p=>p.nom).join(', ')+'\n\n¿Ir a caja de todas formas?'))return;irFase(3);};
+window.nuevaLista=function(){
+  abrirModal('🗑️ Nueva lista','¿Empezar una lista nueva? Se perderá la actual.',
+    function(){lista=[];confirmados=[];faseActual=1;window._historialGuardado=false;document.getElementById('nom1').value='';borrarProgreso();irFase(1);},
+    '🗑️ Nueva lista');
+};
+window.validarIrACaja=function(){
+  const sp=lista.filter(i=>i.precio===null||i.precio===undefined);
+  if(sp.length===0){irFase(3);return;}
+  abrirModal('⚠️ Productos sin precio',sp.length+' producto(s) sin cargar:<br><br><b>'+sp.map(p=>esc(p.nom)).join('</b><br><b>')+'</b><br><br>¿Ir a caja igual?',
+    function(){irFase(3);},
+    '➡️ Ir a caja');
+};
 
 function hacerAcItem(p,q,qN){
   const nN=norm(p.n),idx=nN.indexOf(qN);
@@ -1484,17 +1529,17 @@ function renderF2(){
   });
   document.getElementById('listaF2').innerHTML=html;
 }
-window.tocarF2=function(id){if(itemExpandido===id){itemExpandido=null;renderF2();return;}itemExpandido=id;renderF2();setTimeout(()=>{const el=document.getElementById('p-panel-'+id);if(el)el.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>{const inp=document.getElementById('p-precio-'+id);if(inp&&!inp.value)inp.focus();},100);},30);};
-window.agregarExtraPasillo=function(){
-  const nom=prompt('Nombre del producto extra:');
-  if(!nom||!nom.trim())return;
-  const nombre=nom.trim().charAt(0).toUpperCase()+nom.trim().slice(1);
-  const mem=getMem(nombre);
-  const mon=mem?.moneda||monedaProd;
-  catSiNuevo(nombre,mon);
-  regUso(nombre,mon);
-  lista.push({id:Date.now()+Math.floor(Math.random()*1000),nom:nombre,ico:getIco(nombre),moneda:mem?.moneda||monedaProd,precio:null,iva:'',esPeso:false,precioRef:null,cantRef:null,unidad:'gr',cantUnidad:1,completo:false,confirmado:false,descC:''});
-  vib(50);toast('✅ '+nombre+' agregado');guardarProgreso();renderF2();
+!window.agregarExtraPasillo=function(){
+  abrirPrompt('➕ Producto extra','Escribe el nombre del producto:','',function(nom){
+    if(!nom)return;
+    const nombre=nom.charAt(0).toUpperCase()+nom.slice(1);
+    const mem=getMem(nombre);
+    const mon=mem?.moneda||monedaProd;
+    catSiNuevo(nombre,mon);
+    regUso(nombre,mon);
+    lista.push({id:Date.now()+Math.floor(Math.random()*1000),nom:nombre,ico:getIco(nombre),moneda:mem?.moneda||monedaProd,precio:null,iva:'',esPeso:false,precioRef:null,cantRef:null,unidad:'gr',cantUnidad:1,completo:false,confirmado:false,descC:''});
+    vib(50);toast('✅ '+nombre+' agregado');guardarProgreso();renderF2();
+  });
 };
 
 function renderF3(){
