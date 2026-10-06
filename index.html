@@ -498,6 +498,11 @@ function calcIVA(p,tr){
   if(tr==='incluido'){const b=p/1.16;return{base:b,iva:p-b,total:p};}
   return{base:p,iva:0,total:p};
 }
+function pNum(v){
+  if(v==null)return NaN;
+  const s=String(v).trim().replace(',','.');
+  return parseFloat(s);
+}  
 function genUUID(){
   if(crypto.randomUUID) return crypto.randomUUID();
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0,v=c==='x'?r:(r&0x3|0x8);return v.toString(16);});
@@ -718,7 +723,7 @@ function actualizarLblTasa(fecha,diasAtras){
 }
 
 window.tasaGuardar=async function(){
-  const v=parseFloat(document.getElementById('tasaValor').value);
+  const v=pNum(document.getElementById('tasaValor').value);
   if(!v||v<=0){
     document.getElementById('tasaErr').style.display='block';
     return;
@@ -895,7 +900,7 @@ window.cfgGuardarNombre=async function(){
   toast('✓ Nombre actualizado');
 };
 window.cfgGuardarTasa=async function(){
-  const v=parseFloat(document.getElementById('cfgTasaValor').value);
+  const v=pNum(document.getElementById('cfgTasaValor').value);
   if(!v||v<=0){toast('Valor inválido','#ef4444');return;}
   const ok=await guardarTasaDia(hoyISO(),v,usuarioActual?.nombre);
   if(ok){
@@ -1432,7 +1437,7 @@ window.pSetIva=function(pref,id,v){
 };
 window.pTogglePeso=function(pref,id){const item=lista.find(i=>i.id===id);if(!item)return;item.esPeso=!item.esPeso;if(!item.esPeso){item.precioRef=null;item.cantRef=null;}const campos=document.getElementById(pref+'-campos-peso-'+id);const btn=document.getElementById(pref+'-btn-peso-'+id);if(campos)campos.style.display=item.esPeso?'block':'none';if(btn){btn.textContent='⚖️ Cobran por peso/volumen'+(item.esPeso?' ✓':'');btn.className='btn-peso'+(item.esPeso?' activo':'');}};
 window.pSetUnidad=function(pref,id,v){const item=lista.find(i=>i.id===id);if(!item)return;item.unidad=v;const lr=document.getElementById(pref+'-lbl-ref-'+id);const lc=document.getElementById(pref+'-lbl-cant-'+id);const ic=document.getElementById(pref+'-cant-'+id);if(lr)lr.textContent='Precio/'+(v==='ml'?'L':'kg');if(lc)lc.textContent=v==='ml'?'Mililitros':'Gramos';if(ic)ic.placeholder=v==='ml'?'750':'358';pActHint(pref,id);};
-window.pActHint=function(pref,id){const item=lista.find(i=>i.id===id);if(!item||!item.esPeso)return;const hint=document.getElementById(pref+'-hint-'+id);if(!hint)return;const pr=parseFloat(document.getElementById(pref+'-ref-'+id)?.value);const cr=parseFloat(document.getElementById(pref+'-cant-'+id)?.value);if(!pr||!cr){hint.style.display='none';return;}const base=(pr*cr)/1000,mS=item.moneda==='BS'?' Bs':' $',uR=item.unidad==='ml'?'L':'kg',uC=item.unidad==='ml'?'ml':'gr';hint.textContent=cr+' '+uC+' a '+f2(pr)+mS+'/'+uR+' → '+f2(base)+mS;hint.style.display='block';};
+window.pActHint=function(pref,id){const item=lista.find(i=>i.id===id);if(!item||!item.esPeso)return;const hint=document.getElementById(pref+'-hint-'+id);if(!hint)return;const pr=pNum(document.getElementById(pref+'-ref-'+id)?.value);const cr=pNum(document.getElementById(pref+'-cant-'+id)?.value);if(!pr||!cr){hint.style.display='none';return;}const base=(pr*cr)/1000,mS=item.moneda==='BS'?' Bs':' $',uR=item.unidad==='ml'?'L':'kg',uC=item.unidad==='ml'?'ml':'gr';hint.textContent=cr+' '+uC+' a '+f2(pr)+mS+'/'+uR+' → '+f2(base)+mS;hint.style.display='block';};
 window.pCerrar=function(pref){itemExpandido=null;if(pref==='p')renderF2();else renderF3();};
 
 function pAutoCompletar(id,pref){
@@ -1442,14 +1447,14 @@ function pAutoCompletar(id,pref){
   if(item.completo&&pref==='p')return false;
   let precioFinal=0,descC='',pr=null,cr=null,p=null,c=1;
   if(item.esPeso){
-    pr=parseFloat(document.getElementById(pref+'-ref-'+id)?.value);
-    cr=parseFloat(document.getElementById(pref+'-cant-'+id)?.value);
+   pr=pNum(document.getElementById(pref+'-ref-'+id)?.value);
+    cr=pNum(document.getElementById(pref+'-cant-'+id)?.value);
     if(pr&&pr>0&&cr&&cr>0){
       precioFinal=(pr*cr)/1000;
       descC=item.unidad==='ml'?f2(cr)+' ml':f2(cr)+' g';
     }
   }else{
-    p=parseFloat(document.getElementById(pref+'-precio-'+id)?.value);
+   p=pNum(document.getElementById(pref+'-precio-'+id)?.value);
     c=parseInt(document.getElementById(pref+'-qty-'+id)?.value)||1;
     if(p&&p>0){precioFinal=p*c;descC=c>1?c+' unid.':'';}
   }
@@ -1485,12 +1490,12 @@ window.pConfirmar=function(pref,id){
   const errEl=document.getElementById(pref+'-err-'+id);if(errEl)errEl.style.display='none';
   let precioFinal=0,descC='';
   if(item.esPeso){
-    const pr=parseFloat(document.getElementById(pref+'-ref-'+id)?.value);const cr=parseFloat(document.getElementById(pref+'-cant-'+id)?.value);
+    const pr=pNum(document.getElementById(pref+'-ref-'+id)?.value);const cr=pNum(document.getElementById(pref+'-cant-'+id)?.value);
     if(!pr||pr<=0||!cr||cr<=0){if(errEl){errEl.style.display='block';errEl.textContent='Ingresa precio y cantidad.';}return;}
     precioFinal=(pr*cr)/1000;const uR=item.unidad==='ml'?'L':'kg',uC=item.unidad==='ml'?'ml':'gr';
     descC=cr+' '+uC+' (@'+f2(pr)+(item.moneda==='BS'?' Bs':' $')+'/'+uR+')';item.precioRef=pr;item.cantRef=cr;
   }else{
-    const p=parseFloat(document.getElementById(pref+'-precio-'+id)?.value);const c=parseInt(document.getElementById(pref+'-qty-'+id)?.value)||1;
+    const p=pNum(document.getElementById(pref+'-precio-'+id)?.value);const c=parseInt(document.getElementById(pref+'-qty-'+id)?.value)||1;
     if(!p||p<=0){if(errEl){errEl.style.display='block';errEl.textContent='Ingresa el precio.';}return;}
     precioFinal=p*c;descC=c>1?c+' unid.':'';item.cantUnidad=c;
   }
@@ -1529,6 +1534,7 @@ function renderF2(){
   });
   document.getElementById('listaF2').innerHTML=html;
 }
+window.tocarF2=function(id){if(itemExpandido===id){itemExpandido=null;renderF2();return;}itemExpandido=id;renderF2();setTimeout(()=>{const el=document.getElementById('p-panel-'+id);if(el)el.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>{const inp=document.getElementById('p-precio-'+id);if(inp&&!inp.value)inp.focus();},100);},30);};
 window.agregarExtraPasillo=function(){
   abrirPrompt('➕ Producto extra','Escribe el nombre del producto:','',function(nom){
     if(!nom)return;
@@ -1679,7 +1685,7 @@ window.onNomCargar=function(inp){
 window.cargarGuardar=async function(){
   const abasto=document.getElementById('cargarAbastoNom').value.trim();
   const producto=document.getElementById('cargarProdNom').value.trim();
-  const precio=parseFloat(document.getElementById('cargarValor').value);
+  const precio=pNum(document.getElementById('cargarValor').value);
   if(!abasto||!producto||!precio||precio<=0){
     document.getElementById('cargarErr').style.display='block';
     document.getElementById('cargarErr').textContent='Completa mercado, producto y precio.';
@@ -1734,19 +1740,19 @@ window.cargarGuardar=async function(){
     catSiNuevo(producto,cargarMoneda);
     regUso(producto,cargarMoneda);
     toast('✅ '+producto+' guardado'+(reg.oferta?' 🔥 OFERTA':''));
-  document.getElementById('cargarProdNom').value='';
-  document.getElementById('cargarValor').value='';
-  document.getElementById('cargarOfertaDur').value='';
-  cargarIva='';cargarEsOferta=false;
-  document.getElementById('cargarIvaAgregar').className='iva-btn';
-  document.getElementById('cargarIvaExento').className='iva-btn';
-  document.getElementById('cargarIvaIncluido').className='iva-btn';
-  document.getElementById('cargarOfertaBox').style.display='none';
-  document.getElementById('cargarBtnOferta').textContent='🔥 Marcar como oferta';
-  document.getElementById('cargarBtnOferta').className='btn-orange';
-  document.getElementById('cargarProdNom').focus();
-}catch(e){
-  toast('Error guardando','#ef4444');  
+    document.getElementById('cargarProdNom').value='';
+    document.getElementById('cargarValor').value='';
+    document.getElementById('cargarOfertaDur').value='';
+    cargarIva='';cargarEsOferta=false;
+    document.getElementById('cargarIvaAgregar').className='iva-btn';
+    document.getElementById('cargarIvaExento').className='iva-btn';
+    document.getElementById('cargarIvaIncluido').className='iva-btn';
+    document.getElementById('cargarOfertaBox').style.display='none';
+    document.getElementById('cargarBtnOferta').textContent='🔥 Marcar como oferta';
+    document.getElementById('cargarBtnOferta').className='btn-orange';
+    document.getElementById('cargarProdNom').focus();
+  }catch(e){
+    toast('Error guardando','#ef4444');
     console.error(e);
   }
 };
