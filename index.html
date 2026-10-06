@@ -1529,7 +1529,7 @@ function renderF2(){
   });
   document.getElementById('listaF2').innerHTML=html;
 }
-!window.agregarExtraPasillo=function(){
+window.agregarExtraPasillo=function(){
   abrirPrompt('➕ Producto extra','Escribe el nombre del producto:','',function(nom){
     if(!nom)return;
     const nombre=nom.charAt(0).toUpperCase()+nom.slice(1);
