@@ -137,6 +137,7 @@ button{width:100%;padding:11px;border-radius:8px;border:none;font-size:0.95rem;f
 .dias-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:6px;}
 .dias-btn{padding:10px 4px;border-radius:8px;border:1px solid #334155;background:#0f172a;color:#94a3b8;font-size:0.85rem;font-weight:bold;cursor:pointer;text-align:center;user-select:none;}
 .dias-btn.activo{border-color:#a78bfa;background:#1e1b4b;color:#a78bfa;}
+.btn-ghost.activo{border-color:#38bdf8;background:#0c2a3a;color:#38bdf8;}
 .modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);display:none;align-items:center;justify-content:center;z-index:900;padding:20px;}
 .modal-overlay.show{display:flex;}
 .modal-box{background:#1e293b;border:2px solid #38bdf8;border-radius:12px;padding:20px;max-width:420px;width:100%;}
@@ -207,9 +208,13 @@ button{width:100%;padding:11px;border-radius:8px;border:none;font-size:0.95rem;f
     <span class="home-btn-ico">🔎</span>
     <div class="home-btn-txt"><h3>Consultar Precios</h3><p>¿Dónde está más barato?</p></div>
   </button>
-  <button class="home-btn" onclick="irAHistorial()">
+    <button class="home-btn" onclick="irAHistorial()">
     <span class="home-btn-ico">📊</span>
     <div class="home-btn-txt"><h3>Historial</h3><p>Ver gastos anteriores</p></div>
+  </button>
+  <button class="home-btn" onclick="irABaratos()">
+    <span class="home-btn-ico">💰</span>
+    <div class="home-btn-txt"><h3>Los más baratos</h3><p>Ranking de precios de la comunidad</p></div>
   </button>
 </div>
 
@@ -218,6 +223,25 @@ button{width:100%;padding:11px;border-radius:8px;border:none;font-size:0.95rem;f
   <div style="max-width:480px;margin:0 auto;padding:0 16px;">
     <button class="btn-ghost" onclick="volverInicio()" style="margin-bottom:14px;">← Volver</button>
     <div id="historialLista"></div>
+  </div>
+</div>
+<div class="screen" id="screenBaratos">
+  <h1>💰 Los más baratos</h1>
+  <p class="subtitle">Ranking de precios de la comunidad</p>
+  <div style="max-width:480px;margin:0 auto;padding:0 16px;">
+    <button class="btn-ghost" onclick="volverInicio()" style="margin-bottom:14px;">← Volver</button>
+    <div class="card" style="padding:12px;margin-bottom:12px;">
+      <div class="ac-wrap">
+        <input type="text" id="buscarBaratos" placeholder="Buscar producto..." autocomplete="off" oninput="filtrarBaratos(this.value)">
+      </div>
+      <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;">
+        <button class="btn-ghost" id="btnBaratosTodos" onclick="setLimiteBaratos(9999)" style="margin:0;padding:6px 12px;font-size:0.78rem;width:auto;">Todos</button>
+        <button class="btn-ghost" id="btnBaratos10" onclick="setLimiteBaratos(10)" style="margin:0;padding:6px 12px;font-size:0.78rem;width:auto;">Top 10</button>
+        <button class="btn-ghost" id="btnBaratos25" onclick="setLimiteBaratos(25)" style="margin:0;padding:6px 12px;font-size:0.78rem;width:auto;">Top 25</button>
+        <button class="btn-ghost" id="btnBaratos50" onclick="setLimiteBaratos(50)" style="margin:0;padding:6px 12px;font-size:0.78rem;width:auto;">Top 50</button>
+      </div>
+    </div>
+    <div id="listaBaratos"></div>
   </div>
 </div>
 
@@ -1054,6 +1078,114 @@ window.irAHistorial=async function(){
     const prods=(h.productos||[]).slice(0,4).map(p=>esc(p)).join(', ');
 return`<div class="hist-item"><div class="hist-fecha">📅 ${fecha}${quien}</div><div class="hist-total">${fbs(h.totalBs)} / ${fusd(h.totalUsd)}</div><div class="hist-det">${h.nProductos} productos · $1=${f2(h.tasa)} Bs · ${prods}${h.nProductos>4?'...':''}</div></div>`;
   }).join('');
+};
+// ══ LOS MÁS BARATOS ═══════════════════════════════════════
+let _baratosCache=[];
+let _baratosLimite=9999;
+
+window.irABaratos=async function(){
+  mostrarScreen('screenBaratos');
+  document.getElementById('buscarBaratos').value='';
+  document.getElementById('listaBaratos').innerHTML='<p style="color:#64748b;text-align:center;padding:20px;">Cargando...</p>';
+  try{
+    const snap=await getDocs(collection(db,'precios_compartidos'));
+    const mapa=new Map();
+    snap.forEach(d=>{
+      const r=d.data();
+      if(!r.producto_norm)return;
+      if(!r.tasa&&tasa>0)r.tasa=tasa;
+      let precioUSD=r.moneda==='BS'?r.precio/(r.tasa||tasa||1):r.precio;
+      if(r.iva==='agregar')precioUSD*=1.16;
+      const actual=mapa.get(r.producto_norm);
+      if(!actual||precioUSD<actual.precioUSD){
+        mapa.set(r.producto_norm,{
+          nom:r.producto,
+          norm:r.producto_norm,
+          precioUSD,
+          moneda:r.moneda,
+          precioOriginal:r.precio,
+          abasto:r.abasto,
+          quien:r.quien||'—',
+          fecha:r.fecha,
+          oferta:r.oferta,
+          oferta_dur:r.oferta_dur
+        });
+      }
+    });
+    _baratosCache=Array.from(mapa.values()).sort((a,b)=>a.nom.localeCompare(b.nom,'es'));
+    _baratosLimite=9999;
+    renderBaratos('');
+    actualizarBotonesLimite();
+  }catch(e){
+    document.getElementById('listaBaratos').innerHTML='<p style="color:#ef4444;text-align:center;padding:20px;">Error cargando precios</p>';
+    console.error(e);
+  }
+};
+
+function renderBaratos(filtro){
+  const cont=document.getElementById('listaBaratos');
+  const q=norm(filtro||'');
+  let lista=_baratosCache;
+  if(q){
+    const palabras=q.split(/\s+/).filter(Boolean);
+    lista=lista.filter(item=>{
+      const n=norm(item.nom);
+      return palabras.every(w=>n.includes(w));
+    });
+  }
+  if(lista.length===0){
+    cont.innerHTML='<p style="color:#64748b;text-align:center;padding:20px;line-height:1.5;">'+(filtro?'Sin resultados':'Aún no hay precios cargados.<br>Ve a 💾 Cargar Precio para empezar.')+'</p>';
+    return;
+  }
+  const limite=Math.min(_baratosLimite,lista.length);
+  const mostrar=lista.slice(0,limite);
+  let html='';
+  mostrar.forEach(item=>{
+    const fechaCorta=item.fecha||'—';
+    html+=`<div class="card" style="padding:12px;margin-bottom:8px;cursor:pointer;" onclick="irAProductoDesdeBaratos('${item.nom.replace(/'/g,"\\'")}')">
+      <div style="display:flex;justify-content:space-between;align-items:start;gap:8px;">
+        <div style="flex:1;">
+          <div style="font-size:0.92rem;font-weight:bold;color:#f1f5f9;">🛒 ${esc(item.nom)}</div>
+          <div style="font-size:0.72rem;color:#64748b;margin-top:4px;">🏪 ${esc(item.abasto)} · ${esc(item.quien)} · ${fechaCorta}</div>
+          ${item.oferta?`<div style="font-size:0.7rem;color:#fb923c;margin-top:3px;">🔥 Oferta${item.oferta_dur?' · '+esc(item.oferta_dur):''}</div>`:''}
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <div style="font-size:1rem;font-weight:bold;color:#34d399;">${fusd(item.precioUSD)}</div>
+        </div>
+      </div>
+    </div>`;
+  });
+  html+=`<p style="color:#64748b;text-align:center;padding:14px;font-size:0.78rem;">Mostrando ${mostrar.length} de ${lista.length} productos</p>`;
+  cont.innerHTML=html;
+}
+
+window.filtrarBaratos=function(v){
+  renderBaratos(v);
+};
+
+window.setLimiteBaratos=function(n){
+  _baratosLimite=n;
+  actualizarBotonesLimite();
+  renderBaratos(document.getElementById('buscarBaratos').value);
+};
+
+function actualizarBotonesLimite(){
+  ['btnBaratosTodos','btnBaratos10','btnBaratos25','btnBaratos50'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.classList.remove('activo');
+  });
+  const mapa={9999:'btnBaratosTodos',10:'btnBaratos10',25:'btnBaratos25',50:'btnBaratos50'};
+  const id=mapa[_baratosLimite];
+  if(id)document.getElementById(id).classList.add('activo');
+}
+
+window.irAProductoDesdeBaratos=async function(nombre){
+  await irAComparador();
+  setTimeout(()=>{
+    const inp=document.getElementById('consultaBuscar');
+    if(inp)inp.value=nombre;
+    verProducto(nombre);
+  },100);
 };
 window.irACrearLista=function(){
   if(tasa<=0){toast('💵 Configura la tasa primero','#f97316');return;}
