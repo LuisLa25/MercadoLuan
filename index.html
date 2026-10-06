@@ -1093,8 +1093,15 @@ function filtAC(elId,q,cbSeleccion){
   if(!el)return;
   if(!q){el.style.display='none';el.innerHTML='';return;}
   const qN=norm(q);
-  const rP=catPersonal.filter(p=>norm(p.n).includes(qN)).sort((a,b)=>(b.usos||0)-(a.usos||0));
-  const rB=CAT.filter(p=>norm(p.n).includes(qN));
+const palabras=qN.split(/\s+/).filter(Boolean);
+const rP=catPersonal.filter(p=>{
+  const n=norm(p.n);
+  return palabras.every(w=>n.includes(w));
+}).sort((a,b)=>(b.usos||0)-(a.usos||0));
+const rB=CAT.filter(p=>{
+  const n=norm(p.n);
+  return palabras.every(w=>n.includes(w));
+});
   el.innerHTML='';
   el._cbSeleccion=cbSeleccion;
   if(rP.length===0&&rB.length===0){
