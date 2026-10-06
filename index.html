@@ -481,7 +481,14 @@ function fusd(n){return '$'+f2(n);}
 function esc(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function vib(p){if(navigator.vibrate)navigator.vibrate(p);}
 function toast(msg,color){const t=document.getElementById('toast');t.textContent=msg;t.style.backgroundColor=color||'#10b981';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
-function norm(s){return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');}
+function norm(s){
+  return s.toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g,'')   // quita acentos
+    .replace(/[.,;:!¡¿?'"()\[\]{}]/g,'')  // quita puntuación
+    .replace(/\s+/g,' ')               // espacios múltiples → uno solo
+    .trim();
+}
 function hoy(){return new Date().toLocaleDateString('es-VE',{day:'2-digit',month:'2-digit',year:'numeric'});}
 function hoyISO(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function fechaISO(date){const d=new Date(date);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
