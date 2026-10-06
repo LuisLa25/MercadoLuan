@@ -420,7 +420,7 @@ button{width:100%;padding:11px;border-radius:8px;border:none;font-size:0.95rem;f
   </div>
 </div>
 
-<div class="modal-overlay" id="modalConfirm" onclick="if(event.target===this)cerrarModal()">   <div class="modal-box">     <h3 id="modalTitulo">Confirmar</h3>     <div id="modalMsg" style="max-height:60vh;overflow-y:auto;">—</div>     <div class="row2">       <button class="btn-ghost" id="modalCancelar" onclick="cerrarModal()" style="margin:0;">Cancelar</button>       <button class="btn-danger" id="modalOk" onclick="confirmarModal()" style="margin:0;">Borrar</button>     </div>   </div> </div>
+<div class="modal-overlay" id="modalConfirm" onclick="if(event.target===this)cerrarModal()">   <div class="modal-box">     <h3 id="modalTitulo">Confirmar</h3>     <div id="modalMsg" style="max-height:60vh;overflow-y:auto;">—</div>     <div class="row2">       <button class="btn-ghost" id="modalCancelar" onclick="cerrarModal()" style="margin:0;">Cancelar</button>       <button class="btn-danger" id="modalOk" style="margin:0;">Borrar</button>     </div>   </div> </div>
 
 <div class="modal-overlay" id="modalPrompt" onclick="if(event.target===this)cerrarPrompt()">
   <div class="modal-box">
@@ -1169,6 +1169,10 @@ function renderF1(){
 }
     window.consultarDesdeLista=async function(nombre){
   abrirModal('🔎 '+nombre,'Cargando precios...',null,'Cerrar',true);
+  if(!(tasa>0)){
+    document.getElementById('modalMsg').innerHTML='<span style="color:#fbbf24;">⚠️ Sin tasa cargada — configura la tasa primero.</span>';
+    return;
+  }
   try{
     const normProd=norm(nombre);
     const snap=await getDocs(collection(db,'precios_compartidos'));
@@ -1618,10 +1622,10 @@ window.compartirWA=function(){
 };
 
 // ══ CARGAR PRECIO ═══════════════════════════════════════
-let cargarAbasto='',cargarMoneda='BS',cargarIva='',cargarEsOferta=false;
+let cargarMoneda='BS',cargarIva='',cargarEsOferta=false;
 
 window.irACargarPrecio=function(){
-  cargarAbasto='';cargarMoneda='USD';cargarIva='';cargarEsOferta=false;
+  cargarMoneda='USD';cargarIva='';cargarEsOferta=false;
   document.getElementById('cargarAbastoNom').value='';
   document.getElementById('cargarProdNom').value='';
   document.getElementById('cargarValor').value='';
@@ -1649,7 +1653,6 @@ window.abrirPickerCargar=function(){
 };
 
 window.seleccionarMercadoCargar=function(nombre){
-  cargarAbasto=nombre;
   document.getElementById('cargarAbastoNom').value=nombre;
   cerrarPicker();
   document.getElementById('cargarProdNom').focus();
@@ -1815,6 +1818,10 @@ window.verProducto=async function(nombre){
   document.getElementById('consultaBuscar').value=nombre;
   document.getElementById('btnVolverProductos').style.display='block';
   const cont=document.getElementById('consultaResultado');
+  if(!(tasa>0)){
+    cont.innerHTML='<div class="card"><p style="color:#fbbf24;text-align:center;padding:20px;">⚠️ Sin tasa cargada — configura la tasa primero.</p></div>';
+    return;
+  }
   cont.innerHTML='<p style="color:#64748b;font-size:0.85rem;text-align:center;padding:20px;">Cargando precios...</p>';
   
   try{
@@ -1955,7 +1962,7 @@ window.irAInicio=function(){
 async function limpiarViejosAuto(){
   try{
     const d=new Date();
-    d.setDate(d.getDate()-7);
+    d.setDate(d.getDate()-30);
     const corteISO=fechaISO(d);
     const snap=await getDocs(collection(db,'precios_compartidos'));
     let borrados=0;
@@ -1981,7 +1988,7 @@ async function arrancarApp(){
   await cargarCat();
   await verificarTasaAlArrancar();
   await verificarProgreso();
-  // Limpieza silenciosa de precios con más de 7 días (no bloquea UI)
+  // Limpieza silenciosa de precios con más de 30 días (no bloquea UI)
   limpiarViejosAuto();
 }
 arrancarApp().catch(e=>{
