@@ -1221,10 +1221,20 @@ function hacerAcItem(p,q,qN){
   const m=esc(p.n.slice(idx,idx+q.length));
   const d=esc(p.n.slice(idx+q.length));
   const quien=p.quien?`<span style="font-size:0.68rem;color:#64748b;margin-left:6px;">— ${esc(p.quien)}</span>`:'';
+  let infoPrecio='';
+  if(window._baratosCache && window._baratosCache.length>0){
+    const clave=norm(p.n);
+    const match=window._baratosCache.find(b=>b.norm===clave);
+    if(match){
+      infoPrecio=`<div style="font-size:0.68rem;color:#64748b;margin-top:3px;">🏪 ${esc(match.abasto)} · ${fusd(match.precioUSD)}</div>`;
+    }
+  }
   const div=document.createElement('div');
   div.className='ac-item';
   div.dataset.nombre=p.n;
-  div.innerHTML=`<span class="ac-icono">${p.i||'🛒'}</span>${a}<span class="ac-match">${m}</span>${d}${quien}`;
+  div.style.flexDirection='column';
+  div.style.alignItems='flex-start';
+  div.innerHTML=`<div style="display:flex;align-items:center;gap:8px;width:100%;"><span class="ac-icono">${p.i||'🛒'}</span><div style="flex:1;">${a}<span class="ac-match">${m}</span>${d}${quien}${infoPrecio}</div></div>`;
   return div;
 }
 function filtAC(elId,q,cbSeleccion){
@@ -1771,7 +1781,7 @@ window.compartirWA=function(){
 let cargarMoneda='BS',cargarIva='',cargarEsOferta=false;
 
 window.irACargarPrecio=function(){
-  cargarMoneda='USD';cargarIva='';cargarEsOferta=false;
+  cargarMoneda='USD';cargarIva='incluido';cargarEsOferta=false;
   document.getElementById('cargarAbastoNom').value='';
   document.getElementById('cargarProdNom').value='';
   document.getElementById('cargarValor').value='';
@@ -1785,7 +1795,7 @@ document.getElementById('cargarMonUsd').className='mon-btn usd';
 document.getElementById('cargarLblPrecio').textContent='Precio ($)';
   document.getElementById('cargarIvaAgregar').className='iva-btn';
   document.getElementById('cargarIvaExento').className='iva-btn';
-  document.getElementById('cargarIvaIncluido').className='iva-btn';
+  document.getElementById('cargarIvaIncluido').className='iva-btn ain';
   mostrarScreen('screenCargar');
 };  
 
@@ -2123,6 +2133,29 @@ async function limpiarViejosAuto(){
   }catch(_){}
 }
 
+async function precargarBaratos(){
+  try{
+    const snap=await getDocs(collection(db,'precios_compartidos'));
+    const mapa=new Map();
+    snap.forEach(d=>{
+      const r=d.data();
+      if(!r.producto_norm)return;
+      let precioUSD=r.moneda==='BS'?r.precio/(tasa||1):r.precio;
+      if(r.iva==='agregar')precioUSD*=1.16;
+      const actual=mapa.get(r.producto_norm);
+      if(!actual||precioUSD<actual.precioUSD){
+        mapa.set(r.producto_norm,{
+          nom:r.producto,
+          norm:r.producto_norm,
+          precioUSD,
+          abasto:r.abasto
+        });
+      }
+    });
+    window._baratosCache=Array.from(mapa.values());
+  }catch(_){}
+}
+
 async function arrancarApp(){
   sync('loading');
   const hayUsuario=await inicializarUsuario();
@@ -2134,7 +2167,7 @@ async function arrancarApp(){
   await cargarCat();
   await verificarTasaAlArrancar();
   await verificarProgreso();
-  // Limpieza silenciosa de precios con más de 30 días (no bloquea UI)
+  await precargarBaratos();
   limpiarViejosAuto();
 }
 arrancarApp().catch(e=>{
