@@ -2233,6 +2233,11 @@ window.consultarCompartirWA=function(){
 };
 
 window.verProducto=async function(nombre){
+  // ← Auto-agregar a la multi-consulta
+  if(!_consultaItems.some(it=>it.nom===nombre)){
+    _consultaItems.push({nom:nombre,precioUSD:null,abasto:null,quien:null,fecha:null});
+    actualizarConsulta();
+  }
   document.getElementById('consultaProductos').innerHTML='';
   document.getElementById('consultaBuscar').value=nombre;
   document.getElementById('btnVolverProductos').style.display='block';
