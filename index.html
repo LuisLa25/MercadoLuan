@@ -1193,26 +1193,33 @@ window.irAProductoDesdeBaratos=async function(nombre){
 };
 // ══ COMPARTIR BARATOS POR WHATSAPP ═══════════════════════
 const CATEGORIAS_BARATOS = [
-  {nombre:'🥩 Carnes',claves:['carne','pollo','chuleta','costilla','bistec','muslo','pechuga','alas','lomo','pernil','molida','mechar','guisar','tocino','mortadela','jamon','salchicha','pavon','milanesa','recorte']},
+  {nombre:'🥩 Carnes',claves:['carne','pollo','chuleta','costilla','bistec','muslo','pechuga','alas de','lomo','pernil','molida','mechar','guisar','tocino','mortadela','jamon','salchicha','pavon','milanesa','recorte']},
   {nombre:'🐟 Pescados y Enlatados',claves:['atun','sardina','pescado','enlatado']},
-  {nombre:'🥛 Lácteos',claves:['leche','queso','mantequilla','margarina','yogur','nata','crema']},
-  {nombre:'🌾 Granos y Cereales',claves:['arroz','harina','caraota','lenteja','frijol','maiz','maicena','avena','cereal','p.a.n','pan de maiz']},
+  {nombre:'🍪 Snacks y Dulces',claves:['galleta','pepito','rufl','rufles','dorito','pringle','chocolate','compota','gelatina','cronch','maizorito','club social','papas fritas','snack']},
+  {nombre:'🥤 Bebidas',claves:['refresco','jugo','malta','agua','coca','pepsi','glup','polar','rockstar','energizante','cafe','amanecer','della','madrid','fama','te ','te negro']},
+  {nombre:'🥛 Lácteos',claves:['leche','mantequilla','margarina','yogur','nata','crema','queso crema','queso mozzarela','queso blanco','queso amarillo','queso paisa','queso telita']},
+  {nombre:'🌾 Granos y Cereales',claves:['arroz','harina','caraota','lenteja','frijol','maiz','maicena','avena','cereal']},
   {nombre:'🍝 Pastas',claves:['pasta','vermicelli','linguini','spaghetti','fideo']},
   {nombre:'🥫 Aceites y Salsas',claves:['aceite','vinagre','mayonesa','salsa','ketchup','mostaza','krafk','mavesa','naturoil','vatel','kaldini','mazeite']},
-  {nombre:'🧂 Condimentos',claves:['sal','azucar','papelon','comino','oregano','pimienta','cubito','onoto','konfit']},
-  {nombre:'☕ Café y Té',claves:['cafe','te','amanecer','della','madrid','fama']},
-  {nombre:'🥤 Bebidas',claves:['refresco','jugo','malta','agua','coca','pepsi','glup','polar','rockstar','energizante']},
-  {nombre:'🍪 Snacks y Dulces',claves:['galleta','pepito','rufl','rufles','dorito','pringle','chocolate','compota','gelatina','cronch','maizoritos','club social']},
-  {nombre:'🧴 Limpieza',claves:['jabon','detergente','cloro','suavitel','papel','shampoo','panal','toalla','head&shoulders','caricia','rosal']},
-  {nombre:'🍞 Panadería',claves:['pan','casabe','arepa','arabe']},
-  {nombre:'🥬 Frutas y Verduras',claves:['papa','yuca','tomate','cebolla','ajo','platano','cambur','mango','aguacate','naranja','limon','lechuga','zanahoria','apio','ocumo','name','pimenton','repollo','berenjena','calabacin','chayota','remolacha','patilla','melon','pina','lechosa','guayaba','mandarina']}
+  {nombre:'🧂 Condimentos',claves:['azucar','papelon','comino','oregano','pimienta','cubito','onoto','konfit']},
+  {nombre:'🧴 Limpieza',claves:['jabon','detergente','cloro','suavitel','papel','shampoo','panal','toalla','head&shoulders','caricia','rosal plus','rosal amarillo']},
+  {nombre:'🍞 Panadería',claves:['pan ','pan de','casabe','arepa','arabe']},
+  {nombre:'🥬 Frutas y Verduras',claves:['papa','yuca','tomate','cebolla','ajo ','platano','cambur','mango','aguacate','naranja','limon','lechuga','zanahoria','apio','ocumo','name','pimenton','repollo','berenjena','calabacin','chayota','remolacha','patilla','melon','pina','lechosa','guayaba','mandarina']}
 ];
 
 function categoriaDeProducto(nombre){
   const n=norm(nombre);
+  const nConEsp=' '+n+' ';
   for(const cat of CATEGORIAS_BARATOS){
     for(const cl of cat.claves){
-      if(n.includes(norm(cl)))return cat.nombre;
+      const clN=norm(cl);
+      // Si la clave tiene espacios o es larga (4+ letras), usar includes normal
+      // Si es corta (1-3 letras), buscar como palabra completa
+      if(clN.length<4){
+        if(nConEsp.includes(' '+clN+' '))return cat.nombre;
+      }else{
+        if(n.includes(clN))return cat.nombre;
+      }
     }
   }
   return '🛒 Otros';
