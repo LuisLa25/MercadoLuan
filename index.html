@@ -513,7 +513,6 @@ function norm(s){
     .replace(/\s+/g,' ')               // espacios múltiples → uno solo
     .trim();
 }
-function hoy(){return new Date().toLocaleDateString('es-VE',{day:'2-digit',month:'2-digit',year:'numeric'});}
 function hoyISO(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function fechaISO(date){const d=new Date(date);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function getIco(n){return CAT.find(p=>p.n.toLowerCase()===n.toLowerCase())?.i||catPersonal.find(p=>p.n.toLowerCase()===n.toLowerCase())?.i||'🛒';}
@@ -1092,15 +1091,16 @@ window.irABaratos=async function(){
     const mapa=new Map();
     snap.forEach(d=>{
       const r=d.data();
-      if(!r.producto_norm)return;
+      if(!r.producto)return;
+      const clave=norm(r.producto);
       if(!r.tasa&&tasa>0)r.tasa=tasa;
       let precioUSD=r.moneda==='BS'?r.precio/(r.tasa||tasa||1):r.precio;
       if(r.iva==='agregar')precioUSD*=1.16;
-      const actual=mapa.get(r.producto_norm);
+      const actual=mapa.get(clave);
       if(!actual||precioUSD<actual.precioUSD){
-        mapa.set(r.producto_norm,{
+        mapa.set(clave,{
           nom:r.producto,
-          norm:r.producto_norm,
+          norm:clave,
           precioUSD,
           moneda:r.moneda,
           precioOriginal:r.precio,
@@ -1334,8 +1334,9 @@ function renderF1(){
     const snap=await getDocs(collection(db,'precios_compartidos'));
     const porAbasto={};
     snap.forEach(d=>{
-      const r=d.data();
-      if(r.producto_norm!==normProd)return;
+  const r=d.data();
+  if(!r.producto)return;
+  if(norm(r.producto)!==normProd)return;
       if(!porAbasto[r.abasto])porAbasto[r.abasto]=[];
       porAbasto[r.abasto].push(r);
     });
@@ -1413,10 +1414,12 @@ window.analizarLista=async function(){
     const snap=await getDocs(collection(db,'precios_compartidos'));
     const porProducto={};
     snap.forEach(d=>{
-      const r=d.data();
-      if(!porProducto[r.producto_norm])porProducto[r.producto_norm]=[];
-      porProducto[r.producto_norm].push(r);
-    });
+  const r=d.data();
+  if(!r.producto)return;
+  const clave=norm(r.producto);
+  if(!porProducto[clave])porProducto[clave]=[];
+  porProducto[clave].push(r);
+});
     
 const resultados=[];
 const porMercado={};
@@ -1911,10 +1914,10 @@ window.cargarGuardar=async function(){
     document.getElementById('cargarProdNom').value='';
     document.getElementById('cargarValor').value='';
     document.getElementById('cargarOfertaDur').value='';
-    cargarIva='';cargarEsOferta=false;
-    document.getElementById('cargarIvaAgregar').className='iva-btn';
-    document.getElementById('cargarIvaExento').className='iva-btn';
-    document.getElementById('cargarIvaIncluido').className='iva-btn';
+    cargarIva='incluido';cargarEsOferta=false;
+document.getElementById('cargarIvaAgregar').className='iva-btn';
+document.getElementById('cargarIvaExento').className='iva-btn';
+document.getElementById('cargarIvaIncluido').className='iva-btn ain';
     document.getElementById('cargarOfertaBox').style.display='none';
     document.getElementById('cargarBtnOferta').textContent='🔥 Marcar como oferta';
     document.getElementById('cargarBtnOferta').className='btn-orange';
@@ -1941,11 +1944,13 @@ async function cargarListaProductos(){
     const snap=await getDocs(collection(db,'precios_compartidos'));
     const productos={};
     snap.forEach(d=>{
-      const r=d.data();
-      if(!productos[r.producto_norm]){
-        productos[r.producto_norm]={nom:r.producto,ico:getIco(r.producto)};
-      }
-    });
+  const r=d.data();
+  if(!r.producto)return;
+  const clave=norm(r.producto);
+  if(!productos[clave]){
+    productos[clave]={nom:r.producto,ico:getIco(r.producto)};
+  }
+});
     const lista=Object.values(productos).sort((a,b)=>a.nom.localeCompare(b.nom));
     if(lista.length===0){
       cont.innerHTML='<p style="color:#64748b;font-size:0.85rem;text-align:center;padding:20px;line-height:1.5;">Aún no hay precios cargados.<br>Toca 💾 Cargar Precio para empezar.</p>';
@@ -1985,11 +1990,12 @@ window.verProducto=async function(nombre){
     const snap=await getDocs(collection(db,'precios_compartidos'));
     const porAbasto={};
     snap.forEach(d=>{
-      const r=d.data();
-      if(r.producto_norm!==normProd)return;
-      if(!porAbasto[r.abasto])porAbasto[r.abasto]=[];
-      porAbasto[r.abasto].push(r);
-    });
+  const r=d.data();
+  if(!r.producto)return;
+  if(norm(r.producto)!==normProd)return;
+  if(!porAbasto[r.abasto])porAbasto[r.abasto]=[];
+  porAbasto[r.abasto].push(r);
+});
     
     if(Object.keys(porAbasto).length===0){
       cont.innerHTML='<div class="card"><p style="color:#64748b;font-size:0.85rem;text-align:center;padding:20px;">No hay precios registrados de este producto.</p></div>';
@@ -2035,7 +2041,6 @@ window.verProducto=async function(nombre){
     
     lista.forEach((r,i)=>{
       const esMejor=i===0;
-      const ivaStr=r.iva==='agregar'?'(+16%)':r.iva==='exento'?'(E)':r.iva==='incluido'?'(incl.)':'';
       html+=`<div style="padding:10px;border-radius:8px;margin-bottom:6px;background:${esMejor?'#001a0d':'#0f172a'};border:1px solid ${esMejor?'#10b981':'#334155'};${r.antiguo?'opacity:0.7;':''}">
         <div style="display:flex;justify-content:space-between;align-items:start;">
           <div>
@@ -2139,14 +2144,15 @@ async function precargarBaratos(){
     const mapa=new Map();
     snap.forEach(d=>{
       const r=d.data();
-      if(!r.producto_norm)return;
+      if(!r.producto)return;
+      const clave=norm(r.producto);
       let precioUSD=r.moneda==='BS'?r.precio/(tasa||1):r.precio;
       if(r.iva==='agregar')precioUSD*=1.16;
-      const actual=mapa.get(r.producto_norm);
+      const actual=mapa.get(clave);
       if(!actual||precioUSD<actual.precioUSD){
-        mapa.set(r.producto_norm,{
+        mapa.set(clave,{
           nom:r.producto,
-          norm:r.producto_norm,
+          norm:clave,
           precioUSD,
           abasto:r.abasto
         });
