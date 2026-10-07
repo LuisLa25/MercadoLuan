@@ -327,8 +327,9 @@ button{width:100%;padding:11px;border-radius:8px;border:none;font-size:0.95rem;f
         </div>
         <div id="listaF1"></div>
       </div>
-      <button class="btn-primary" onclick="analizarLista()" style="margin-bottom:8px;">🔎 Analizar precios de mi lista</button>
+            <button class="btn-primary" onclick="analizarLista()" style="margin-bottom:8px;">🔎 Analizar precios de mi lista</button>
 <button class="btn-orange" onclick="irFase(2)">🏪 Ir al mercado →</button>
+<button class="btn-wa" onclick="fase1CompartirWA()" style="margin-top:8px;">📲 Compartir lista</button>
     </div>
   </div>
   <div id="fase2" style="display:none;">
@@ -429,6 +430,17 @@ button{width:100%;padding:11px;border-radius:8px;border:none;font-size:0.95rem;f
     <div class="ac-lista" id="acConsulta"></div>
   </div>
   <div id="consultaProductos" style="margin-top:12px;"></div>
+</div>
+
+<div id="consultaListaBox" style="display:none;">
+  <div class="card">
+    <div class="card-title">
+      <span>📋 Productos consultados<span class="cnt" id="cntConsulta">0</span></span>
+      <button class="btn-link" onclick="limpiarConsulta()">🗑️ Limpiar</button>
+    </div>
+    <div id="consultaLista"></div>
+    <button class="btn-wa" onclick="consultarCompartirWA()" style="margin-top:12px;">📲 Compartir consulta</button>
+  </div>
 </div>
 
 <button class="btn-ghost" id="btnVolverProductos" onclick="volverListaProductos()" style="display:none;margin-bottom:12px;">← Todos los productos</button>
@@ -1394,6 +1406,22 @@ window.onNom1=function(inp){
   });
 };
 
+window.fase1CompartirWA=function(){
+  if(lista.length===0){toast('La lista está vacía','#f97316');return;}
+  const fecha=new Date().toLocaleDateString('es-VE',{day:'2-digit',month:'2-digit',year:'numeric'});
+  let msg='🛒 *MI LISTA DE MERCADO*\n';
+  msg+='👤 '+((usuarioActual&&usuarioActual.nombre)||'—')+'\n';
+  msg+='📅 '+fecha+'\n';
+  msg+='━━━━━━━━━━━━━━━━━━━━━\n\n';
+  msg+='📝 *Productos ('+lista.length+')*\n';
+  lista.forEach((item,i)=>{
+    msg+=(i+1)+'. '+item.nom+'\n';
+  });
+  msg+='\n━━━━━━━━━━━━━━━━━━━━━\n';
+  msg+='🏷️ LuAn System™';
+  window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
+};
+
 window.agregarNombre=function(){
   const nom=document.getElementById('nom1').value.trim();
   if(!nom){document.getElementById('err1').style.display='block';return;}
@@ -1608,9 +1636,37 @@ totalPeor+=peor.precioUSD;
       </div>`;
     }
     
-    document.getElementById('modalTitulo').textContent='📊 Análisis de tu lista';
-    document.getElementById('modalMsg').innerHTML=html;
-    document.getElementById('modalOk').textContent='Cerrar';
+    // Generar texto WA
+let wa='📊 *ANÁLISIS DE MI LISTA*\n';
+wa+='👤 '+((usuarioActual&&usuarioActual.nombre)||'—')+'\n';
+wa+='📅 '+new Date().toLocaleDateString('es-VE',{day:'2-digit',month:'2-digit',year:'numeric'})+' | 💵 $1 = '+f2(tasa)+' Bs\n';
+wa+='━━━━━━━━━━━━━━━━━━━━━\n\n';
+wa+='📋 *POR PRODUCTO*\n';
+resultados.forEach(r=>{
+  wa+='• '+r.nom+': ✓ '+r.mejor.abasto+' · '+fusd(r.mejor.precioUSD)+'\n';
+});
+wa+='\n';
+if(Object.keys(porMercado).length>0){
+  wa+='🏪 *SI VAS A UN SOLO MERCADO*\n';
+  Object.keys(porMercado).map(m=>({nom:m,items:porMercado[m],total:porMercado[m].reduce((s,x)=>s+x.precio,0)})).sort((a,b)=>b.items.length-a.items.length).forEach(m=>{
+    wa+='• '+m.nom+': '+m.items.length+' de '+lista.length+' · '+fusd(m.total)+'\n';
+  });
+  wa+='\n';
+}
+wa+='━━━━━━━━━━━━━━━━━━━━━\n';
+wa+='💰 *Producto a producto:* '+fusd(totalMejor)+'\n';
+const ahT=totalPeor-totalMejor;
+if(ahT>0.005)wa+='💸 *Ahorras:* '+fusd(ahT)+' vs comprar todo en el más caro\n';
+if(faltantes.length>0)wa+='⚠️ Sin precios: '+faltantes.length+' producto(s)\n';
+wa+='━━━━━━━━━━━━━━━━━━━━━\n';
+wa+='🏷️ LuAn System™';
+window._analisisTexto=wa;
+
+html+='<button class="btn-wa" onclick="compartirAnalisisWA()" style="margin-top:14px;">📲 Compartir análisis</button>';
+
+document.getElementById('modalTitulo').textContent='📊 Análisis de tu lista';
+document.getElementById('modalMsg').innerHTML=html;
+document.getElementById('modalOk').textContent='Cerrar';
   }catch(e){
     document.getElementById('modalTitulo').textContent='⚠️ Error';
     document.getElementById('modalMsg').innerHTML='<span style="color:#ef4444;">Error analizando. Verifica tu conexión.</span>';
@@ -1618,6 +1674,10 @@ totalPeor+=peor.precioUSD;
     console.error(e);
   }
 };  
+window.compartirAnalisisWA=function(){
+  if(!window._analisisTexto){toast('Primero analiza tu lista','#f97316');return;}
+  window.open('https://wa.me/?text='+encodeURIComponent(window._analisisTexto),'_blank');
+};
 window.elimItem=function(i){lista.splice(i,1);renderF1();guardarProgreso();};
 window.dragStart=function(i){dragSrcIdx=i;setTimeout(()=>{const el=document.getElementById('drag-'+i);if(el)el.classList.add('dragging');},0);};
 window.dragOver=function(e,i){e.preventDefault();document.querySelectorAll('#listaF1 .item-card').forEach(c=>c.classList.remove('drag-over'));const el=document.getElementById('drag-'+i);if(el)el.classList.add('drag-over');};
@@ -2063,11 +2123,113 @@ window.onConsultaBuscar=function(inp){
   const q=inp.value.trim();
   if(q.length>0)inp.value=q.charAt(0).toUpperCase()+q.slice(1);
   filtAC('acConsulta',q,function(nombre){
-    inp.value=nombre;
-    document.getElementById('acConsulta').style.display='none';
-    document.getElementById('acConsulta').innerHTML='';
-    verProducto(nombre);
+    agregarAConsulta(nombre);
   });
+};
+
+// ══ MULTI-CONSULTA ═══════════════════════════════════════
+let _consultaItems=[];
+
+window.agregarAConsulta=function(nombre){
+  if(!nombre)return;
+  if(_consultaItems.some(it=>it.nom===nombre)){
+    toast('Ya está en la lista','#f97316');
+    document.getElementById('consultaBuscar').value='';
+    document.getElementById('acConsulta').style.display='none';
+    return;
+  }
+  _consultaItems.push({nom:nombre,precioUSD:null,abasto:null,quien:null,fecha:null});
+  document.getElementById('consultaBuscar').value='';
+  document.getElementById('acConsulta').style.display='none';
+  document.getElementById('acConsulta').innerHTML='';
+  vib(30);
+  actualizarConsulta();
+};
+
+window.eliminarDeConsulta=function(idx){
+  _consultaItems.splice(idx,1);
+  actualizarConsulta();
+};
+
+window.limpiarConsulta=function(){
+  _consultaItems=[];
+  actualizarConsulta();
+};
+
+async function actualizarConsulta(){
+  const box=document.getElementById('consultaListaBox');
+  if(_consultaItems.length===0){box.style.display='none';return;}
+  box.style.display='block';
+  document.getElementById('cntConsulta').textContent=_consultaItems.length;
+  try{
+    const snap=await getDocs(collection(db,'precios_compartidos'));
+    const porProd={};
+    snap.forEach(d=>{
+      const r=d.data();
+      if(!r.producto)return;
+      const clave=norm(r.producto);
+      let p=r.moneda==='BS'?r.precio/(r.tasa||tasa||1):r.precio;
+      if(r.iva==='agregar')p*=1.16;
+      if(!porProd[clave]||p<porProd[clave].precioUSD){
+        porProd[clave]={precioUSD:p,abasto:r.abasto,quien:r.quien||'—',fecha:r.fecha};
+      }
+    });
+    _consultaItems.forEach(it=>{
+      const k=norm(it.nom);
+      const d=porProd[k];
+      if(d){
+        it.precioUSD=d.precioUSD;
+        it.abasto=d.abasto;
+        it.quien=d.quien;
+        it.fecha=d.fecha;
+      }
+    });
+  }catch(_){}
+  renderConsultaLista();
+}
+
+function renderConsultaLista(){
+  const cont=document.getElementById('consultaLista');
+  if(_consultaItems.length===0){cont.innerHTML='';return;}
+  let html='';
+  _consultaItems.forEach((it,idx)=>{
+    const precio=it.precioUSD!=null?fusd(it.precioUSD):'Sin datos';
+    const abasto=it.abasto||'—';
+    const color=it.precioUSD!=null?'#34d399':'#fbbf24';
+    html+=`<div style="padding:8px 10px;background:#0f172a;border-radius:6px;margin-bottom:5px;display:flex;justify-content:space-between;align-items:center;gap:8px;">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:0.85rem;font-weight:bold;color:#f1f5f9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">🛒 ${esc(it.nom)}</div>
+        <div style="font-size:0.72rem;color:#64748b;margin-top:2px;">🏪 ${esc(abasto)}</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;">
+        <div style="font-size:0.9rem;font-weight:bold;color:${color};">${precio}</div>
+        <button class="btn-sm btn-sm-danger" onclick="eliminarDeConsulta(${idx})" style="margin-top:4px;">✕</button>
+      </div>
+    </div>`;
+  });
+  cont.innerHTML=html;
+}
+
+window.consultarCompartirWA=function(){
+  if(_consultaItems.length===0){toast('No hay productos para compartir','#ef4444');return;}
+  const fecha=new Date().toLocaleDateString('es-VE',{day:'2-digit',month:'2-digit',year:'numeric'});
+  let msg='🔎 *CONSULTA DE PRECIOS*\n';
+  msg+='👤 '+((usuarioActual&&usuarioActual.nombre)||'—')+'\n';
+  msg+='📅 '+fecha+' | 💵 $1 = '+f2(tasa)+' Bs\n';
+  msg+='━━━━━━━━━━━━━━━━━━━━━\n\n';
+  _consultaItems.forEach(it=>{
+    if(it.precioUSD!=null&&it.abasto){
+      msg+='🛒 '+it.nom+'\n';
+      msg+='✓ '+it.abasto+' · '+fusd(it.precioUSD)+'\n\n';
+    }else{
+      msg+='🛒 '+it.nom+'\n';
+      msg+='⚠️ Sin precios cargados\n\n';
+    }
+  });
+  msg+='━━━━━━━━━━━━━━━━━━━━━\n';
+  msg+='📊 Total: '+_consultaItems.length+' productos\n';
+  msg+='🏷️ LuAn System™';
+  window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
 };
 
 window.verProducto=async function(nombre){
