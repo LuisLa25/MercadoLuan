@@ -241,7 +241,11 @@ button{width:100%;padding:11px;border-radius:8px;border:none;font-size:0.95rem;f
         <button class="btn-ghost" id="btnBaratos50" onclick="setLimiteBaratos(50)" style="margin:0;padding:6px 12px;font-size:0.78rem;width:auto;">Top 50</button>
       </div>
     </div>
-    <div id="listaBaratos"></div>
+        <div id="listaBaratos"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px;margin-bottom:20px;">
+      <button class="btn-wa" onclick="compartirBaratosWA(true)" style="margin:0;">📲 Compartir completo</button>
+      <button class="btn-wa" onclick="compartirBaratosWA(false)" style="margin:0;">📲 Solo categorías</button>
+    </div>
   </div>
 </div>
 
@@ -1186,6 +1190,91 @@ window.irAProductoDesdeBaratos=async function(nombre){
     if(inp)inp.value=nombre;
     verProducto(nombre);
   },100);
+};
+// ══ COMPARTIR BARATOS POR WHATSAPP ═══════════════════════
+const CATEGORIAS_BARATOS = [
+  {nombre:'🥩 Carnes',claves:['carne','pollo','chuleta','costilla','bistec','muslo','pechuga','alas','lomo','pernil','molida','mechar','guisar','tocino','mortadela','jamon','salchicha','pavon','milanesa','recorte']},
+  {nombre:'🐟 Pescados y Enlatados',claves:['atun','sardina','pescado','enlatado']},
+  {nombre:'🥛 Lácteos',claves:['leche','queso','mantequilla','margarina','yogur','nata','crema']},
+  {nombre:'🌾 Granos y Cereales',claves:['arroz','harina','caraota','lenteja','frijol','maiz','maicena','avena','cereal','p.a.n','pan de maiz']},
+  {nombre:'🍝 Pastas',claves:['pasta','vermicelli','linguini','spaghetti','fideo']},
+  {nombre:'🥫 Aceites y Salsas',claves:['aceite','vinagre','mayonesa','salsa','ketchup','mostaza','krafk','mavesa','naturoil','vatel','kaldini','mazeite']},
+  {nombre:'🧂 Condimentos',claves:['sal','azucar','papelon','comino','oregano','pimienta','cubito','onoto','konfit']},
+  {nombre:'☕ Café y Té',claves:['cafe','te','amanecer','della','madrid','fama']},
+  {nombre:'🥤 Bebidas',claves:['refresco','jugo','malta','agua','coca','pepsi','glup','polar','rockstar','energizante']},
+  {nombre:'🍪 Snacks y Dulces',claves:['galleta','pepito','rufl','rufles','dorito','pringle','chocolate','compota','gelatina','cronch','maizoritos','club social']},
+  {nombre:'🧴 Limpieza',claves:['jabon','detergente','cloro','suavitel','papel','shampoo','panal','toalla','head&shoulders','caricia','rosal']},
+  {nombre:'🍞 Panadería',claves:['pan','casabe','arepa','arabe']},
+  {nombre:'🥬 Frutas y Verduras',claves:['papa','yuca','tomate','cebolla','ajo','platano','cambur','mango','aguacate','naranja','limon','lechuga','zanahoria','apio','ocumo','name','pimenton','repollo','berenjena','calabacin','chayota','remolacha','patilla','melon','pina','lechosa','guayaba','mandarina']}
+];
+
+function categoriaDeProducto(nombre){
+  const n=norm(nombre);
+  for(const cat of CATEGORIAS_BARATOS){
+    for(const cl of cat.claves){
+      if(n.includes(norm(cl)))return cat.nombre;
+    }
+  }
+  return '🛒 Otros';
+}
+
+window.compartirBaratosWA=function(completo){
+  if(!_baratosCache||_baratosCache.length===0){
+    toast('No hay productos para compartir','#ef4444');
+    return;
+  }
+  const fecha=new Date().toLocaleDateString('es-VE',{day:'2-digit',month:'2-digit',year:'numeric'});
+  const total=_baratosCache.length;
+
+  let msg='🛒 *LOS MÁS BARATOS · Mercado LuAn*\n';
+  msg+='👤 '+((usuarioActual&&usuarioActual.nombre)||'—')+'\n';
+  msg+='📅 '+fecha+' | 💵 $1 = '+f2(tasa)+' Bs\n';
+  msg+='━━━━━━━━━━━━━━━━━━━━━\n\n';
+
+  // Agrupar por categoría
+  const porCategoria={};
+  _baratosCache.forEach(item=>{
+    const cat=categoriaDeProducto(item.nom);
+    if(!porCategoria[cat])porCategoria[cat]=[];
+    porCategoria[cat].push(item);
+  });
+
+  // Orden de categorías según la lista oficial
+  const ordenCategorias=CATEGORIAS_BARATOS.map(c=>c.nombre).concat(['🛒 Otros']);
+  const cats=Object.keys(porCategoria).sort((a,b)=>{
+    const ia=ordenCategorias.indexOf(a);
+    const ib=ordenCategorias.indexOf(b);
+    return (ia<0?999:ia)-(ib<0?999:ib);
+  });
+
+  // Sección por categoría
+  msg+='🏷️ *POR CATEGORÍA*\n';
+  msg+='━━━━━━━━━━━━━━━━━━━━━\n\n';
+  cats.forEach(cat=>{
+    const items=porCategoria[cat].sort((a,b)=>a.nom.localeCompare(b.nom,'es'));
+    msg+=cat+'\n';
+    items.forEach(item=>{
+      msg+='• '+item.nom+': '+fusd(item.precioUSD)+' · '+item.abasto+'\n';
+    });
+    msg+='\n';
+  });
+
+  // Sección completa (si pidió completo)
+  if(completo){
+    msg+='━━━━━━━━━━━━━━━━━━━━━\n\n';
+    msg+='📋 *LISTA COMPLETA (A-Z)*\n';
+    msg+='━━━━━━━━━━━━━━━━━━━━━\n\n';
+    _baratosCache.forEach(item=>{
+      msg+='• '+item.nom+': '+fusd(item.precioUSD)+' · '+item.abasto+'\n';
+    });
+    msg+='\n';
+  }
+
+  msg+='━━━━━━━━━━━━━━━━━━━━━\n';
+  msg+='📊 Total: '+total+' productos\n';
+  msg+='🏷️ LuAn System™';
+
+  window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
 };
 window.irACrearLista=function(){
   if(tasa<=0){toast('💵 Configura la tasa primero','#f97316');return;}
