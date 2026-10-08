@@ -1099,6 +1099,7 @@ let _baratosCache=[];
 let _baratosLimite=9999;
 
 window.irABaratos=async function(){
+  if(!(tasa>0)){toast('💵 Configura la tasa primero','#f97316');return;}
   mostrarScreen('screenBaratos');
   document.getElementById('buscarBaratos').value='';
   document.getElementById('listaBaratos').innerHTML='<p style="color:#64748b;text-align:center;padding:20px;">Cargando...</p>';
@@ -1128,9 +1129,10 @@ window.irABaratos=async function(){
         });
       }
     });
-    _baratosCache=Array.from(mapa.values()).sort((a,b)=>a.nom.localeCompare(b.nom,'es'));
-    _baratosLimite=9999;
-    renderBaratos('');
+   _baratosCache=Array.from(mapa.values()).sort((a,b)=>a.nom.localeCompare(b.nom,'es'));
+window._baratosCache=_baratosCache;
+_baratosLimite=9999;
+renderBaratos('');
     actualizarBotonesLimite();
   }catch(e){
     document.getElementById('listaBaratos').innerHTML='<p style="color:#ef4444;text-align:center;padding:20px;">Error cargando precios</p>';
@@ -2402,6 +2404,7 @@ async function limpiarViejosAuto(){
 }
 
 async function precargarBaratos(){
+  if(!(tasa>0)){window._baratosCache=[];return;}
   try{
     const snap=await getDocs(collection(db,'precios_compartidos'));
     const mapa=new Map();
