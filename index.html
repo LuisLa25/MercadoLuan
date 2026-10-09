@@ -1161,7 +1161,7 @@ function renderBaratos(filtro){
   let html='';
   mostrar.forEach(item=>{
     const fechaCorta=item.fecha||'—';
-    html+=`<div class="card" style="padding:12px;margin-bottom:8px;cursor:pointer;" onclick="irAProductoDesdeBaratos('${item.nom.replace(/'/g,"\\'")}')">
+    html+=`<div class="card" style="padding:12px;margin-bottom:8px;cursor:pointer;" data-accion="ver" data-nombre="${esc(item.nom)}">
       <div style="display:flex;justify-content:space-between;align-items:start;gap:8px;">
         <div style="flex:1;">
           <div style="font-size:0.92rem;font-weight:bold;color:#f1f5f9;">🛒 ${esc(item.nom)}</div>
@@ -1177,6 +1177,11 @@ function renderBaratos(filtro){
   html+=`<p style="color:#64748b;text-align:center;padding:14px;font-size:0.78rem;">Mostrando ${mostrar.length} de ${lista.length} productos</p>`;
   cont.innerHTML=html;
 }
+  document.getElementById('listaBaratos').addEventListener('click', e=>{
+  const card = e.target.closest('[data-accion="ver"]');
+  if(!card) return;
+  irAProductoDesdeBaratos(card.dataset.nombre);
+});
 
 window.filtrarBaratos=function(v){
   renderBaratos(v);
@@ -2123,11 +2128,16 @@ async function cargarListaProductos(){
       return;
     }
     cont.innerHTML='<div style="font-size:0.72rem;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;font-weight:bold;margin-bottom:6px;">Productos con precios ('+lista.length+')</div>'+
-      lista.map(p=>`<button onclick="verProducto('${p.nom.replace(/'/g,"\\'")}')" style="width:100%;padding:12px 14px;margin-top:6px;border-radius:8px;border:1px solid #334155;background:#0f172a;color:#f1f5f9;font-size:0.9rem;font-weight:bold;cursor:pointer;text-align:left;">${p.ico} ${esc(p.nom)}</button>`).join('');
+      lista.map(p=>`<button data-accion="ver-prod" data-nombre="${esc(p.nom)}" style="width:100%;padding:12px 14px;margin-top:6px;border-radius:8px;border:1px solid #334155;background:#0f172a;color:#f1f5f9;font-size:0.9rem;font-weight:bold;cursor:pointer;text-align:left;">${p.ico} ${esc(p.nom)}</button>`).join('');
   }catch(e){
     cont.innerHTML='<p style="color:#ef4444;font-size:0.85rem;text-align:center;padding:20px;">Error cargando</p>';
   }
 }
+  document.getElementById('consultaProductos').addEventListener('click', e=>{
+  const btn = e.target.closest('[data-accion="ver-prod"]');
+  if(!btn) return;
+  verProducto(btn.dataset.nombre);
+});
 
 window.onConsultaBuscar=function(inp){
   const q=inp.value.trim();
@@ -2458,4 +2468,4 @@ arrancarApp().catch(e=>{
 });
 </script>
 </body>
-  </html>
+</html>
