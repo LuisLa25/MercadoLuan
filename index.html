@@ -807,13 +807,36 @@ window.tasaOmitir=function(){
 
 async function cargarCat(){
   sync('loading');
+  // 1. Cargar lo local primero (nunca perdemos lo que ya había)
+  let local=[];
+  try{const l=localStorage.getItem('luan_cat');if(l)local=JSON.parse(l)||[];}catch(_){}
+
+  // 2. Intentar traer remoto
   try{
     const s=await getDoc(doc(db,'catalogo_familiar','compartido'));
-    catPersonal=s.exists()?(s.data().productos||[]):[];
-    fbListo=true;sync('ok');
+    const remoto=s.exists()?(s.data().productos||[]):[];
+
+    // 3. Fusionar por nombre (case-insensitive)
+    const mapa=new Map();
+    remoto.forEach(p=>mapa.set(p.n.toLowerCase(),p));
+    local.forEach(p=>{
+      const key=p.n.toLowerCase();
+      if(mapa.has(key)){
+        const ex=mapa.get(key);
+        ex.usos=Math.max(ex.usos||0,p.usos||0);
+        ex.moneda=p.moneda||ex.moneda;
+      }else{
+        mapa.set(key,p);
+      }
+    });
+    catPersonal=Array.from(mapa.values());
+    fbListo=true;
+    sync('ok');
   }catch(_){
-    fbListo=false;sync('err');
-    try{const l=localStorage.getItem('luan_cat');if(l)catPersonal=JSON.parse(l);}catch(_){}
+    // 4. Sin red → usar solo local
+    catPersonal=local;
+    fbListo=false;
+    sync('err');
   }
 }
 async function guardarCat(){
@@ -2404,6 +2427,14 @@ window.irAInicio=function(){
   window.volverInicio=window.irAInicio;
 
 async function limpiarViejosAuto(){
+  if(!fbListo)return;
+  const hoy=hoyISO();
+  let ultima='';
+  try{ultima=localStorage.getItem('luan_limpieza_fecha')||'';}catch(_){}
+  if(ultima===hoy){
+    alert('✅ Limpieza YA corrió hoy ('+hoy+'). No se repite.');   // ← TEMPORAL
+    return;
+  }
   try{
     const d=new Date();
     d.setDate(d.getDate()-30);
@@ -2417,10 +2448,13 @@ async function limpiarViejosAuto(){
         borrados++;
       }
     }
+    try{localStorage.setItem('luan_limpieza_fecha',hoy);}catch(_){}
+    alert('🧹 Limpieza corrió. Borrados: '+borrados+'. Fecha guardada: '+hoy);   // ← TEMPORAL
     if(borrados>0)console.log('🧹 Limpieza automática: '+borrados+' precios viejos');
-  }catch(_){}
+  }catch(e){
+    alert('⚠️ Limpieza falló: '+e.message);   // ← TEMPORAL
+  }
 }
-
 async function precargarBaratos(){
   if(!(tasa>0)){window._baratosCache=[];return;}
   try{
