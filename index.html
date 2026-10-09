@@ -2145,13 +2145,13 @@ async function cargarListaProductos(){
     productos[clave]={nom:r.producto,ico:getIco(r.producto)};
   }
 });
-    const lista=Object.values(productos).sort((a,b)=>a.nom.localeCompare(b.nom));
-    if(lista.length===0){
+    const productosLista=Object.values(productos).sort((a,b)=>a.nom.localeCompare(b.nom));
+if(productosLista.length===0){
       cont.innerHTML='<p style="color:#64748b;font-size:0.85rem;text-align:center;padding:20px;line-height:1.5;">Aún no hay precios cargados.<br>Toca 💾 Cargar Precio para empezar.</p>';
       return;
     }
-    cont.innerHTML='<div style="font-size:0.72rem;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;font-weight:bold;margin-bottom:6px;">Productos con precios ('+lista.length+')</div>'+
-      lista.map(p=>`<button data-accion="ver-prod" data-nombre="${esc(p.nom)}" style="width:100%;padding:12px 14px;margin-top:6px;border-radius:8px;border:1px solid #334155;background:#0f172a;color:#f1f5f9;font-size:0.9rem;font-weight:bold;cursor:pointer;text-align:left;">${p.ico} ${esc(p.nom)}</button>`).join('');
+    cont.innerHTML='<div style="font-size:0.72rem;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;font-weight:bold;margin-bottom:6px;">Productos con precios ('+productosLista.length+')</div>'+
+      productosLista.map(p=>`<button data-accion="ver-prod" data-nombre="${esc(p.nom)}" style="width:100%;padding:12px 14px;margin-top:6px;border-radius:8px;border:1px solid #334155;background:#0f172a;color:#f1f5f9;font-size:0.9rem;font-weight:bold;cursor:pointer;text-align:left;">${p.ico} ${esc(p.nom)}</button>`).join('');
   }catch(e){
     cont.innerHTML='<p style="color:#ef4444;font-size:0.85rem;text-align:center;padding:20px;">Error cargando</p>';
   }
@@ -2313,7 +2313,8 @@ window.verProducto=async function(nombre){
     const hace15ISO=fechaISO(hace15);
     
     const lista=[];
-    Object.keys(porAbasto).forEach(ab=>{
+    const listaPrecios=[];
+Object.keys(porAbasto).forEach(ab=>{
       const regs=porAbasto[ab].sort((a,b)=>b.fecha.localeCompare(a.fecha));
       const ult=regs[0];
       let precioUSD=ult.moneda==='BS'?ult.precio/tasa:ult.precio;
@@ -2321,7 +2322,7 @@ window.verProducto=async function(nombre){
       const precioBs=ult.moneda==='BS'?ult.precio:ult.precio*tasa;
       const antiguo=ult.fecha<hace15ISO;
       const diasAtras=Math.floor((new Date(hoy)-new Date(ult.fecha))/(1000*60*60*24));
-      lista.push({
+        listaPrecios.push({
         abasto:ab,
         quien:ult.quien,
         fecha:ult.fecha,
@@ -2337,15 +2338,15 @@ window.verProducto=async function(nombre){
       });
     });
     
-    lista.sort((a,b)=>a.precioUSD-b.precioUSD);
-    const mejor=lista[0];
-    const peor=lista[lista.length-1];
+    listaPrecios.sort((a,b)=>a.precioUSD-b.precioUSD);
+    const mejor=listaPrecios[0];
+    const peor=listaPrecios[listaPrecios.length-1];
     const ahorro=peor.precioUSD-mejor.precioUSD;
     
     let html=`<div class="card">
       <div class="card-title">${getIco(nombre)} ${esc(nombre)}</div>`;
     
-    lista.forEach((r,i)=>{
+    listaPrecios.forEach((r,i)=>{
       const esMejor=i===0;
       html+=`<div style="padding:10px;border-radius:8px;margin-bottom:6px;background:${esMejor?'#001a0d':'#0f172a'};border:1px solid ${esMejor?'#10b981':'#334155'};${r.antiguo?'opacity:0.7;':''}">
         <div style="display:flex;justify-content:space-between;align-items:start;">
