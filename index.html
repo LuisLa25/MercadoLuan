@@ -2427,14 +2427,11 @@ window.irAInicio=function(){
   window.volverInicio=window.irAInicio;
 
 async function limpiarViejosAuto(){
-  if(!fbListo)return;
+  if(!fbListo)return;   // sin conexión confirmada, no toca Firestore
   const hoy=hoyISO();
   let ultima='';
   try{ultima=localStorage.getItem('luan_limpieza_fecha')||'';}catch(_){}
-  if(ultima===hoy){
-    alert('✅ Limpieza YA corrió hoy ('+hoy+'). No se repite.');   // ← TEMPORAL
-    return;
-  }
+  if(ultima===hoy)return;   // ya corrió hoy, no repetir
   try{
     const d=new Date();
     d.setDate(d.getDate()-30);
@@ -2449,12 +2446,10 @@ async function limpiarViejosAuto(){
       }
     }
     try{localStorage.setItem('luan_limpieza_fecha',hoy);}catch(_){}
-    alert('🧹 Limpieza corrió. Borrados: '+borrados+'. Fecha guardada: '+hoy);   // ← TEMPORAL
     if(borrados>0)console.log('🧹 Limpieza automática: '+borrados+' precios viejos');
-  }catch(e){
-    alert('⚠️ Limpieza falló: '+e.message);   // ← TEMPORAL
-  }
+  }catch(_){}
 }
+
 async function precargarBaratos(){
   if(!(tasa>0)){window._baratosCache=[];return;}
   try{
