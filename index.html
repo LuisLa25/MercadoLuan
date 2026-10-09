@@ -488,10 +488,11 @@ const firebaseConfig = {
   appId: "1:1011437257690:web:5ebd8180bca6bf6a6c36e3"
 };
 
-const USER_ID = 'luis-arichuna';
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+function uidProgreso(){ return usuarioActual?.id || 'anon'; }
+  
 const MIS_MERCADOS=[
   'EUROMAX',
   'HIPER LÍDER',
@@ -858,17 +859,17 @@ function guardarProgreso(){
   if(!fbListo)return;
   if(_progresoTimer)clearTimeout(_progresoTimer);
   _progresoTimer=setTimeout(async()=>{
-    try{await setDoc(doc(db,'lista_progreso',USER_ID),e);}catch(_){}
+  try{await setDoc(doc(db,'lista_progreso',uidProgreso()),e);}catch(_){}  
     _progresoTimer=null;
   },500);
 }
 async function borrarProgreso(){
   try{localStorage.removeItem('luan_progreso');}catch(_){}
   if(!fbListo)return;
-  try{await deleteDoc(doc(db,'lista_progreso',USER_ID));}catch(_){}
+  try{await deleteDoc(doc(db,'lista_progreso',uidProgreso()));}catch(_){}
 }
 async function cargarProgreso(){
-  if(fbListo){try{const s=await getDoc(doc(db,'lista_progreso',USER_ID));if(s.exists()){const d=s.data();try{localStorage.setItem('luan_progreso',JSON.stringify(d));}catch(_){}return d;}}catch(_){}}
+  if(fbListo){try{const s=await getDoc(doc(db,'lista_progreso',uidProgreso()));if(s.exists()){const d=s.data();try{localStorage.setItem('luan_progreso',JSON.stringify(d));}catch(_){}return d;}}catch(_){}}
   try{const l=localStorage.getItem('luan_progreso');if(l)return JSON.parse(l);}catch(_){}
   return null;
 }
@@ -1445,10 +1446,17 @@ function renderF1(){
       ontouchstart="touchStart(event,${i})" ontouchmove="touchMove(event)" ontouchend="touchEnd(event,${i})">
       <span class="drag-handle">☰</span><span class="item-ico">${item.ico}</span>
       <div class="item-body"><div class="item-nom">${esc(item.nom)}</div></div>
-      <button class="btn-sm btn-sm-success" onclick="event.stopPropagation();consultarDesdeLista('${item.nom.replace(/'/g,"\\'")}')" style="margin-right:6px;">🔎</button>
-      <button class="btn-sm btn-sm-danger" onclick="event.stopPropagation();elimItem(${i})">✕</button>
+      <button class="btn-sm btn-sm-success" data-accion="consultar" data-nombre="${esc(item.nom)}" style="margin-right:6px;">🔎</button>
+      <button class="btn-sm btn-sm-danger" data-accion="eliminar" data-idx="${i}">✕</button>
     </div>`).join('');
 }
+  document.getElementById('listaF1').addEventListener('click', e=>{
+  const btn = e.target.closest('[data-accion]');
+  if(!btn) return;
+  e.stopPropagation();
+  if(btn.dataset.accion==='consultar') consultarDesdeLista(btn.dataset.nombre);
+  else if(btn.dataset.accion==='eliminar') elimItem(parseInt(btn.dataset.idx,10));
+});
     window.consultarDesdeLista=async function(nombre){
   abrirModal('🔎 '+nombre,'Cargando precios...',null,'Cerrar',true);
   if(!(tasa>0)){
@@ -2450,4 +2458,4 @@ arrancarApp().catch(e=>{
 });
 </script>
 </body>
-</html>
+  </html>
