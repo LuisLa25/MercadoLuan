@@ -547,9 +547,33 @@ function calcIVA(p,tr){
 }
 function pNum(v){
   if(v==null)return NaN;
-  const s=String(v).trim().replace(',','.');
-  return parseFloat(s);
-}  
+  let s=String(v).trim().replace(/\s/g,'');
+  if(!s)return NaN;
+  const tienePunto=s.includes('.');
+  const tieneComa=s.includes(',');
+  if(tieneComa){
+    // Coma = separador decimal (formato Venezuela)
+    // Quitar puntos de miles, cambiar coma por punto decimal
+    s=s.replace(/\./g,'').replace(',','.');
+  }else if(tienePunto){
+    const partes=s.split('.');
+    if(partes.length>2){
+      // 1.500.000 → todos miles
+      s=s.replace(/\./g,'');
+    }else if(partes.length===2){
+      const ent=partes[0];
+      const dec=partes[1];
+      // X.XXX (1-3 dígitos antes, exactamente 3 después, no empieza en 0)
+      // → probablemente miles, ej: 1.500, 10.000, 100.000
+      if(dec.length===3 && ent.length>=1 && ent.length<=3 && ent!=='0' && !ent.startsWith('0')){
+        s=ent+dec;
+      }
+      // Sino, dejar como decimal: 1.50, 100.50, 0.50, 1500.99
+    }
+  }
+  const n=parseFloat(s);
+  return isNaN(n)?NaN:n;
+}
 function genUUID(){
   if(crypto.randomUUID) return crypto.randomUUID();
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0,v=c==='x'?r:(r&0x3|0x8);return v.toString(16);});
