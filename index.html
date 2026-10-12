@@ -176,7 +176,7 @@ button{width:100%;padding:11px;border-radius:8px;border:none;font-size:0.95rem;f
   </div>
 </div>
 
-<div class="screen activo" id="screenInicio">
+< class="screen activo" id="screenInicio">
   <h1>🛒 Mercado LuAn</h1>
   <p class="subtitle"><span class="sync-dot" id="syncDot"></span><span class="sync-label" id="syncLabel">Conectando...</span></p>
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
@@ -212,9 +212,13 @@ button{width:100%;padding:11px;border-radius:8px;border:none;font-size:0.95rem;f
     <span class="home-btn-ico">📊</span>
     <div class="home-btn-txt"><h3>Historial</h3><p>Ver gastos anteriores</p></div>
   </button>
-  <button class="home-btn" onclick="irABaratos()">
+   <button class="home-btn" onclick="irABaratos()">
     <span class="home-btn-ico">💰</span>
     <div class="home-btn-txt"><h3>Los más baratos</h3><p>Ranking de precios de la comunidad</p></div>
+  </button>
+  <button class="home-btn" onclick="abrirUSA()">
+    <span class="home-btn-ico">📦</span>
+    <div class="home-btn-txt"><h3>LuAn USA</h3><p>Compras de importación</p></div>
   </button>
 </div>
 
@@ -448,6 +452,92 @@ button{width:100%;padding:11px;border-radius:8px;border:none;font-size:0.95rem;f
 <div id="consultaResultado"></div>
   </div>
 </div>
+
+  <!-- ══ LUAN USA ══════════════════════════════════════════ -->
+<div class="screen" id="screenUSA">
+  <h1>📦 LuAn USA</h1>
+  <p class="subtitle">Compras de importación</p>
+  <div style="max-width:480px;margin:0 auto;padding:0 16px;">
+    <button class="btn-ghost" onclick="volverInicio()" style="margin-bottom:14px;">← Volver</button>
+    <button class="btn-primary" onclick="crearNuevoPedidoUSA()" style="margin-bottom:8px;">➕ Nuevo pedido</button>
+    <button class="btn-ghost" onclick="irAConsultarUSA()" style="margin-bottom:14px;">🔎 Consultar producto</button>
+    <div id="usaListaPedidos"></div>
+  </div>
+</div>
+
+<div class="screen" id="screenUSAPedido">
+  <h1 id="usaPedidoTitulo">📦 Pedido</h1>
+  <p class="subtitle" id="usaPedidoSub">—</p>
+  <div style="max-width:480px;margin:0 auto;padding:0 16px;">
+    <button class="btn-ghost" onclick="volverAUSA()" style="margin-bottom:14px;">← Volver a USA</button>
+    <div id="usaPedidoAcciones" style="margin-bottom:14px;"></div>
+    <div id="usaPedidoItems"></div>
+  </div>
+</div>
+
+<div class="screen" id="screenUSAAgregar">
+  <h1>➕ Agregar producto</h1>
+  <p class="subtitle" id="usaAgregarSub">—</p>
+  <div style="max-width:480px;margin:0 auto;padding:0 16px;">
+    <button class="btn-ghost" onclick="volverAPedidoUSA()" style="margin-bottom:14px;">← Volver al pedido</button>
+    <div class="card">
+      <label>Producto</label>
+      <input type="text" id="usaProdNom" placeholder="Ej: Shampoo Pantene Coco 350ml" autocomplete="off">
+      <label style="margin-top:10px;">Tienda</label>
+      <select id="usaTienda">
+        <option value="">Elegir tienda...</option>
+        <option>Walmart</option>
+        <option>Target</option>
+        <option>Costco</option>
+        <option>Sam's Club</option>
+        <option>Kroger</option>
+        <option>Publix</option>
+        <option>Aldi</option>
+        <option>Dollar Tree</option>
+        <option>Family Dollar</option>
+        <option>CVS</option>
+        <option>Walgreens</option>
+        <option>Best Buy</option>
+        <option>Home Depot</option>
+        <option>Amazon</option>
+        <option>Otra</option>
+      </select>
+      <input type="text" id="usaTiendaOtra" placeholder="Si elegiste Otra, escribe aquí..." style="margin-top:8px;display:none;">
+      <label style="margin-top:10px;">Fecha de compra</label>
+      <input type="date" id="usaFecha" inputmode="numeric">
+    </div>
+    <div class="card">
+      <label>Precio unitario (USD)</label>
+      <input type="number" id="usaPrecio" placeholder="0.00" step="0.01" min="0" inputmode="decimal">
+      <label style="margin-top:10px;">Tax (%)</label>
+      <input type="number" id="usaTax" placeholder="Ej: 3.5" step="0.01" min="0" inputmode="decimal">
+      <div class="hint" id="usaCalc" style="display:none;margin-top:8px;"></div>
+      <label style="margin-top:10px;">Cantidad</label>
+      <div class="qty-row">
+        <button class="qty-btn" onclick="usaQty(-1)">−</button>
+        <input type="number" class="qty-input" id="usaQty" value="1" min="1" inputmode="numeric">
+        <button class="qty-btn" onclick="usaQty(1)">+</button>
+      </div>
+    </div>
+    <p id="usaErr" class="err">Completa producto, tienda y precio.</p>
+    <button class="btn-success" onclick="guardarItemUSA()">✓ Agregar al pedido</button>
+  </div>
+</div>
+
+<div class="screen" id="screenUSAConsultar">
+  <h1>🔎 Consultar USA</h1>
+  <p class="subtitle">Buscar producto en compras USA</p>
+  <div style="max-width:480px;margin:0 auto;padding:0 16px;">
+    <button class="btn-ghost" onclick="volverAUSA()" style="margin-bottom:14px;">← Volver a USA</button>
+    <div class="card">
+      <div class="ac-wrap">
+        <input type="text" id="usaBuscar" placeholder="Escribe el nombre del producto..." autocomplete="off" oninput="onUSABuscar(this.value)">
+      </div>
+    </div>
+    <div id="usaResultados"></div>
+  </div>
+</div>
+<!-- ══ FIN LUAN USA ══════════════════════════════════════════ -->
 
 <div class="modal-overlay" id="modalPicker" onclick="if(event.target===this)cerrarPicker()">
   <div class="modal-box">
@@ -2523,3 +2613,4 @@ arrancarApp().catch(e=>{
 </script>
 </body>
 </html>
+
