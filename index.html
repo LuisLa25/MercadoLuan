@@ -953,27 +953,32 @@ async function cargarCat(){
     sync('err');
   }
 }
+let _catTimer=null;
 async function guardarCat(){
   try{localStorage.setItem('luan_cat',JSON.stringify(catPersonal));}catch(_){}
   if(!fbListo)return;
-  try{
-    const s=await getDoc(doc(db,'catalogo_familiar','compartido'));
-    const remoto=s.exists()?(s.data().productos||[]):[];
-    const mapa=new Map();
-    remoto.forEach(p=>mapa.set(p.n.toLowerCase(),p));
-    catPersonal.forEach(p=>{
-      const key=p.n.toLowerCase();
-      if(mapa.has(key)){
-        const ex=mapa.get(key);
-        ex.usos=Math.max(ex.usos||0,p.usos||0);
-        ex.moneda=p.moneda||ex.moneda;
-      }else{
-        mapa.set(key,p);
-      }
-    });
-    catPersonal=Array.from(mapa.values());
-    await setDoc(doc(db,'catalogo_familiar','compartido'),{productos:catPersonal,actualizado:new Date().toISOString()});
-  }catch(_){}
+  if(_catTimer)clearTimeout(_catTimer);
+  _catTimer=setTimeout(async()=>{
+    _catTimer=null;
+    try{
+      const s=await getDoc(doc(db,'catalogo_familiar','compartido'));
+      const remoto=s.exists()?(s.data().productos||[]):[];
+      const mapa=new Map();
+      remoto.forEach(p=>mapa.set(p.n.toLowerCase(),p));
+      catPersonal.forEach(p=>{
+        const key=p.n.toLowerCase();
+        if(mapa.has(key)){
+          const ex=mapa.get(key);
+          ex.usos=Math.max(ex.usos||0,p.usos||0);
+          ex.moneda=p.moneda||ex.moneda;
+        }else{
+          mapa.set(key,p);
+        }
+      });
+      catPersonal=Array.from(mapa.values());
+      await setDoc(doc(db,'catalogo_familiar','compartido'),{productos:catPersonal,actualizado:new Date().toISOString()});
+    }catch(_){}
+  },800);
 }
 function regUso(nombre,moneda){
   const i=catPersonal.findIndex(p=>p.n.toLowerCase()===nombre.toLowerCase());
@@ -983,8 +988,9 @@ function catSiNuevo(nombre,moneda){
   const enB=CAT.some(p=>p.n.toLowerCase()===nombre.toLowerCase());
   const enP=catPersonal.some(p=>p.n.toLowerCase()===nombre.toLowerCase());
   if(!enB&&!enP){
-    catPersonal.push({n:nombre,i:'⭐',usos:1,moneda:moneda||'BS',quien:usuarioActual?.nombre||'—',creado:new Date().toISOString()});
-    guardarCat();
+    catPersonal.push({n:nombre,i:'⭐',usos:0,moneda:moneda||'BS',quien:usuarioActual?.nombre||'—',creado:new Date().toISOString()});
+    // No llamar guardarCat aquí — regUso lo llama inmediatamente después
+    // (con throttle ya aplicado en Fix D, evita doble escritura)
   }
 }
 function getMem(nombre){return catPersonal.find(p=>p.n.toLowerCase()===nombre.toLowerCase())||null;}
@@ -1470,9 +1476,21 @@ window.validarIrACaja=function(){
 
 function hacerAcItem(p,q,qN){
   const nN=norm(p.n),idx=nN.indexOf(qN);
-  const a=esc(p.n.slice(0,idx));
-  const m=esc(p.n.slice(idx,idx+q.length));
-  const d=esc(p.n.slice(idx+q.length));
+  // Buscar la posición equivalente en el string original usando regex
+  // para evitar desalineación por acentos/puntuación antes del match
+  let a=esc(p.n),m='',d='';
+  if(idx>=0){
+    const palabras=qN.split(/\s+/).filter(Boolean);
+    const reStr=palabras.map(w=>w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('[^\\s]*\\s+');
+    const re=new RegExp(reStr,'i');
+    const match=p.n.match(re);
+    if(match&&match.index!=null){
+      const ini=match.index,fin=match.index+match[0].length;
+      a=esc(p.n.slice(0,ini));
+      m=esc(p.n.slice(ini,fin));
+      d=esc(p.n.slice(fin));
+    }
+  }
   const quien=p.quien?`<span style="font-size:0.68rem;color:#64748b;margin-left:6px;">— ${esc(p.quien)}</span>`:'';
   let infoPrecio='';
   if(window._baratosCache && window._baratosCache.length>0){
@@ -1990,7 +2008,7 @@ window.pConfirmar=function(pref,id){
     regUso(item.nom,item.moneda);monedaProd=item.moneda;
     window._historialGuardado=false;
   }
-  catSiNuevo(item.nom,item.moneda);itemExpandido=null;vib(50);
+  
   toast(pref==='c'?'✓ '+item.nom+' confirmado':'✓ '+item.nom+' guardado');
   guardarProgreso();if(pref==='p')renderF2();else renderF3();
 };
@@ -2165,6 +2183,8 @@ window.onNomCargar=function(inp){
 };
 
 window.cargarGuardar=async function(){
+  const btn=document.querySelector('#screenCargar .btn-success');
+  if(btn&&btn.disabled)return;
   const abasto=document.getElementById('cargarAbastoNom').value.trim();
   const producto=document.getElementById('cargarProdNom').value.trim();
   const precio=pNum(document.getElementById('cargarValor').value);
@@ -2179,6 +2199,7 @@ window.cargarGuardar=async function(){
     return;
   }
   document.getElementById('cargarErr').style.display='none';
+  if(btn){btn.disabled=true;btn.textContent='⏳ Guardando...';}
   
   const dur=document.getElementById('cargarOfertaDur').value.trim();
   const reg={
@@ -2217,7 +2238,7 @@ window.cargarGuardar=async function(){
     }catch(_){}
   }
   
-  try{
+    try{
     await addDoc(collection(db,'precios_compartidos'),reg);
     catSiNuevo(producto,cargarMoneda);
     regUso(producto,cargarMoneda);
@@ -2226,16 +2247,18 @@ window.cargarGuardar=async function(){
     document.getElementById('cargarValor').value='';
     document.getElementById('cargarOfertaDur').value='';
     cargarIva='incluido';cargarEsOferta=false;
-document.getElementById('cargarIvaAgregar').className='iva-btn';
-document.getElementById('cargarIvaExento').className='iva-btn';
-document.getElementById('cargarIvaIncluido').className='iva-btn ain';
+    document.getElementById('cargarIvaAgregar').className='iva-btn';
+    document.getElementById('cargarIvaExento').className='iva-btn';
+    document.getElementById('cargarIvaIncluido').className='iva-btn ain';
     document.getElementById('cargarOfertaBox').style.display='none';
     document.getElementById('cargarBtnOferta').textContent='🔥 Marcar como oferta';
     document.getElementById('cargarBtnOferta').className='btn-orange';
+    if(btn){btn.disabled=false;btn.textContent='💾 Guardar precio';}
     document.getElementById('cargarProdNom').focus();
   }catch(e){
     toast('Error guardando','#ef4444');
     console.error(e);
+    if(btn){btn.disabled=false;btn.textContent='💾 Guardar precio';}
   }
 };
 
