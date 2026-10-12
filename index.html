@@ -176,7 +176,7 @@ button{width:100%;padding:11px;border-radius:8px;border:none;font-size:0.95rem;f
   </div>
 </div>
 
-< class="screen activo" id="screenInicio">
+<div class="screen activo" id="screenInicio">
   <h1>🛒 Mercado LuAn</h1>
   <p class="subtitle"><span class="sync-dot" id="syncDot"></span><span class="sync-label" id="syncLabel">Conectando...</span></p>
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
@@ -2500,6 +2500,306 @@ Object.keys(porAbasto).forEach(ab=>{
   await cargarListaProductos();
 };
 
+// ══ LUAN USA ══════════════════════════════════════════
+const TIENDAS_USA = ['Walmart','Target','Costco',"Sam's Club",'Kroger','Publix','Aldi','Dollar Tree','Family Dollar','CVS','Walgreens','Best Buy','Home Depot','Amazon'];
+
+let pedidoActual=null;
+
+function calcTaxItem(precioUnit,pct){
+  if(!precioUnit||!pct)return 0;
+  return Math.round(precioUnit*pct)/100;
+}
+
+window.abrirUSA=async function(){
+  mostrarScreen('screenUSA');
+  await cargarPedidosUSA();
+};
+
+async function cargarPedidosUSA(){
+  const cont=document.getElementById('usaListaPedidos');
+  cont.innerHTML='<p style="color:#64748b;text-align:center;padding:20px;">Cargando...</p>';
+  try{
+    const snap=await getDocs(collection(db,'pedidos_usa'));
+    const todos=[];
+    snap.forEach(d=>{todos.push({id:d.id,...d.data()});});
+    todos.sort((a,b)=>(b.creado||'').localeCompare(a.creado||''));
+    const abiertos=todos.filter(p=>p.abierto);
+    const cerrados=todos.filter(p=>!p.abierto);
+    if(todos.length===0){
+      cont.innerHTML='<p style="color:#64748b;text-align:center;padding:20px;line-height:1.5;">Aún no hay pedidos.<br>Toca ➕ Nuevo pedido para empezar.</p>';
+      return;
+    }
+    let html='';
+    if(abiertos.length>0){
+      html+='<div style="font-size:0.72rem;color:#38bdf8;text-transform:uppercase;letter-spacing:0.5px;font-weight:bold;margin-bottom:6px;">📂 Pedidos abiertos</div>';
+      abiertos.forEach(p=>{html+=renderPedidoCard(p,'#10b981');});
+    }
+    if(cerrados.length>0){
+      html+='<div style="font-size:0.72rem;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;font-weight:bold;margin:16px 0 6px;">📁 Pedidos cerrados</div>';
+      cerrados.forEach(p=>{html+=renderPedidoCard(p,'#64748b');});
+    }
+    cont.innerHTML=html;
+  }catch(e){
+    cont.innerHTML='<p style="color:#ef4444;text-align:center;padding:20px;">Error cargando pedidos</p>';
+    console.error(e);
+  }
+}
+
+function renderPedidoCard(p,color){
+  const fecha=p.creado?new Date(p.creado).toLocaleDateString('es-VE',{day:'2-digit',month:'2-digit',year:'numeric'}):'—';
+  return`<div class="card" style="padding:12px;margin-bottom:8px;cursor:pointer;border-left:3px solid ${color};" data-accion="abrir-pedido" data-id="${p.id}">
+    <div style="font-size:0.95rem;font-weight:bold;color:#f1f5f9;">${esc(p.nombre||'Sin nombre')}</div>
+    <div style="font-size:0.72rem;color:#64748b;margin-top:4px;">👤 ${esc(p.usuario_nombre||'—')} · ${fecha}</div>
+    ${p.abierto?'<div style="font-size:0.7rem;color:#10b981;margin-top:4px;">🟢 Abierto</div>':'<div style="font-size:0.7rem;color:#64748b;margin-top:4px;">🔵 Cerrado</div>'}
+  </div>`;
+}
+
+document.getElementById('usaListaPedidos').addEventListener('click',e=>{
+  const card=e.target.closest('[data-accion="abrir-pedido"]');
+  if(!card)return;
+  abrirPedidoUSA(card.dataset.id);
+});
+
+window.crearNuevoPedidoUSA=function(){
+  abrirPrompt('➕ Nuevo pedido','Escribe un nombre (ej: Pedido Noviembre):','',async function(nombre){
+    if(!nombre)return;
+    try{
+      const reg={
+        nombre:nombre,
+        usuario_id:usuarioActual?.id||'—',
+        usuario_nombre:usuarioActual?.nombre||'—',
+        abierto:true,
+        creado:new Date().toISOString(),
+        cerrado_en:null,
+        notas:''
+      };
+      const ref=await addDoc(collection(db,'pedidos_usa'),reg);
+      toast('✅ Pedido creado');
+      await abrirPedidoUSA(ref.id);
+    }catch(e){
+      toast('Error creando pedido','#ef4444');
+      console.error(e);
+    }
+  });
+};
+
+window.abrirPedidoUSA=async function(pedidoId){
+  try{
+    const s=await getDoc(doc(db,'pedidos_usa',pedidoId));
+    if(!s.exists()){toast('Pedido no encontrado','#ef4444');return;}
+    pedidoActual={id:pedidoId,...s.data()};
+    mostrarScreen('screenUSAPedido');
+    document.getElementById('usaPedidoTitulo').textContent='📦 '+(pedidoActual.nombre||'Pedido');
+    const fecha=pedidoActual.creado?new Date(pedidoActual.creado).toLocaleDateString('es-VE',{day:'2-digit',month:'2-digit',year:'numeric'}):'—';
+    document.getElementById('usaPedidoSub').textContent='👤 '+(pedidoActual.usuario_nombre||'—')+' · '+fecha+' · '+(pedidoActual.abierto?'🟢 Abierto':'🔵 Cerrado');
+    const acc=document.getElementById('usaPedidoAcciones');
+    if(pedidoActual.abierto){
+      acc.innerHTML='<button class="btn-primary" onclick="irAAgregarItemUSA()" style="margin-bottom:8px;">➕ Agregar producto</button><button class="btn-danger" onclick="cerrarPedidoUSA()" style="margin:0;">🔒 Cerrar pedido</button>';
+    }else{
+      acc.innerHTML='';
+    }
+    await cargarItemsPedido();
+  }catch(e){
+    toast('Error abriendo pedido','#ef4444');
+    console.error(e);
+  }
+};
+
+async function cargarItemsPedido(){
+  const cont=document.getElementById('usaPedidoItems');
+  cont.innerHTML='<p style="color:#64748b;text-align:center;padding:20px;">Cargando items...</p>';
+  try{
+    const snap=await getDocs(collection(db,'items_usa'));
+    const items=[];
+    snap.forEach(d=>{
+      const r=d.data();
+      if(r.pedido_id===pedidoActual.id)items.push({id:d.id,...r});
+    });
+    items.sort((a,b)=>(a.tienda||'').localeCompare(b.tienda||'')||(a.producto||'').localeCompare(b.producto||''));
+    if(items.length===0){
+      cont.innerHTML='<p style="color:#64748b;text-align:center;padding:20px;">Aún no hay productos en este pedido.</p>';
+      return;
+    }
+    const totalUSD=items.reduce((s,i)=>s+((i.precio_unitario||0)+(i.tax_unitario||0))*(i.cantidad||1),0);
+    let html='';
+    items.forEach(i=>{
+      const sub=(i.precio_unitario||0)*(i.cantidad||1);
+      const tax=(i.tax_unitario||0)*(i.cantidad||1);
+      const tot=sub+tax;
+      html+=`<div class="card" style="padding:10px;margin-bottom:6px;">
+        <div style="font-size:0.88rem;font-weight:bold;color:#f1f5f9;">🛒 ${esc(i.producto)}</div>
+        <div style="font-size:0.72rem;color:#64748b;margin-top:3px;">🏪 ${esc(i.tienda)} · ${i.fecha_compra||'—'} · ×${i.cantidad||1}</div>
+        <div style="font-size:0.8rem;color:#38bdf8;margin-top:4px;">$${f2(i.precio_unitario)} + $${f2(i.tax_unitario)} tax = <b>$${f2(tot)}</b></div>
+      </div>`;
+    });
+    html+=`<div class="card" style="background:#0c2a3a;border:2px solid #38bdf8;margin-top:10px;text-align:center;">
+      <div style="font-size:0.75rem;color:#94a3b8;">TOTAL DEL PEDIDO</div>
+      <div style="font-size:1.3rem;font-weight:bold;color:#38bdf8;margin-top:4px;">$${f2(totalUSD)}</div>
+      <div style="font-size:0.75rem;color:#64748b;">${items.length} items</div>
+    </div>`;
+    cont.innerHTML=html;
+  }catch(e){
+    cont.innerHTML='<p style="color:#ef4444;text-align:center;padding:20px;">Error cargando items</p>';
+  }
+}
+
+window.cerrarPedidoUSA=function(){
+  abrirModal('🔒 Cerrar pedido','¿Cerrar este pedido? Ya no se podrán agregar más productos.',
+    async function(){
+      try{
+        await setDoc(doc(db,'pedidos_usa',pedidoActual.id),{abierto:false,cerrado_en:new Date().toISOString()},{merge:true});
+        toast('🔒 Pedido cerrado');
+        await abrirPedidoUSA(pedidoActual.id);
+      }catch(e){
+        toast('Error cerrando','#ef4444');
+      }
+    },
+    '🔒 Cerrar');
+};
+
+window.volverAUSA=function(){
+  pedidoActual=null;
+  mostrarScreen('screenUSA');
+  cargarPedidosUSA();
+};
+
+window.irAAgregarItemUSA=function(){
+  if(!pedidoActual){toast('Primero abre un pedido','#ef4444');return;}
+  document.getElementById('usaProdNom').value='';
+  document.getElementById('usaTienda').value='';
+  document.getElementById('usaTiendaOtra').value='';
+  document.getElementById('usaTiendaOtra').style.display='none';
+  document.getElementById('usaFecha').value=hoyISO();
+  document.getElementById('usaPrecio').value='';
+  document.getElementById('usaTax').value='';
+  document.getElementById('usaQty').value='1';
+  document.getElementById('usaCalc').style.display='none';
+  document.getElementById('usaErr').style.display='none';
+  document.getElementById('usaAgregarSub').textContent='Pedido: '+(pedidoActual.nombre||'—');
+  mostrarScreen('screenUSAAgregar');
+  setTimeout(()=>document.getElementById('usaProdNom').focus(),150);
+};
+
+window.volverAPedidoUSA=function(){
+  if(pedidoActual)abrirPedidoUSA(pedidoActual.id);
+  else volverAUSA();
+};
+
+window.usaQty=function(d){
+  const i=document.getElementById('usaQty');
+  i.value=Math.max(1,(parseInt(i.value)||1)+d);
+  vib(30);
+  actualizarCalcUSA();
+};
+
+window.actualizarCalcUSA=function(){
+  const precio=pNum(document.getElementById('usaPrecio').value);
+  const pct=pNum(document.getElementById('usaTax').value);
+  const qty=parseInt(document.getElementById('usaQty').value)||1;
+  const hint=document.getElementById('usaCalc');
+  if(!precio||precio<=0){hint.style.display='none';return;}
+  const taxUnit=calcTaxItem(precio,pct||0);
+  const total=(precio+taxUnit)*qty;
+  hint.textContent='$'+f2(precio)+' + $'+f2(taxUnit)+' tax (×'+qty+') = $'+f2(total);
+  hint.style.display='block';
+};
+
+['usaPrecio','usaTax','usaQty'].forEach(id=>{
+  const el=document.getElementById(id);
+  if(el)el.addEventListener('input',actualizarCalcUSA);
+});
+
+document.getElementById('usaTienda').addEventListener('change',function(){
+  document.getElementById('usaTiendaOtra').style.display=(this.value==='Otra')?'block':'none';
+});
+
+window.guardarItemUSA=async function(){
+  if(!pedidoActual||!pedidoActual.abierto){toast('El pedido no está abierto','#ef4444');return;}
+  const producto=document.getElementById('usaProdNom').value.trim();
+  const tiendaSel=document.getElementById('usaTienda').value;
+  const tiendaOtra=document.getElementById('usaTiendaOtra').value.trim();
+  const tienda=tiendaSel==='Otra'?tiendaOtra:tiendaSel;
+  const fecha=document.getElementById('usaFecha').value;
+  const precio=pNum(document.getElementById('usaPrecio').value);
+  const pct=pNum(document.getElementById('usaTax').value)||0;
+  const qty=parseInt(document.getElementById('usaQty').value)||1;
+  const err=document.getElementById('usaErr');
+  if(!producto||!tienda||!precio||precio<=0||!fecha){
+    err.style.display='block';
+    err.textContent='Completa producto, tienda, fecha y precio.';
+    return;
+  }
+  err.style.display='none';
+  const taxUnit=calcTaxItem(precio,pct);
+  try{
+    await addDoc(collection(db,'items_usa'),{
+      pedido_id:pedidoActual.id,
+      producto:producto,
+      producto_norm:norm(producto),
+      tienda:tienda,
+      fecha_compra:fecha,
+      precio_unitario:precio,
+      tax_pct:pct,
+      tax_unitario:taxUnit,
+      cantidad:qty,
+      usuario_id:usuarioActual?.id||'—',
+      usuario_nombre:usuarioActual?.nombre||'—',
+      creado:new Date().toISOString()
+    });
+    toast('✅ '+producto+' agregado');
+    vib(50);
+    await abrirPedidoUSA(pedidoActual.id);
+  }catch(e){
+    toast('Error guardando','#ef4444');
+    console.error(e);
+  }
+};
+
+window.irAConsultarUSA=function(){
+  document.getElementById('usaBuscar').value='';
+  document.getElementById('usaResultados').innerHTML='';
+  mostrarScreen('screenUSAConsultar');
+  setTimeout(()=>document.getElementById('usaBuscar').focus(),150);
+};
+
+window.onUSABuscar=function(q){
+  const qN=norm(q);
+  const cont=document.getElementById('usaResultados');
+  if(!qN){cont.innerHTML='';return;}
+  cont.innerHTML='<p style="color:#64748b;text-align:center;padding:20px;">Buscando...</p>';
+  clearTimeout(window._usaBuscarTimer);
+  window._usaBuscarTimer=setTimeout(async()=>{
+    try{
+      const snap=await getDocs(collection(db,'items_usa'));
+      const resultados=[];
+      snap.forEach(d=>{
+        const r=d.data();
+        if(!r.producto_norm)return;
+        if(r.producto_norm.includes(qN))resultados.push({id:d.id,...r});
+      });
+      if(resultados.length===0){
+        cont.innerHTML='<p style="color:#64748b;text-align:center;padding:20px;">Sin resultados.</p>';
+        return;
+      }
+      resultados.sort((a,b)=>(b.creado||'').localeCompare(a.creado||''));
+      let html='';
+      resultados.forEach(r=>{
+        const taxU=r.tax_unitario||0;
+        html+=`<div class="card" style="padding:10px;margin-bottom:6px;">
+          <div style="font-size:0.9rem;font-weight:bold;color:#f1f5f9;">🛒 ${esc(r.producto)}</div>
+          <div style="font-size:0.72rem;color:#64748b;margin-top:3px;">🏪 ${esc(r.tienda)} · ${r.fecha_compra||'—'} · ×${r.cantidad||1}</div>
+          <div style="font-size:0.82rem;color:#34d399;margin-top:4px;">$${f2(r.precio_unitario)} + $${f2(taxU)} tax = <b>$${f2((r.precio_unitario||0)+taxU)}</b></div>
+          <div style="font-size:0.68rem;color:#64748b;margin-top:2px;">👤 ${esc(r.usuario_nombre||'—')}</div>
+        </div>`;
+      });
+      cont.innerHTML=html;
+    }catch(e){
+      cont.innerHTML='<p style="color:#ef4444;text-align:center;padding:20px;">Error buscando</p>';
+    }
+  },250);
+};
+// ══ FIN LUAN USA ══════════════════════════════════════════
+  
 // ══ ARRANQUE ═══════════════════════════════════════════
 document.getElementById('nom1').addEventListener('keypress',e=>{
   if(e.key!=='Enter')return;
@@ -2613,4 +2913,3 @@ arrancarApp().catch(e=>{
 </script>
 </body>
 </html>
-
