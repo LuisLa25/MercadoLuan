@@ -295,7 +295,7 @@ button{width:100%;padding:11px;border-radius:8px;border:none;font-size:0.95rem;f
     </div>
     <div class="config-section">
       <h3>ℹ️ Acerca de</h3>
-      <p>Mercado LuAn v2 · LuAn System™<br>Lista · Cargar Precio · Consultar · Historial</p>
+      <p>Mercado LuAn v2 · LuAn System™<br>Lista · Cargar Precio · Consultar · Historial · LuAn USA</p>
     </div>
   </div>
 </div>
@@ -2109,13 +2109,16 @@ document.getElementById('cargarLblPrecio').textContent='Precio ($)';
   document.getElementById('cargarIvaIncluido').className='iva-btn ain';
   mostrarScreen('screenCargar');
 };  
-
 window.abrirPickerCargar=function(){
   const cont=document.getElementById('pickerLista');
-  const html=MIS_MERCADOS.map(m=>
-    `<button onclick="seleccionarMercadoCargar('${m.replace(/'/g,"\\'")}');event.stopPropagation()" style="width:100%;padding:14px;margin-top:6px;border-radius:8px;border:1px solid #334155;background:#0f172a;color:#f1f5f9;font-size:0.95rem;font-weight:bold;cursor:pointer;text-align:left;">🏪 ${m}</button>`
+  cont.innerHTML=MIS_MERCADOS.map(m=>
+    `<button data-mercado="${esc(m)}" style="width:100%;padding:14px;margin-top:6px;border-radius:8px;border:1px solid #334155;background:#0f172a;color:#f1f5f9;font-size:0.95rem;font-weight:bold;cursor:pointer;text-align:left;">🏪 ${esc(m)}</button>`
   ).join('');
-  cont.innerHTML=html;
+  cont.onclick=function(e){
+    const btn=e.target.closest('[data-mercado]');
+    if(!btn)return;
+    seleccionarMercadoCargar(btn.dataset.mercado);
+  };
   document.getElementById('modalPicker').classList.add('show');
 };
 
@@ -2425,8 +2428,7 @@ window.verProducto=async function(nombre){
     const hoy=hoyISO();
     const hace15=new Date();hace15.setDate(hace15.getDate()-15);
     const hace15ISO=fechaISO(hace15);
-    
-    const lista=[];
+   
     const listaPrecios=[];
 Object.keys(porAbasto).forEach(ab=>{
       const regs=porAbasto[ab].sort((a,b)=>b.fecha.localeCompare(a.fecha));
@@ -2609,12 +2611,10 @@ async function cargarItemsPedido(){
   const cont=document.getElementById('usaPedidoItems');
   cont.innerHTML='<p style="color:#64748b;text-align:center;padding:20px;">Cargando items...</p>';
   try{
-    const snap=await getDocs(collection(db,'items_usa'));
-    const items=[];
-    snap.forEach(d=>{
-      const r=d.data();
-      if(r.pedido_id===pedidoActual.id)items.push({id:d.id,...r});
-    });
+   const q2=query(collection(db,'items_usa'),where('pedido_id','==',pedidoActual.id));
+const snap=await getDocs(q2);
+const items=[];
+snap.forEach(d=>items.push({id:d.id,...d.data()}));
     items.sort((a,b)=>(a.tienda||'').localeCompare(b.tienda||'')||(a.producto||'').localeCompare(b.producto||''));
     if(items.length===0){
       cont.innerHTML='<p style="color:#64748b;text-align:center;padding:20px;">Aún no hay productos en este pedido.</p>';
@@ -2724,11 +2724,11 @@ window.guardarItemUSA=async function(){
   const pct=pNum(document.getElementById('usaTax').value)||0;
   const qty=parseInt(document.getElementById('usaQty').value)||1;
   const err=document.getElementById('usaErr');
-  if(!producto||!tienda||!precio||precio<=0||!fecha){
-    err.style.display='block';
-    err.textContent='Completa producto, tienda, fecha y precio.';
-    return;
-  }
+  if(!producto||!tienda||!precio||precio<=0||!fecha||!/^\d{4}-\d{2}-\d{2}$/.test(fecha)){
+  err.style.display='block';
+  err.textContent='Completa producto, tienda, fecha y precio.';
+  return;
+}
   err.style.display='none';
   const taxUnit=calcTaxItem(precio,pct);
   try{
@@ -2913,4 +2913,4 @@ arrancarApp().catch(e=>{
 </script>
 </body>
 </html>
-
+📱 
