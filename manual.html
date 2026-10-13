@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manual · Mercado LuAn</title>
+<meta name="theme-color" content="#f97316">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;background:#0f172a;color:#f8fafc;min-height:100vh;line-height:1.6;}
+header{background:#1e293b;border-bottom:1px solid #334155;padding:14px 16px;position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+header h1{font-size:1.05rem;color:#38bdf8;font-weight:bold;}
+header a{color:#38bdf8;font-size:0.82rem;text-decoration:none;border:1px solid #334155;padding:6px 12px;border-radius:20px;}
+header a:active{background:#0c2a3a;}
+.layout{display:grid;grid-template-columns:1fr;max-width:1100px;margin:0 auto;}
+@media(min-width:820px){.layout{grid-template-columns:260px 1fr;gap:20px;padding:20px;}}
+nav{background:#1e293b;border-bottom:1px solid #334155;padding:12px 16px;}
+@media(min-width:820px){nav{background:none;border:none;padding:0;position:sticky;top:80px;align-self:start;max-height:calc(100vh - 100px);overflow-y:auto;}}
+nav h2{font-size:0.72rem;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;}
+nav ul{list-style:none;}
+nav li{margin:2px 0;}
+nav a{display:block;padding:8px 12px;color:#cbd5e1;text-decoration:none;border-radius:8px;font-size:0.88rem;cursor:pointer;user-select:none;}
+nav a:active,nav a.activo{background:#0c2a3a;color:#38bdf8;}
+main{padding:20px 16px 60px;}
+.seccion{display:none;}
+.seccion.activa{display:block;animation:fadeIn 0.2s;}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+main h2{font-size:1.4rem;color:#38bdf8;margin-bottom:6px;}
+main h3{font-size:1.05rem;color:#a78bfa;margin-top:24px;margin-bottom:10px;border-bottom:1px solid #334155;padding-bottom:6px;}
+main h4{font-size:0.95rem;color:#f97316;margin-top:16px;margin-bottom:6px;}
+main p{margin:8px 0;color:#cbd5e1;}
+main ul,main ol{margin:8px 0 8px 20px;color:#cbd5e1;}
+main li{margin:4px 0;}
+main strong{color:#f1f5f9;}
+main code{background:#1e293b;border:1px solid #334155;padding:2px 6px;border-radius:4px;font-size:0.85em;color:#38bdf8;}
+main kbd{background:#334155;color:#f1f5f9;padding:1px 6px;border-radius:4px;font-size:0.82em;}
+.card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:14px 16px;margin:14px 0;}
+.card-titulo{font-size:0.9rem;font-weight:bold;color:#f1f5f9;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+.pasos{background:#0f172a;border-left:3px solid #f97316;padding:12px 14px 12px 18px;border-radius:8px;margin:12px 0;}
+.pasos ol{margin-left:18px;}
+.pasos li{margin:8px 0;}
+.tip{background:#0c2a3a;border:1px solid #38bdf8;border-radius:10px;padding:12px 14px;margin:14px 0;font-size:0.9rem;}
+.tip::before{content:"💡 ";font-size:1.1rem;}
+.warn{background:#1c0a00;border:1px solid #fb923c;border-radius:10px;padding:12px 14px;margin:14px 0;font-size:0.9rem;color:#fb923c;}
+.warn::before{content:"⚠️ ";font-size:1.1rem;}
+.ok{background:#001a0d;border:1px solid #10b981;border-radius:10px;padding:12px 14px;margin:14px 0;font-size:0.9rem;color:#34d399;}
+.ok::before{content:"✅ ";font-size:1.1rem;}
+.boton{display:inline-block;background:#1e293b;border:2px solid #334155;border-radius:10px;padding:8px 14px;margin:4px 4px 4px 0;font-size:0.85rem;font-weight:bold;color:#f1f5f9;}
+.boton.primario{border-color:#0ea5e9;background:#0c2a3a;color:#38bdf8;}
+.boton.exito{border-color:#10b981;background:#001a0d;color:#34d399;}
+.boton.peligro{border-color:#ef4444;background:#1c0a00;color:#f87171;}
+.boton.naranja{border-color:#f97316;background:#1c0a00;color:#fb923c;}
+.boton.wa{border-color:#25d366;background:#001a0d;color:#34d399;}
+.grid2{display:grid;grid-template-columns:1fr;gap:10px;}
+@media(min-width:520px){.grid2{grid-template-columns:1fr 1fr;}}
+.tabla{width:100%;border-collapse:collapse;margin:12px 0;font-size:0.85rem;}
+.tabla th,.tabla td{border:1px solid #334155;padding:8px 10px;text-align:left;vertical-align:top;}
+.tabla th{background:#1e293b;color:#94a3b8;font-weight:bold;}
+.tabla td{color:#cbd5e1;}
+.sub{color:#64748b;font-size:0.75rem;margin-bottom:20px;}
+.volver{display:inline-block;margin:20px 0 0;padding:8px 14px;background:none;border:1px solid #334155;color:#38bdf8;border-radius:20px;text-decoration:none;font-size:0.85rem;cursor:pointer;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📖 Manual · Mercado LuAn</h1>
+  <a href="./index.html">← Ir a la app</a>
+</header>
+
+<div class="layout">
+  <nav>
+    <h2>Contenido</h2>
+    <ul id="indice">
+      <li><a data-sec="bienvenida">👋 Bienvenida</a></li>
+      <li><a data-sec="primer-uso">👤 Primer uso</a></li>
+      <li><a data-sec="tasa">💵 Tasa BCV</a></li>
+      <li><a data-sec="inicio">🏠 Pantalla de inicio</a></li>
+      <li><a data-sec="mercado">🛒 Mercado LuAn</a></li>
+      <li><a data-sec="cargar">💾 Cargar Precio</a></li>
+      <li><a data-sec="consultar">🔎 Consultar Precios</a></li>
+      <li><a data-sec="historial">📊 Historial</a></li>
+      <li><a data-sec="baratos">💰 Los más baratos</a></li>
+      <li><a data-sec="usa">📦 LuAn USA</a></li>
+      <li><a data-sec="config">⚙️ Configuración</a></li>
+      <li><a data-sec="faq">❓ Preguntas frecuentes</a></li>
+      <li><a data-sec="problemas">🛠️ Solución de problemas</a></li>
+    </ul>
+  </nav>
+
+  <main>
+
+    <!-- ══ BIENVENIDA ══ -->
+    <section class="seccion activa" id="bienvenida">
+      <h2>👋 Bienvenida</h2>
+      <p class="sub">Guía completa de Mercado LuAn</p>
+      <p>Bienvenida al manual oficial de <strong>Mercado LuAn</strong>, la app familiar para organizar las compras del mercado en Venezuela y las importaciones desde Estados Unidos.</p>
+      <p>Este manual está hecho para que cualquiera de la familia pueda aprender a usarla en pocos minutos, sin tecnicismos. Si algo no queda claro, revisa la sección de <strong>Preguntas frecuentes</strong> al final.</p>
+
+      <div class="card">
+        <div class="card-titulo">🎯 La app tiene 2 módulos</div>
+        <div class="grid2">
+          <div class="boton primario" style="display:block;padding:12px;">🛒 <strong>Mercado LuAn</strong><br><span style="font-size:0.78rem;font-weight:normal;">Para comprar en Venezuela</span></div>
+          <div class="boton naranja" style="display:block;padding:12px;">📦 <strong>LuAn USA</strong><br><span style="font-size:0.78rem;font-weight:normal;">Para importaciones desde EE.UU.</span></div>
+        </div>
+      </div>
+
+      <div class="tip">Puedes volver a este manual en cualquier momento desde el botón <code>← Ir a la app</code> arriba a la derecha.</div>
+    </section>
+
+    <!-- ══ PRIMER USO ══ -->
+    <section class="seccion" id="primer-uso">
+      <h2>👤 Primer uso</h2>
+      <p class="sub">Cómo empezar a usar la app</p>
+
+      <p>La primera vez que abres la app te va a pedir tu <strong>nombre</strong>. Solo se pide una vez y sirve para firmar todo lo que hagas: las listas, los precios, el historial.</p>
+
+      <div class="pasos">
+        <strong>Paso a paso:</strong>
+        <ol>
+          <li>Abre la app.</li>
+          <li>Verás la pantalla <strong>"¿Cómo te llamas?"</strong>.</li>
+          <li>Escribe tu nombre (ej: <code>Luis</code>, <code>Sandra</code>, <code>La Ñeca</code>).</li>
+          <li>Toca el botón <span class="boton exito">✓ Continuar</span>.</li>
+        </ol>
+      </div>
+
+      <div class="tip">Si quieres cambiar tu nombre después, ve a <strong>⚙️ Configuración</strong> desde la pantalla principal.</div>
+    </section>
+
+    <!-- ══ TASA ══ -->
+    <section class="seccion" id="tasa">
+      <h2>💵 Tasa BCV</h2>
+      <p class="sub">El precio del dólar del día</p>
+
+      <p>La <strong>tasa</strong> es lo que vale 1 dólar en bolívares según el BCV. Sin tasa, la app no puede calcular totales, ni comparar precios, ni generar análisis.</p>
+
+      <h3>¿Cuándo se pide?</h3>
+      <ul>
+        <li>La primera vez que usas la app.</li>
+        <li>Cuando es un día nuevo y no hay tasa cargada.</li>
+        <li>Después de las 5pm (opcional), si el BCV ya publicó la de mañana.</li>
+      </ul>
+
+      <h3>Cómo cargarla</h3>
+      <div class="pasos">
+        <ol>
+          <li>Cuando aparezca la pantalla <strong>💵 Tasa BCV</strong>, escribe el precio del dólar (ej: <code>875.65</code>).</li>
+          <li>Toca <span class="boton exito">✓ Guardar y continuar</span>.</li>
+        </ol>
+      </div>
+
+      <div class="tip">Si te equivocas, puedes cambiarla desde <strong>⚙️ Configuración → 💵 Tasa BCV</strong>.</div>
+      <div class="warn">No pongas la tasa en formato <code>1.500,50</code>. Usa <code>1500.50</code> o <code>1500</code>, porque el input solo acepta punto.</div>
+    </section>
+
+    <!-- ══ INICIO ══ -->
+    <section class="seccion" id="inicio">
+      <h2>🏠 Pantalla de inicio</h2>
+      <p class="sub">El centro de todo</p>
+
+      <p>Es la primera pantalla que ves después del login. Desde aquí se accede a todas las funciones.</p>
+
+      <h3>Qué ves de arriba a abajo</h3>
+      <table class="tabla">
+        <tr><th>Elemento</th><th>Para qué sirve</th></tr>
+        <tr><td>🟢 <strong>Sincronizado ✓</strong></td><td>Puntito de color: verde (todo bien), amarillo (sincronizando), rojo (sin conexión, modo local)</td></tr>
+        <tr><td>👤 <strong>Tu nombre</strong></td><td>Muestra quién está usando la app</td></tr>
+        <tr><td>⚙️ <strong>Configuración</strong></td><td>Cambiar nombre, tasa, limpiar datos</td></tr>
+        <tr><td>📋 <strong>Lista en progreso</strong></td><td>Aparece si dejaste una lista a medias. Puedes <strong>▶ Continuar</strong> o <strong>🗑️ Descartar</strong></td></tr>
+        <tr><td>⚙️ 💵 <strong>Tasa: XXX Bs/$</strong></td><td>Muestra la tasa vigente y hace cuántos días se cargó</td></tr>
+        <tr><td>🔥 <strong>Ofertas recientes</strong></td><td>Las últimas ofertas marcadas por la comunidad</td></tr>
+      </table>
+
+      <h3>Los 6 botones grandes</h3>
+      <div class="grid2">
+        <div class="boton primario" style="display:block;padding:12px;">🛒 <strong>Mercado LuAn</strong><br><span style="font-size:0.78rem;font-weight:normal;">Crear lista de compra</span></div>
+        <div class="boton primario" style="display:block;padding:12px;">💾 <strong>Cargar Precio</strong><br><span style="font-size:0.78rem;font-weight:normal;">Registrar precios</span></div>
+        <div class="boton primario" style="display:block;padding:12px;">🔎 <strong>Consultar Precios</strong><br><span style="font-size:0.78rem;font-weight:normal;">Dónde está más barato</span></div>
+        <div class="boton primario" style="display:block;padding:12px;">📊 <strong>Historial</strong><br><span style="font-size:0.78rem;font-weight:normal;">Compras anteriores</span></div>
+        <div class="boton primario" style="display:block;padding:12px;">💰 <strong>Los más baratos</strong><br><span style="font-size:0.78rem;font-weight:normal;">Ranking de la comunidad</span></div>
+        <div class="boton naranja" style="display:block;padding:12px;">📦 <strong>LuAn USA</strong><br><span style="font-size:0.78rem;font-weight:normal;">Compras de importación</span></div>
+      </div>
+    </section>
+
+    <!-- ══ MERCADO ══ -->
+    <section class="seccion" id="mercado">
+      <h2>🛒 Mercado LuAn</h2>
+      <p class="sub">Crear una lista de compra paso a paso</p>
+
+      <p>Es la función principal. Te guía por <strong>4 fases</strong> para ir al mercado con una lista ordenada y clara.</p>
+
+      <div class="card">
+        <div class="card-titulo">Las 4 fases</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <div class="boton">📝 Lista</div>
+          <div class="boton">🏪 Pasillo</div>
+          <div class="boton">🛒 Caja</div>
+          <div class="boton">✅ Total</div>
+        </div>
+        <p style="font-size:0.85rem;margin-top:10px;">Arriba de la pantalla ves la barra con las 4 fases. Puedes tocar cualquiera para ir, pero lo normal es hacerlo en orden.</p>
+      </div>
+
+      <h3>📝 Fase 1 — Lista</h3>
+      <p>Aquí <strong>anotas qué vas a comprar</strong>.</p>
+      <div class="pasos">
+        <ol>
+          <li>En <strong>"Nombre del producto"</strong>, empieza a escribir (ej: <code>Azúcar</code>).</li>
+          <li>Aparecerán sugerencias:
+            <ul>
+              <li><strong>⭐ Tus productos</strong> — los que ya usaste antes.</li>
+              <li><strong>📦 Catálogo</strong> — los 110 productos predefinidos.</li>
+            </ul>
+          </li>
+          <li>Toca la sugerencia, o sigue escribiendo tu propio nombre.</li>
+          <li>Toca <span class="boton exito">➕ Agregar a la lista</span>.</li>
+        </ol>
+      </div>
+      <p>Cada producto en la lista tiene 3 botones:</p>
+      <ul>
+        <li><strong>☰</strong> — arrastra para reordenar (útil para ordenar por pasillo).</li>
+        <li><strong>🔎</strong> — ver en qué abastos está y a qué precio.</li>
+        <li><strong>✕</strong> — eliminar de la lista.</li>
+      </ul>
+      <p style="margin-top:12px;">Al pie de la lista:</p>
+      <div>
+        <span class="boton primario">🔎 Analizar precios de mi lista</span>
+        <span class="boton naranja">🏪 Ir al mercado →</span>
+        <span class="boton wa">📲 Compartir lista</span>
+      </div>
+
+      <h3>🏪 Fase 2 — Pasillo</h3>
+      <p>Aquí <strong>cargas los precios reales</strong> que ves en el abasto.</p>
+      <div class="pasos">
+        <ol>
+          <li>Toca un producto de la lista.</li>
+          <li>Se abre un panel con:
+            <ul>
+              <li><strong>Moneda del precio</strong> — 🟢 Bs o 🔵 $</li>
+              <li><strong>Precio</strong> — el valor unitario</li>
+              <li><strong>Cantidad</strong> — con botones − y +</li>
+              <li><strong>IVA</strong> — <code>+16%</code>, <code>(E) Exento</code>, o <code>Incluido</code></li>
+              <li><strong>⚖️ Cobran por peso/volumen</strong> — actívalo si el precio es por kg o por litro</li>
+            </ul>
+          </li>
+          <li>Llena los campos.</li>
+          <li>Toca <span class="boton exito">✓ Confirmar</span>.</li>
+        </ol>
+      </div>
+      <div class="tip">Si llenas precio, IVA y moneda, el panel se cierra solo y marca el producto con ✅. Ahorra tiempo.</div>
+
+      <h3>🛒 Fase 3 — Caja</h3>
+      <p>Aquí <strong>confirmas el precio final</strong> que pagas en caja (a veces varía del pasillo).</p>
+      <div class="pasos">
+        <ol>
+          <li>Toca un producto.</li>
+          <li>Revisa o ajusta el precio, cantidad e IVA.</li>
+          <li>Toca <span class="boton exito">✓ Confirmar</span>.</li>
+        </ol>
+      </div>
+      <p>El producto se marca con ✅ y queda fijo. Al pie: <span class="boton primario">✅ Ver total →</span></p>
+
+      <h3>✅ Fase 4 — Total (Resumen)</h3>
+      <p>Aquí ves <strong>el total de tu compra</strong>.</p>
+      <ul>
+        <li>Lista de todos los productos confirmados.</li>
+        <li><strong>Subtotal base</strong> — en Bs y en $.</li>
+        <li><strong>IVA 16%</strong> — sumado aparte.</li>
+        <li><strong>TOTAL A PAGAR</strong> — en Bs (grande) y en $ (chico).</li>
+      </ul>
+      <p>Al llegar aquí, la compra se guarda <strong>automáticamente en el Historial</strong>.</p>
+      <div>
+        <span class="boton wa">📲 Compartir por WhatsApp</span>
+        <span class="boton">🗑️ Nueva lista</span>
+      </div>
+
+      <div class="tip">Si cierras la app en medio de una lista, todo se guarda. Al volver verás el banner <strong>📋 Lista en progreso</strong>.</div>
+    </section>
+
+    <!-- ══ CARGAR PRECIO ══ -->
+    <section class="seccion" id="cargar">
+      <h2>💾 Cargar Precio</h2>
+      <p class="sub">Compartir precios con la comunidad</p>
+
+      <p>Sirve para <strong>registrar un precio que viste o compraste</strong>, para que los demás usuarios lo vean y puedan comparar.</p>
+
+      <div class="pasos">
+        <strong>Cómo cargar un precio:</strong>
+        <ol>
+          <li><strong>Elegir mercado</strong> — toca <span class="boton primario">🏪 Elegir mercado</span> y elige uno de los 9 predefinidos (EUROMAX, HIPER LÍDER, GRANJA, EL MARACUCHO, LA ESMERALDA, LA MINA, COMEVAL, LA CHIMENEA, EL CHACAL). O escribe otro a mano.</li>
+          <li><strong>Escribir el producto</strong> — igual que en la lista, con autocompletado.</li>
+          <li><strong>Poner el precio</strong>:
+            <ul>
+              <li>Moneda: 🟢 Bs o 🔵 $</li>
+              <li>Precio: el valor</li>
+              <li>IVA: <code>+16%</code>, <code>(E) Exento</code>, o <code>Incluido</code></li>
+            </ul>
+          </li>
+          <li><strong>¿Es oferta?</strong> (opcional) — si el precio es mucho más bajo de lo normal, toca <span class="boton naranja">🔥 Marcar como oferta</span> y escribe por cuánto tiempo (ej: <code>3 días</code>).</li>
+          <li>Toca <span class="boton exito">💾 Guardar precio</span>.</li>
+        </ol>
+      </div>
+
+      <div class="tip">La app detecta sola las ofertas: si el precio es 10% más bajo que el más barato anterior, lo marca como oferta automáticamente.</div>
+      <div class="ok">Al guardar, verás un mensaje de confirmación y el formulario se limpia listo para el siguiente precio.</div>
+    </section>
+
+    <!-- ══ CONSULTAR ══ -->
+    <section class="seccion" id="consultar">
+      <h2>🔎 Consultar Precios</h2>
+      <p class="sub">¿Dónde está más barato?</p>
+
+      <p>Sirve para <strong>comparar precios</strong> de un producto en todos los abastos donde la comunidad lo haya cargado.</p>
+
+      <h3>Buscar un producto</h3>
+      <div class="pasos">
+        <ol>
+          <li>Toca <span class="boton primario">🔎 Consultar Precios</span> desde el inicio.</li>
+          <li>Aparece la lista de <strong>todos los productos con precios cargados</strong>.</li>
+          <li>Toca uno, o escribe en el buscador para filtrar.</li>
+        </ol>
+      </div>
+
+      <h3>Qué verás al tocar un producto</h3>
+      <ul>
+        <li>El ícono y el nombre del producto.</li>
+        <li><strong>Todos los abastos</strong> donde se ha cargado, ordenados <strong>del más barato al más caro</strong>.</li>
+        <li>El más barato tiene la etiqueta <strong>✓ MEJOR</strong> en verde.</li>
+        <li>Al final: <strong>💰 Ahorro vs el más caro</strong>.</li>
+      </ul>
+
+      <h3>Productos consultados</h3>
+      <p>Cada producto que buscas se agrega a una lista arriba, para compararlos juntos. Puedes:</p>
+      <ul>
+        <li>Eliminar uno con <strong>✕</strong>.</li>
+        <li>Tocar <strong>🗑️ Limpiar</strong> para vaciar la lista.</li>
+        <li>Tocar <span class="boton wa">📲 Compartir consulta</span> para mandarla por WhatsApp.</li>
+      </ul>
+    </section>
+
+    <!-- ══ HISTORIAL ══ -->
+    <section class="seccion" id="historial">
+      <h2>📊 Historial</h2>
+      <p class="sub">Tus compras anteriores</p>
+
+      <p>Muestra tus últimas <strong>50 compras</strong> hechas con la lista de mercado.</p>
+
+      <p>Cada línea tiene:</p>
+      <ul>
+        <li>📅 <strong>Fecha</strong> (día/mes/año + hora).</li>
+        <li>👤 <strong>Por quién</strong> — tu nombre.</li>
+        <li>💵 <strong>Total en Bs / Total en $</strong>.</li>
+        <li>📝 <strong>Detalle</strong> — cantidad de productos, la tasa del día, y los primeros 4 productos.</li>
+      </ul>
+
+      <div class="card">
+        <div class="card-titulo">Ejemplo</div>
+        <p style="font-size:0.88rem;">📅 12/10/2026, 01:13 a.m. · por Luisla<br>
+        <strong>$45.20 / 39.585,00 Bs</strong><br>
+        12 productos · $1=875.65 Bs · Arroz, Café, Leche, Pan...</p>
+      </div>
+    </section>
+
+    <!-- ══ BARATOS ══ -->
+    <section class="seccion" id="baratos">
+      <h2>💰 Los más baratos</h2>
+      <p class="sub">Ranking de precios de la comunidad</p>
+
+      <p>Muestra <strong>el mejor precio de cada producto</strong>, de entre todos los cargados por la comunidad.</p>
+
+      <h3>Filtros y búsqueda</h3>
+      <ul>
+        <li><strong>Buscador</strong> — escribe para filtrar por nombre.</li>
+        <li><strong>Botones de límite</strong> — Todos, Top 10, Top 25, Top 50.</li>
+      </ul>
+
+      <h3>Cada producto muestra</h3>
+      <ul>
+        <li>🛒 Nombre.</li>
+        <li>🏪 El abasto con el mejor precio.</li>
+        <li>👤 Quién lo cargó y 📅 cuándo.</li>
+        <li>💰 El precio en $ (verde si es el mejor).</li>
+        <li>🔥 Si es oferta.</li>
+      </ul>
+
+      <div class="tip">Al tocar cualquier producto, te lleva automáticamente a <strong>Consultar Precios</strong> con ese producto cargado.</div>
+
+      <h3>Compartir por WhatsApp</h3>
+      <div>
+        <span class="boton wa">📲 Compartir completo</span>
+        <span class="boton wa">📲 Solo categorías</span>
+      </div>
+      <p style="font-size:0.85rem;margin-top:8px;">El primero manda la lista por categoría <em>y</em> la lista A-Z completa. El segundo solo la agrupada por categoría.</p>
+
+      <h3>Las categorías</h3>
+      <p>🥩 Carnes · 🐟 Pescados · 🍪 Snacks · 🥤 Bebidas · 🥛 Lácteos · 🌾 Granos · 🍝 Pastas · 🥫 Aceites · 🧂 Condimentos · 🧴 Limpieza · 🍞 Panadería · 🥬 Frutas y Verduras · 🛒 Otros</p>
+    </section>
+
+    <!-- ══ USA ══ -->
+    <section class="seccion" id="usa">
+      <h2>📦 LuAn USA</h2>
+      <p class="sub">Compras de importación desde Estados Unidos</p>
+
+      <p>Módulo <strong>nuevo</strong> pensado para quienes compran productos en USA y los envían a Venezuela. Sirve para que la persona que compra (ej: en Atlanta) vaya cargando los productos día por día, y luego en Venezuela puedan verificar cada factura física sin perder tiempo.</p>
+
+      <div class="card">
+        <div class="card-titulo">💡 Para qué sirve este módulo</div>
+        <ul>
+          <li><strong>Guardar el nombre real</strong> del producto (no el código de la factura de Walmart).</li>
+          <li><strong>Asociar cada producto</strong> a su tienda, fecha y precio exacto.</li>
+          <li><strong>Consultar después</strong> para saber en qué factura viene cada cosa.</li>
+          <li><strong>Ver el total</strong> de cada pedido con tax incluido.</li>
+        </ul>
+      </div>
+
+      <h3>🏠 La pantalla principal de USA</h3>
+      <p>Al tocar <span class="boton naranja">📦 LuAn USA</span> desde el inicio, ves:</p>
+      <ul>
+        <li><span class="boton primario">➕ Nuevo pedido</span> — para empezar una caja nueva.</li>
+        <li><span class="boton">🔎 Consultar producto</span> — para buscar un producto ya cargado.</li>
+        <li><strong>📂 Pedidos abiertos</strong> — los que aún se están llenando.</li>
+        <li><strong>📁 Pedidos cerrados</strong> — los que ya se enviaron.</li>
+      </ul>
+
+      <h3>➕ Crear un pedido nuevo</h3>
+      <div class="pasos">
+        <ol>
+          <li>En <strong>LuAn USA</strong>, toca <span class="boton primario">➕ Nuevo pedido</span>.</li>
+          <li>Escribe un nombre descriptivo (ej: <code>Pedido Noviembre</code>, <code>Caja Sandra 12-oct</code>).</li>
+          <li>Toca <strong>Aceptar</strong>.</li>
+          <li>Se abre el pedido vacío, listo para agregar productos.</li>
+        </ol>
+      </div>
+
+      <div class="tip">El nombre puede ser cualquiera. Sirve para que después reconozcas cada caja entre varias.</div>
+
+      <h3>🛒 Agregar un producto</h3>
+      <div class="pasos">
+        <ol>
+          <li>Dentro del pedido, toca <span class="boton primario">➕ Agregar producto</span>.</li>
+          <li><strong>Producto</strong> — escribe el nombre real (ej: <code>Shampoo Pantene Coco 350ml</code>).</li>
+          <li><strong>Tienda</strong> — elige del menú: Walmart, Target, Costco, Sam's Club, Kroger, Publix, Aldi, Dollar Tree, Family Dollar, CVS, Walgreens, Best Buy, Home Depot, Amazon, u "Otra".</li>
+          <li><strong>Fecha de compra</strong> — la fecha real en que se compró (puede ser anterior a hoy).</li>
+          <li><strong>Precio unitario</strong> — el precio en USD, sin tax.</li>
+          <li><strong>Tax (%)</strong> — el porcentaje de impuesto (ej: <code>8.9</code>). La app calcula el tax en dólares automáticamente.</li>
+          <li><strong>Cantidad</strong> — cuántas unidades.</li>
+          <li>Toca <span class="boton exito">✓ Agregar al pedido</span>.</li>
+        </ol>
+      </div>
+
+      <div class="ok">A medida que llenas precio y tax, aparece un resumen abajo que dice: <code>$8.99 + $0.80 tax (×5) = $48.95</code>. Así confirmas antes de guardar.</div>
+
+      <div class="tip">Si vas a repetir productos, deja el mismo mercado en la parte de arriba y solo cambia producto y precio — más rápido.</div>
+
+      <h3>👀 Ver el contenido del pedido</h3>
+      <p>Dentro del pedido ves cada item así:</p>
+      <div class="card">
+        <p style="font-size:0.88rem;">🛒 Shampoo Pantene Coco 350ml<br>
+        🏪 Walmart · 2026-10-05 · ×5<br>
+        <span style="color:#38bdf8;">$8.99 + $0.80 tax = <strong>$48.95</strong></span></p>
+      </div>
+      <p>Al final aparece el <strong>TOTAL DEL PEDIDO</strong> con el monto en dólares y el número de items.</p>
+
+      <h3>🔒 Cerrar un pedido</h3>
+      <p>Cuando termines de cargar todo lo que va en la caja, toca <span class="boton peligro">🔒 Cerrar pedido</span>. Confirma.</p>
+      <p>El pedido pasa a <strong>🔵 Cerrado</strong> y ya no se puede seguir editando. Se mueve a la sección "Pedidos cerrados".</p>
+
+      <h3>🔎 Consultar producto USA</h3>
+      <p>Cuando recibas la caja en Venezuela:</p>
+      <div class="pasos">
+        <ol>
+          <li>En LuAn USA, toca <span class="boton">🔎 Consultar producto</span>.</li>
+          <li>Escribe el nombre (ej: <code>shampoo</code>).</li>
+          <li>Aparecerán todos los resultados que coincidan, mostrando:
+            <ul>
+              <li>Nombre del producto.</li>
+              <li>Tienda y fecha.</li>
+              <li>Precio unitario + tax.</li>
+              <li>Quién lo cargó.</li>
+            </ul>
+          </li>
+        </ol>
+      </div>
+
+      <div class="ok">Con esa información vas directo a la factura física correcta. Ya no hay que buscar entre 10-20 facturas distintas.</div>
+
+      <h3>📋 Ejemplo real de uso</h3>
+      <ol>
+        <li>La hija está en Atlanta y compra 5 shampoo en Walmart el 5 de octubre.</li>
+        <li>Llega a casa, abre la app, crea (o abre) el pedido <em>"Pedido Noviembre"</em>.</li>
+        <li>Agrega: producto <code>Shampoo Pantene Coco 350ml</code>, tienda <em>Walmart</em>, fecha <em>5 oct</em>, precio <em>8.99</em>, tax <em>8.9</em>, cantidad <em>5</em>.</li>
+        <li>Repite con todos los productos de esa compra.</li>
+        <li>Sigue comprando en otros días y agrega al mismo pedido.</li>
+        <li>Cuando termina, toca <em>🔒 Cerrar pedido</em> y lo envía.</li>
+        <li>En Venezuela, cuando llega la caja, abren LuAn USA, consultan el producto <code>shampoo</code> y ven: <em>Walmart · 5 oct · $8.99 + $0.80</em>.</li>
+        <li>Buscan la factura de Walmart del 5 de octubre y confirman.</li>
+      </ol>
+
+      <div class="tip">Los productos de USA viven en un módulo separado. <strong>No se mezclan</strong> con los productos venezolanos de "Mercado LuAn".</div>
+    </section>
+
+    <!-- ══ CONFIG ══ -->
+    <section class="seccion" id="config">
+      <h2>⚙️ Configuración</h2>
+      <p class="sub">Ajustes de la app</p>
+
+      <p>Accesible desde el botón <strong>⚙️ Configuración</strong> o el chip de tasa en el inicio.</p>
+
+      <h3>👤 Usuario</h3>
+      <p>Muestra tu nombre actual. Puedes cambiarlo aquí. Los registros anteriores conservan el nombre con el que se guardaron.</p>
+
+      <h3>💵 Tasa BCV</h3>
+      <p>Muestra la tasa vigente. Puedes actualizarla tocando <span class="boton exito">✓ Actualizar tasa de hoy</span>.</p>
+
+      <h3>🗑️ Limpiar precios viejos</h3>
+      <p>Borra los precios del comparador con más de N días. Puedes elegir conservar 1, 3, 5 o 7 días. Útil cuando la base crece demasiado.</p>
+
+      <h3>🏪 Borrar precios de un abasto</h3>
+      <p>Elimina todos los precios cargados de un abasto específico. Útil si un abasto cerró o cambió de dueño.</p>
+
+      <div class="warn">El borrado de un abasto es <strong>permanente</strong>. Confirma antes de tocar.</div>
+
+      <h3>ℹ️ Acerca de</h3>
+      <p>Versión y firma de la app.</p>
+    </section>
+
+    <!-- ══ FAQ ══ -->
+    <section class="seccion" id="faq">
+      <h2>❓ Preguntas frecuentes</h2>
+      <p class="sub">Dudas comunes</p>
+
+      <h3>¿Qué pasa si me quedo sin internet?</h3>
+      <p>La app <strong>sigue funcionando</strong>. Puedes ver listas, agregar productos, cargar precios. El puntito arriba se pone rojo. Cuando vuelve la conexión, todo se sube automáticamente.</p>
+
+      <h3>¿Mis datos son privados?</h3>
+      <ul>
+        <li><strong>Tu progreso de lista, historial y catálogo personal:</strong> solo tuyos.</li>
+        <li><strong>Los precios que cargas con "Cargar Precio":</strong> son públicos para la comunidad.</li>
+        <li><strong>LuAn USA:</strong> solo lo ven quienes tienen la app (tú y tu hija).</li>
+      </ul>
+
+      <h3>¿Cómo comparto cosas por WhatsApp?</h3>
+      <p>Cualquier botón <span class="boton wa">📲</span> abre WhatsApp con un mensaje pre-armado. Solo eliges a quién mandarlo.</p>
+
+      <h3>¿Qué significan los símbolos en los precios?</h3>
+      <table class="tabla">
+        <tr><td>🟢 Bs</td><td>Precio en bolívares</td></tr>
+        <tr><td>🔵 $</td><td>Precio en dólares</td></tr>
+        <tr><td>(E)</td><td>Producto exento de IVA</td></tr>
+        <tr><td>(IVA incl.)</td><td>El precio ya tiene IVA</td></tr>
+        <tr><td>(+16%)</td><td>Hay que sumarle 16% de IVA</td></tr>
+        <tr><td>🔥</td><td>Es oferta</td></tr>
+        <tr><td>⚠️</td><td>Precio con más de 15 días</td></tr>
+        <tr><td>✅</td><td>Confirmado en caja</td></tr>
+      </table>
+
+      <h3>¿Puedo usar la app en dos teléfonos?</h3>
+      <p>Sí. Cada persona tiene su propio usuario (nombre). Cada quien ve sus propias listas y su propio historial. Los precios compartidos sí los ven todos.</p>
+
+      <h3>¿Qué pasa si cierro la app en medio de una lista?</h3>
+      <p>Nada, todo se guarda. Al abrir de nuevo aparece el banner <strong>📋 Lista en progreso</strong> para retomar donde ibas.</p>
+
+      <h3>¿Qué pasa si toco "🗑️ Descartar" en el banner?</h3>
+      <p>Se borra la lista a medias <strong>permanentemente</strong>. Te pide confirmación antes.</p>
+
+      <h3>¿Puedo cargar precios de USA sin haber ido al mercado?</h3>
+      <p>Sí, pero en el módulo <strong>📦 LuAn USA</strong>, no en "💾 Cargar Precio". LuAn USA es el módulo para importaciones.</p>
+
+      <h3>¿Se mezclan los productos de USA con los de Venezuela?</h3>
+      <p>No. Son <strong>dos módulos independientes</strong>. Los productos de USA solo aparecen en LuAn USA. Los de Venezuela solo en Mercado LuAn.</p>
+    </section>
+
+    <!-- ══ PROBLEMAS ══ -->
+    <section class="seccion" id="problemas">
+      <h2>🛠️ Solución de problemas</h2>
+      <p class="sub">Si algo no funciona</p>
+
+      <h3>No veo los cambios que hicimos en la app</h3>
+      <p>Chrome guarda la versión vieja en caché. Solución rápida: en la barra de direcciones agrega <code>?v=2</code> al final. Cada vez que cambies algo, sube el número: <code>?v=3</code>, <code>?v=4</code>...</p>
+
+      <h3>Aparece "Error al arrancar"</h3>
+      <p>Casi siempre es porque falta un elemento del HTML o una función del JS. Revisa que todo esté pegado correctamente. También revisa que la URL no tenga errores.</p>
+
+      <h3>El puntito arriba está rojo (Sin conexión)</h3>
+      <p>No pasa nada. La app sigue funcionando en modo local. Cuando vuelva la conexión, se sube todo solo.</p>
+
+      <h3>Un producto no aparece en el autocompletado</h3>
+      <p>La primera vez que lo escribes hay que confirmarlo. Después queda guardado como <strong>⭐ Tus productos</strong>.</p>
+
+      <h3>Un precio se guardó mal (número equivocado)</h3>
+      <p>Ve a <strong>⚙️ Configuración → 🏪 Borrar precios de un abasto</strong> y borra todos los de ese abasto, o espera a la limpieza automática (30 días).</p>
+
+      <h3>La tasa quedó mal</h3>
+      <p>Ve a <strong>⚙️ Configuración → 💵 Tasa BCV</strong>, escribe el valor correcto y toca <em>✓ Actualizar tasa de hoy</em>.</p>
+
+      <h3>No puedo ver los pedidos de USA que cargué</h3>
+      <p>Revisa que estés en el módulo correcto: <strong>📦 LuAn USA</strong> desde el inicio. Si no los ves, revisa que la conexión esté activa (el puntito verde).</p>
+
+      <div class="ok">Si algo se rompe y no lo puedes arreglar, avisa al administrador con una descripción exacta de qué viste. Mientras más detalle, más rápido se soluciona.</div>
+    </section>
+
+    <a class="volver" href="#" onclick="irA('bienvenida');return false;">↑ Volver arriba</a>
+  </main>
+</div>
+
+<script>
+function irA(id){
+  document.querySelectorAll('.seccion').forEach(s=>s.classList.remove('activa'));
+  document.querySelectorAll('#indice a').forEach(a=>a.classList.remove('activo'));
+  const sec=document.getElementById(id);
+  if(sec)sec.classList.add('activa');
+  const item=document.querySelector('#indice a[data-sec="'+id+'"]');
+  if(item)item.classList.add('activo');
+  window.scrollTo({top:0,behavior:'smooth'});
+  try{history.replaceState(null,'','#'+id);}catch(_){}
+}
+document.getElementById('indice').addEventListener('click',e=>{
+  const a=e.target.closest('a[data-sec]');
+  if(!a)return;
+  e.preventDefault();
+  irA(a.dataset.sec);
+});
+// Al abrir, si hay hash, ir a esa sección
+if(location.hash){
+  const id=location.hash.slice(1);
+  if(document.getElementById(id))setTimeout(()=>irA(id),100);
+}
+</script>
+</body>
+</html>
