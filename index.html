@@ -1034,8 +1034,21 @@ async function guardarHistorial(tBs,tUsd,n){
   try{await addDoc(collection(db,'historial_luan'),e);}catch(_){}
 }
 async function cargarHistorial(){
-  if(fbListo){try{const q2=query(collection(db,'historial_luan'),orderBy('fecha','desc'),limit(50));const snap=await getDocs(q2);const h=[];snap.forEach(d=>h.push(d.data()));return h;}catch(_){}}
-  try{return JSON.parse(localStorage.getItem('luan_hist')||'[]');}catch(_){return[];}
+  const miId=usuarioActual?.id||'—';
+  if(fbListo){
+    try{
+      const q2=query(collection(db,'historial_luan'),where('quienId','==',miId));
+      const snap=await getDocs(q2);
+      const h=[];
+      snap.forEach(d=>h.push(d.data()));
+      h.sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
+      return h.slice(0,50);
+    }catch(_){}
+  }
+  try{
+    const local=JSON.parse(localStorage.getItem('luan_hist')||'[]');
+    return local.filter(x=>x.quienId===miId);
+  }catch(_){return[];}
 }
 
 function mostrarScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('activo'));document.getElementById(id).classList.add('activo');}
@@ -1239,7 +1252,7 @@ return`<div class="hist-item"><div class="hist-fecha">📅 ${fecha}${quien}</div
   }).join('');
 };
 // ══ LOS MÁS BARATOS ═══════════════════════════════════════
-let _baratosCache=[];
+window._baratosCache=window._baratosCache||[];
 let _baratosLimite=9999;
 
 window.irABaratos=async function(){
@@ -1273,8 +1286,7 @@ window.irABaratos=async function(){
         });
       }
     });
-   _baratosCache=Array.from(mapa.values()).sort((a,b)=>a.nom.localeCompare(b.nom,'es'));
-window._baratosCache=_baratosCache;
+   window._baratosCache=Array.from(mapa.values()).sort((a,b)=>a.nom.localeCompare(b.nom,'es'));
 _baratosLimite=9999;
 renderBaratos('');
     actualizarBotonesLimite();
@@ -1287,7 +1299,7 @@ renderBaratos('');
 function renderBaratos(filtro){
   const cont=document.getElementById('listaBaratos');
   const q=norm(filtro||'');
-  let lista=_baratosCache;
+  let lista=window._baratosCache;
   if(q){
     const palabras=q.split(/\s+/).filter(Boolean);
     lista=lista.filter(item=>{
@@ -1389,12 +1401,12 @@ function categoriaDeProducto(nombre){
 }
 
 window.compartirBaratosWA=function(completo){
-  if(!_baratosCache||_baratosCache.length===0){
+  if(!window._baratosCache||window._baratosCache.length===0){
     toast('No hay productos para compartir','#ef4444');
     return;
   }
   const fecha=new Date().toLocaleDateString('es-VE',{day:'2-digit',month:'2-digit',year:'numeric'});
-  const total=_baratosCache.length;
+  const total=window._baratosCache.length;
 
   let msg='🛒 *LOS MÁS BARATOS · Mercado LuAn*\n';
   msg+='👤 '+((usuarioActual&&usuarioActual.nombre)||'—')+'\n';
@@ -1403,8 +1415,8 @@ window.compartirBaratosWA=function(completo){
 
   // Agrupar por categoría
   const porCategoria={};
-  _baratosCache.forEach(item=>{
-    const cat=categoriaDeProducto(item.nom);
+ window._baratosCache.forEach(item=>{
+  const cat=categoriaDeProducto(item.nom);
     if(!porCategoria[cat])porCategoria[cat]=[];
     porCategoria[cat].push(item);
   });
@@ -1434,9 +1446,9 @@ window.compartirBaratosWA=function(completo){
     msg+='━━━━━━━━━━━━━━━━━━━━━\n\n';
     msg+='📋 *LISTA COMPLETA (A-Z)*\n';
     msg+='━━━━━━━━━━━━━━━━━━━━━\n\n';
-    _baratosCache.forEach(item=>{
-      msg+='• '+item.nom+': '+fusd(item.precioUSD)+' · '+item.abasto+'\n';
-    });
+    window._baratosCache.forEach(item=>{
+  msg+='• '+item.nom+': '+fusd(item.precioUSD)+' · '+item.abasto+'\n';
+});
     msg+='\n';
   }
 
@@ -1997,8 +2009,9 @@ window.pConfirmar=function(pref,id){
     if(!p||p<=0){if(errEl){errEl.style.display='block';errEl.textContent='Ingresa el precio.';}return;}
     precioFinal=p*c;descC=c>1?c+' unid.':'';item.cantUnidad=c;
   }
-  if(!item.iva){if(errEl){errEl.style.display='block';errEl.textContent='Selecciona el IVA.';}return;}
+    if(!item.iva){if(errEl){errEl.style.display='block';errEl.textContent='Selecciona el IVA.';}return;}
   item.precio=precioFinal;item.descC=descC;item.completo=true;
+  catSiNuevo(item.nom,item.moneda);
   if(pref==='c'){
     const calc=calcIVA(precioFinal,item.iva);let bBs,bUsd,iBs,iUsd,tBs,tUsd;
     if(item.moneda==='BS'){bBs=calc.base;iBs=calc.iva;tBs=calc.total;bUsd=bBs/tasa;iUsd=iBs/tasa;tUsd=tBs/tasa;}
@@ -2008,7 +2021,8 @@ window.pConfirmar=function(pref,id){
     regUso(item.nom,item.moneda);monedaProd=item.moneda;
     window._historialGuardado=false;
   }
-  
+  itemExpandido=null;
+  vib(50);
   toast(pref==='c'?'✓ '+item.nom+' confirmado':'✓ '+item.nom+' guardado');
   guardarProgreso();if(pref==='p')renderF2();else renderF3();
 };
@@ -2738,6 +2752,9 @@ document.getElementById('usaTienda').addEventListener('change',function(){
 
 window.guardarItemUSA=async function(){
   if(!pedidoActual||!pedidoActual.abierto){toast('El pedido no está abierto','#ef4444');return;}
+  const btnUSA=document.querySelector('#screenUSAAgregar .btn-success');
+  if(btnUSA&&btnUSA.disabled)return;
+  if(btnUSA){btnUSA.disabled=true;btnUSA.textContent='⏳ Guardando...';}
   const producto=document.getElementById('usaProdNom').value.trim();
   const tiendaSel=document.getElementById('usaTienda').value;
   const tiendaOtra=document.getElementById('usaTiendaOtra').value.trim();
@@ -2750,6 +2767,7 @@ window.guardarItemUSA=async function(){
   if(!producto||!tienda||!precio||precio<=0||!fecha||!/^\d{4}-\d{2}-\d{2}$/.test(fecha)){
   err.style.display='block';
   err.textContent='Completa producto, tienda, fecha y precio.';
+  if(btnUSA){btnUSA.disabled=false;btnUSA.textContent='✓ Agregar al pedido';}
   return;
 }
   err.style.display='none';
@@ -2769,12 +2787,14 @@ window.guardarItemUSA=async function(){
       usuario_nombre:usuarioActual?.nombre||'—',
       creado:new Date().toISOString()
     });
-    toast('✅ '+producto+' agregado');
+        toast('✅ '+producto+' agregado');
     vib(50);
+    if(btnUSA){btnUSA.disabled=false;btnUSA.textContent='✓ Agregar al pedido';}
     await abrirPedidoUSA(pedidoActual.id);
   }catch(e){
     toast('Error guardando','#ef4444');
     console.error(e);
+    if(btnUSA){btnUSA.disabled=false;btnUSA.textContent='✓ Agregar al pedido';}
   }
 };
 
@@ -2936,3 +2956,4 @@ arrancarApp().catch(e=>{
 </script>
 </body>
 </html>
+
